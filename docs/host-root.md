@@ -26,7 +26,7 @@ The matching keystore stays on the build machine. This tree does not contain it,
 
 ## Launcher
 
-The default launcher glyph is the first frame of the DSH-TUI pixel whale girl (`app/tool/pet_src/whale-girl/sheets/idle.png`, x=13..61). The next frame is not included. Nearest-neighbor scale, kept inside the adaptive 66/108 safe circle so the head and tail survive circle and rounded-square masks. Copyright stays with ccch1mneyyy; see `ASSETS.md`. The in-app brand mark is unchanged.
+The default launcher glyph is the first frame of the DSH-TUI pixel whale girl (`app/tool/pet_src/whale-girl/sheets/idle.png`, x=13..61). The next frame is not included. Nearest-neighbor scale, kept inside the adaptive 66/108 safe circle. Legacy PNGs and the adaptive foreground are RGBA with alpha 0 outside the character; the adaptive background drawable is Android's transparent color. A launcher can still paint its own plate. ColorOS often does. Copyright stays with ccch1mneyyy; see `ASSETS.md`. The in-app brand mark is unchanged.
 
 ## Provenance
 

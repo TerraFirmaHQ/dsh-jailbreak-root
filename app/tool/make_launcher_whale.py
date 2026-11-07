@@ -6,8 +6,10 @@ Source: app/tool/pet_src/whale-girl/sheets/idle.png, first frame only
 Art terms: ASSETS.md — copyright ccch1mneyyy, not AGPL-3.0.
 
 The glyph is scaled uniformly with nearest-neighbor and kept inside the
-adaptive safe circle (66/108). Head and tail stay inside circle and
-rounded-square masks.
+adaptive safe circle (66/108). Legacy and adaptive foreground PNGs are
+RGBA: pixels outside the character are alpha 0. No baked plate, gradient,
+or circle fill. Android's adaptive background is @android:color/transparent.
+A launcher may still paint its own plate.
 """
 
 from __future__ import annotations
@@ -112,17 +114,12 @@ def main() -> int:
         return out
 
     for dens, size in legacy.items():
-        fg = fit(frame, size, 0.82)
-        bg = sky(size)
-        full = bg.copy()
-        full.alpha_composite(fg)
-        flat = bg.copy()
-        flat.alpha_composite(squircle(full))
-        flat.convert("RGB").save(RES / f"mipmap-{dens}/ic_launcher.png")
-        flatc = bg.copy()
-        flatc.alpha_composite(circle(full))
-        flatc.convert("RGB").save(RES / f"mipmap-{dens}/ic_launcher_round.png")
-    print("wrote launcher icons from", SHEET)
+        # Transparent outside the character. The launcher may mask this; we do not
+        # paint a plate, gradient, or filled circle into the PNG.
+        glyph = fit(frame, size, 0.82)
+        glyph.save(RES / f"mipmap-{dens}/ic_launcher.png")
+        glyph.save(RES / f"mipmap-{dens}/ic_launcher_round.png")
+    print("wrote transparent launcher icons from", SHEET)
     return 0
 
 
