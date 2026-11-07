@@ -1,0 +1,15 @@
+{
+  "hostRootTitle": "Root",
+  "hostRootBody": "Host root is off by default and does not call su until you turn it on. read_file is a fixed read, including /data/adb, with no dialog. Arbitrary shell and writes show a preview first. Changes to hiding, modules, SELinux or mounts are labeled. Cancel runs nothing.",
+  "hostRootSwitch": "Host root tools",
+  "hostRootChroot": "Optional chroot engine",
+  "hostRootChrootHint": "Off by default. Everyday use stays on upstream PRoot and does not need root. When on, the engine runs in a chroot as this app's uid.",
+  "hostRootPrompt": "Built-in prompt is locked",
+  "hostRootPromptMissing": "The built-in prompt asset is missing. Nothing was invented in its place.",
+  "hostRootPersona": "Persona",
+  "hostRootPersonaHint": "Blank by default. This is not a coordinator and it does not replace the locked prompt.",
+  "hostRootSave": "Save",
+  "hostRootNoSu": "su was not granted. The switch stays off.",
+  "hostRootBattery": "Battery exemption (read back)",
+  "hostRootMigration": "An upgrade keeps /root only. /usr/local and /opt need installing again. Scheduled tasks written by the new engine are not guaranteed to load on an older engine."
+}

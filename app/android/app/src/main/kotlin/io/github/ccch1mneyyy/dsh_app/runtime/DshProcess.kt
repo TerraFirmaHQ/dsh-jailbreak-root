@@ -5,6 +5,8 @@ import android.os.Process as AndroidProcess
 import android.system.ErrnoException
 import android.system.Os
 import android.system.OsConstants
+import io.github.ccch1mneyyy.dsh_app.hostroot.HostRootControl
+import io.github.ccch1mneyyy.dsh_app.hostroot.HostRootGuest
 import io.github.ccch1mneyyy.dsh_app.phone.PhoneGuest
 import java.io.File
 import java.io.IOException
@@ -63,8 +65,19 @@ class DshProcess(
     var direct: Boolean = false
         private set
 
+    /** Optional chroot launch. Off unless this start actually selected it. */
+    var chrootActive: Boolean = false
+        private set
+
+    var chrootMounts: List<String> = emptyList()
+        private set
+
+    /** Set by [adopt] when the engine outlived the previous app process. */
+    var adoptedPid: Int? = null
+        private set
+
     val launchDiagnostics = LaunchDiagnostics()
-    val executionMode: String? get() = launchDiagnostics.currentMode(process?.isAlive == true)
+    val executionMode: String? get() = launchDiagnostics.currentMode(process?.isAlive == true || adoptedPid != null)
 
     var directFallbackReason: String? = null
         private set
@@ -73,7 +86,19 @@ class DshProcess(
      * [binds] are extra proot `-b host:guest` mounts, inserted before the guest command.
      * [safe] boots the rescue profile instead of `web` (see [SafeMode.profileArg]).
      */
-    fun start(guestEnv: Map<String, String>, binds: List<String> = emptyList(), safe: Boolean = false, phone: Boolean = false, directEngine: Boolean = false, directFailed: Boolean = false, onLaunchMethod: ((Boolean) -> Unit)? = null) {
+    fun start(
+        guestEnv: Map<String, String>,
+        binds: List<String> = emptyList(),
+        safe: Boolean = false,
+        phone: Boolean = false,
+        directEngine: Boolean = false,
+        directFailed: Boolean = false,
+        onLaunchMethod: ((Boolean) -> Unit)? = null,
+        chrootRequested: Boolean = false,
+        chrootFailed: Boolean = false,
+        chrootGranted: Boolean = false,
+        mounts: HostRootControl.Mounts = HostRootControl.Mounts(false, false, false),
+    ) {
         check(process == null) { "already started" }
         var selection = DirectLaunch.select(rootfs, directEngine, safe, directFailed)
         // Only PRoot's fake hard links stand in Direct's way: tidy them once no runtime process is left.
@@ -141,7 +166,12 @@ class DshProcess(
                 if (withAuth != null) authPending = false
                 val withSpeech = if (speechPending) SpeechGuest.launchArg(withAuth ?: withSearch ?: withPhone ?: selected ?: arg) else null
                 if (withSpeech != null) speechPending = false
-                argv += expand(withSpeech ?: withAuth ?: withSearch ?: withPhone ?: selected ?: arg)
+                val base = withSpeech ?: withAuth ?: withSearch ?: withPhone ?: selected ?: arg
+                // Locked prompt, optional persona, host-root MCP. Files are written only when each is on.
+                val withPrompt = if (mounts.prompt) HostRootGuest.launchArg(base, HostRootGuest.PROMPT_PATCH, allowProfile = true) else null
+                val withPersona = if (mounts.persona) HostRootGuest.launchArg(withPrompt ?: base, HostRootGuest.PERSONA_PATCH) else null
+                val withRoot = if (mounts.root) HostRootGuest.launchArg(withPersona ?: withPrompt ?: base, HostRootGuest.ROOT_PATCH) else null
+                argv += expand(withRoot ?: withPersona ?: withPrompt ?: base)
             }
         }
         check(!safe || profileSelected) { "safe mode: this runtime's launch command has no `dsh web` to replace" }
@@ -163,6 +193,23 @@ class DshProcess(
             env.clear()
             env.putAll(plan.environment)
         }
+        // Optional chroot. select() does not spawn su; the command below is the only su,
+        // and only when the user turned the switch on and a previous probe said it was granted.
+        val chrootSelection = if (direct) ChrootLaunch.Selection(false) else ChrootLaunch.select(rootfs, chrootRequested, safe, chrootFailed, chrootGranted)
+        if (chrootSelection.root) {
+            val plan = ChrootLaunch.prepare(rootfs, argv, AndroidProcess.myUid(), ChrootLaunch.supplementaryGroups())
+            chrootActive = true
+            chrootMounts = plan.mountTargets
+            val script = File(context.filesDir, "chroot-launch.sh")
+            script.writeText(plan.script)
+            builder.command(listOf("su", "-c", "exec sh ${DirectLaunch.quote(script.absolutePath)}")).directory(context.filesDir)
+            env.clear()
+            env["PATH"] = "/system/bin:/system/xbin"
+            listener.onLog("[dsh-app] launch method: root-chroot", "system")
+        } else if (chrootRequested && !safe && !direct) {
+            listener.onLog("[dsh-app] chroot left off (${chrootSelection.fallbackReason ?: "not granted"}); staying on proot", "system")
+        }
+        if (chrootActive) launchDiagnostics.selected("chroot", chrootSelection.fallbackReason)
 
         readyReported = false
         if (directFallbackReason == DirectLaunch.INCOMPATIBLE) listener.onLog("[dsh-app] direct fallback: proot hard-link backing files need compatible launch; user preference and data retained", "system")
@@ -263,28 +310,79 @@ class DshProcess(
      * proot ignores SIGTERM, so stop DSH itself first (pid file written by the launch
      * command), then SIGQUIT proot, which kills every remaining tracee.
      */
+    /**
+     * Attach to a chroot engine that survived the previous process.
+     * Identity, workdir, port and token were already checked by [ChrootSession].
+     */
+    fun adopt(record: EngineHandoff.Record) {
+        check(process == null && adoptedPid == null) { "already started" }
+        port = record.port
+        adoptedPid = record.pid
+        chrootActive = true
+        chrootMounts = record.mountTargets
+        phoneMounted = record.phone
+        readyReported = true
+        launchDiagnostics.selected("chroot", null)
+        launchDiagnostics.spawned()
+        listener.onLog("[dsh-app] adopted the running engine (pid ${record.pid}, port ${record.port})", "system")
+        listener.onReady(this, "http://127.0.0.1:$port", record.token)
+        waiter = thread(name = "dsh-adopt-wait", isDaemon = true) {
+            AdoptedEngineMonitor(
+                record,
+                rootfs,
+                AndroidProcess.myUid(),
+                { pid ->
+                    ChrootSession.livenessFromProc(pid) { path ->
+                        val file = File(path)
+                        if (!file.exists()) null
+                        else if (path.endsWith("/cwd")) runCatching { file.canonicalPath }.getOrNull()
+                        else if (file.isDirectory) ""
+                        else runCatching { file.readText() }.getOrNull()
+                    }
+                },
+                { canConnect(it) },
+                { Thread.sleep(it) },
+            ).run()
+            adoptedPid = null
+            listener.onExit(this, 0, expectedExit)
+        }
+    }
+
     @Synchronized fun stop(expected: Boolean = true) {
         stopping = true
         startupSignal.countDown()
         if (expected) expectedExit = true
         if (stopper != null) return
-        val p = process ?: return
+        val adopted = adoptedPid
+        val p = process
+        if (p == null && adopted == null) return
+        if (adopted != null && p == null) {
+            stopper = thread(name = "dsh-stop", isDaemon = true) {
+                ChrootLaunch.terminate(listOf(adopted))
+                if (chrootMounts.isNotEmpty()) ChrootLaunch.cleanup(chrootMounts)
+                adoptedPid = null
+                listener.onExit(this, 0, expectedExit)
+            }
+            return
+        }
+        val child = p ?: return
         stopper = thread(name = "dsh-stop", isDaemon = true) {
             try {
-                val node = if (p.isAlive) guestRecord() else null
-                val proot = if (direct) null else node?.let { child -> processSnapshot().records.firstOrNull { it.pid == child.parent && it.proot } }
+                val node = if (child.isAlive) guestRecord() else null
+                val proot = if (direct) null else node?.let { trace -> processSnapshot().records.firstOrNull { it.pid == trace.parent && it.proot } }
                 if (node != null) signalOwned(node, OsConstants.SIGTERM)
-                else if (direct && p.isAlive) p.destroy() // loader/preload may fail before writing its pid file
-                if (!waitExit(p, 5000) && proot != null) signalOwned(proot, OsConstants.SIGQUIT)
-                waitExit(p, 2000)
+                else if (direct && child.isAlive) child.destroy() // loader/preload may fail before writing its pid file
+                if (!waitExit(child, 5000) && proot != null) signalOwned(proot, OsConstants.SIGQUIT)
+                waitExit(child, 2000)
             } finally {
                 try {
-                    if (p.isAlive) p.destroyForcibly()
+                    if (child.isAlive) child.destroyForcibly()
                 } finally {
                     // Reap tracees before waiting: an OEM Process.waitFor may not
                     // return until they exit. The waiter still retains this owner.
                     killStrays()
-                    p.waitFor()
+                    if (chrootMounts.isNotEmpty()) ChrootLaunch.cleanup(chrootMounts)
+                    child.waitFor()
                 }
             }
         }

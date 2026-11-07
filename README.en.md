@@ -2,6 +2,8 @@
   <a href="README.md">简体中文</a> · <b>English</b>
 </p>
 
+**dsh Root** is this tree: upstream dsh-Go v1.0.12 (`d5ad25c5bc4c66ecacee76b3c5378db45e1db3fa`) plus host-root tools. The launcher name is dsh Root. Host root and the optional chroot engine default to off; normal startup stays on upstream PRoot. See [docs/host-root.md](docs/host-root.md).
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-en-dark.webp">

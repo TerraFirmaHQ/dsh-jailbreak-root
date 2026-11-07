@@ -41,6 +41,7 @@ class MainActivity : FlutterActivity() {
         cache.get(ENGINE_ID)?.let { return it }
         return FlutterEngine(applicationContext).also { engine ->
             engine.plugins.add(RuntimePlugin())
+            engine.plugins.add(io.github.ccch1mneyyy.dsh_app.hostroot.HostRootPlugin())
             engine.plugins.add(PhonePlugin())
             engine.plugins.add(NotifyPlugin())
             engine.plugins.add(FilesPlugin())

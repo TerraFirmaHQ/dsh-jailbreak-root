@@ -2,6 +2,8 @@
   <b>简体中文</b> · <a href="README.en.md">English</a>
 </p>
 
+**dsh Root** 基于官方 dsh-Go v1.0.12（`d5ad25c5bc4c66ecacee76b3c5378db45e1db3fa`）。桌面名称是 dsh Root。主机 root 和可选 chroot 默认关闭，平时仍走上游 PRoot。说明见 [docs/host-root.md](docs/host-root.md)。
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-zh-dark.webp">

@@ -13940,6 +13940,84 @@ abstract class L10n {
   /// **'通过 SSH 隧道连接。此连接不提供 LAN / P2P 路径检测或延迟测量。'**
   String get hostDetailsSshNetworkHint;
 
+  /// No description provided for @hostRootTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'Root'**
+  String get hostRootTitle;
+
+  /// No description provided for @hostRootBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'主机 root 默认关闭。关闭时不会调用 su。打开后，read_file 按固定命令读取（含 /data/adb，不弹窗）。任意 shell 和写入都要先看预览；改隐藏、模块、SELinux 或挂载会标明。取消则不执行。'**
+  String get hostRootBody;
+
+  /// No description provided for @hostRootSwitch.
+  ///
+  /// In zh, this message translates to:
+  /// **'主机 root 工具'**
+  String get hostRootSwitch;
+
+  /// No description provided for @hostRootChroot.
+  ///
+  /// In zh, this message translates to:
+  /// **'可选 chroot 引擎'**
+  String get hostRootChroot;
+
+  /// No description provided for @hostRootChrootHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认关闭。日常仍用上游 PRoot，不需要 root。打开后引擎在 chroot 里以本应用 uid 运行。'**
+  String get hostRootChrootHint;
+
+  /// No description provided for @hostRootPrompt.
+  ///
+  /// In zh, this message translates to:
+  /// **'内置提示词已锁定'**
+  String get hostRootPrompt;
+
+  /// No description provided for @hostRootPromptMissing.
+  ///
+  /// In zh, this message translates to:
+  /// **'内置提示词资源缺失，没有用别的文本顶替。'**
+  String get hostRootPromptMissing;
+
+  /// No description provided for @hostRootPersona.
+  ///
+  /// In zh, this message translates to:
+  /// **'人设'**
+  String get hostRootPersona;
+
+  /// No description provided for @hostRootPersonaHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认空白。这不是协调员，也不会替换锁定的内置提示词。'**
+  String get hostRootPersonaHint;
+
+  /// No description provided for @hostRootSave.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存'**
+  String get hostRootSave;
+
+  /// No description provided for @hostRootNoSu.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有拿到 su。开关保持关闭。'**
+  String get hostRootNoSu;
+
+  /// No description provided for @hostRootBattery.
+  ///
+  /// In zh, this message translates to:
+  /// **'电池豁免（读回确认）'**
+  String get hostRootBattery;
+
+  /// No description provided for @hostRootMigration.
+  ///
+  /// In zh, this message translates to:
+  /// **'升级只保留 /root。/usr/local 和 /opt 需要重装。新引擎写入的定时任务不能保证被旧引擎读回。'**
+  String get hostRootMigration;
+
   /// No description provided for @hubSessionDetails.
   ///
   /// In zh, this message translates to:

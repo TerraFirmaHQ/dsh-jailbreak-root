@@ -7989,6 +7989,49 @@ class L10nEn extends L10n {
       'Uses an SSH tunnel. LAN / P2P route inspection and latency measurements are not available for this connection.';
 
   @override
+  String get hostRootTitle => 'Root';
+
+  @override
+  String get hostRootBody =>
+      'Host root is off by default and does not call su until you turn it on. read_file is a fixed read, including /data/adb, with no dialog. Arbitrary shell and writes show a preview first. Changes to hiding, modules, SELinux or mounts are labeled. Cancel runs nothing.';
+
+  @override
+  String get hostRootSwitch => 'Host root tools';
+
+  @override
+  String get hostRootChroot => 'Optional chroot engine';
+
+  @override
+  String get hostRootChrootHint =>
+      'Off by default. Everyday use stays on upstream PRoot and does not need root. When on, the engine runs in a chroot as this app\'s uid.';
+
+  @override
+  String get hostRootPrompt => 'Built-in prompt is locked';
+
+  @override
+  String get hostRootPromptMissing => 'The built-in prompt asset is missing. Nothing was invented in its place.';
+
+  @override
+  String get hostRootPersona => 'Persona';
+
+  @override
+  String get hostRootPersonaHint =>
+      'Blank by default. This is not a coordinator and it does not replace the locked prompt.';
+
+  @override
+  String get hostRootSave => 'Save';
+
+  @override
+  String get hostRootNoSu => 'su was not granted. The switch stays off.';
+
+  @override
+  String get hostRootBattery => 'Battery exemption (read back)';
+
+  @override
+  String get hostRootMigration =>
+      'An upgrade keeps /root only. /usr/local and /opt need installing again. Scheduled tasks written by the new engine are not guaranteed to load on an older engine.';
+
+  @override
   String get hubSessionDetails => 'Chat details';
 
   @override

@@ -96,6 +96,14 @@ class RuntimeInstaller(
         }
         onProgress(total, total)
 
+        timed("migrate-preflight") {
+            val report = io.github.ccch1mneyyy.dsh_app.hostroot.MigrationPreflight.capture(
+                File(baseDir, "rootfs"),
+                File(context.filesDir, "migration/${System.currentTimeMillis()}"),
+            )
+            onLog("[dsh-app] runtime migration preflight: keep ${report.plan.keep} drop ${report.plan.drop}; backup=${report.backedUp}")
+            if (report.error != null) onLog("[dsh-app] runtime migration backup incomplete: ${report.error}")
+        }
         timed("activate") {
             activateRootfs(baseDir, manifest.runtimeVersion, keepDir, dropKept,
                 sync = { timed("sync") { sync() } })

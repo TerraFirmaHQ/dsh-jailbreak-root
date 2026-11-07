@@ -81,6 +81,7 @@ enum SettingsPageId {
   privacy,
   sharedLinks,
   engine,
+  hostRoot,
   remote,
   engineParams,
   subagent,
@@ -475,6 +476,14 @@ final _pages = <SettingsPageMeta>[
     keywords: (l) => l.searchKwEngine,
     freq: Freq.medium,
     links: const ['engine'],
+  ),
+  SettingsPageMeta(
+    SettingsPageId.hostRoot,
+    title: (l) => l.hostRootTitle,
+    parent: SettingsPageId.engine,
+    keywords: (l) => l.hostRootTitle,
+    links: const ['host-root', 'root'],
+    row: false,
   ),
   SettingsPageMeta(
     SettingsPageId.remote,

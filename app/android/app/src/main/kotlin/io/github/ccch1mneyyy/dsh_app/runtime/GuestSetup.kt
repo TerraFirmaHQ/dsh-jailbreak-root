@@ -101,6 +101,7 @@ object GuestSetup {
         phoneControl: Boolean = false,
         visualReplies: Boolean = true,
         directEngine: Boolean = false,
+        hostRoot: Boolean = false,
     ) {
         try {
             val file = File(rootfs, "root/.dsh/AGENTS.md")
@@ -122,6 +123,7 @@ object GuestSetup {
                 },
             ) + (if (visualReplies) DSH_UI_SECTION else "") +
                 (if (phoneControl) PhoneGuest.AGENTS_SECTION else "") +
+                (if (hostRoot) io.github.ccch1mneyyy.dsh_app.hostroot.HostRootGuest.AGENTS_SECTION else "") +
                 DIAGNOSTICS_SECTION.replace(
                     "{PATH}",
                     if (directEngine) "${rootfs.canonicalPath}/root/.dsh/dsh-app/diagnostics.md"

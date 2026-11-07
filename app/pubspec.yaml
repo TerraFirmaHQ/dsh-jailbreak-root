@@ -153,6 +153,8 @@ flutter:
     - assets/skills/dsh-go-plugin/
     - assets/skills/dsh-go-guide/
     - assets/skills/dsh-go-support/
+    # Locked DeepSeek-4.1 prompt and the optional blank persona plugin.
+    - assets/engine/hostprompt/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
