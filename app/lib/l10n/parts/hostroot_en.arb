@@ -21,5 +21,11 @@
   "hostRootApprovalTitle": "Allow this root command?",
   "hostRootApprovalProtected": "This changes the hiding setup, a module, SELinux, or mounts. Nothing runs unless you allow it.",
   "hostRootAllow": "Allow",
-  "hostRootDeny": "Deny"
+  "hostRootDeny": "Deny",
+  "hostPersonaTitle": "Custom persona",
+  "hostPersonaKeywords": "persona,custom,blank",
+  "hostPromptLockedTitle": "Built-in prompt",
+  "hostPromptLockedValue": "Locked",
+  "hostPromptLockedHint": "Built in and not editable here. A persona is a later section and does not replace this text.",
+  "hostPromptLockedKeywords": "prompt,locked,built-in"
 }

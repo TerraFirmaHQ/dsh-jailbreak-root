@@ -82,6 +82,7 @@ enum SettingsPageId {
   sharedLinks,
   engine,
   hostRoot,
+  hostPersona,
   remote,
   engineParams,
   subagent,
@@ -486,6 +487,14 @@ final _pages = <SettingsPageMeta>[
     links: const ['host-root', 'root'],
   ),
   SettingsPageMeta(
+    SettingsPageId.hostPersona,
+    title: (l) => l.hostPersonaTitle,
+    group: _abilities,
+    keywords: (l) => l.hostPersonaKeywords,
+    freq: Freq.medium,
+    links: const ['persona', 'host-persona'],
+  ),
+  SettingsPageMeta(
     SettingsPageId.remote,
     title: (l) => l.commonRemoteHost,
     group: _hosts,
@@ -587,6 +596,14 @@ abstract final class Spots {
     group: _general,
     title: (l) => l.localeTitle,
     keywords: (l) => l.searchKwLanguage,
+  );
+  static final lockedPrompt = SettingSpot(
+    'locked-prompt',
+    page: SettingsPageId.hub,
+    group: _abilities,
+    title: (l) => l.hostPromptLockedTitle,
+    keywords: (l) => l.hostPromptLockedKeywords,
+    freq: Freq.medium,
   );
   static final askAi = SettingSpot(
     'ask-ai',
@@ -1058,6 +1075,7 @@ abstract final class Spots {
 }
 
 final _rows = <SettingSpot>[
+  Spots.lockedPrompt,
   Spots.chatTextSize,
   Spots.foldTurns,
   Spots.language,

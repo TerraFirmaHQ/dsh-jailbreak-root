@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url'
 const here = dirname(fileURLToPath(import.meta.url))
 const prompt = readFileSync(join(here, '../../assets/engine/hostprompt/prompt.md'))
 const plugin = readFileSync(join(here, '../../assets/engine/hostprompt/index.mjs'), 'utf8')
+const persona = readFileSync(join(here, '../../assets/engine/hostprompt/persona.mjs'), 'utf8')
 
 test('prompt bytes are the 4.1 file', () => {
   assert.equal(prompt.length, 21403)
@@ -18,4 +19,12 @@ test('plugin places that text first and does not interpolate it', () => {
   assert.match(plugin, /SECTION_ORDER = -2000/)
   assert.match(plugin, /interpolate: false/)
   assert.match(plugin, /dsh:builtin-prompt/)
+})
+
+test('persona is a later section and stays off when blank', () => {
+  assert.match(persona, /SECTION_ORDER = -1500/)
+  assert.match(persona, /dsh:persona/)
+  assert.match(persona, /if \(text.length === 0\) return/)
+  assert.ok(plugin.includes('SECTION_ORDER = -2000'))
+  assert.ok(persona.includes('SECTION_ORDER = -1500'))
 })

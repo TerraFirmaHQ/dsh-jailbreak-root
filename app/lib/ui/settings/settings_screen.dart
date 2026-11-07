@@ -49,6 +49,7 @@ import '../shell/page_frame.dart';
 import '../theme/app_icons.dart';
 import '../theme/theme.dart';
 import '../update/update_tiles.dart' show UpdateBadge;
+import 'host_persona_page.dart';
 import 'host_root_page.dart';
 import 'about_page.dart';
 import 'appearance/appearance_page.dart';
@@ -113,6 +114,16 @@ class SettingsScreen extends ConsumerWidget {
         : root.rootEnabled
         ? l10n.pluginsTurnedOn
         : l10n.hubValueOff;
+    final personaValue = !root.loaded
+        ? null
+        : root.persona.trim().isEmpty
+        ? l10n.commonNotSet
+        : l10n.hubValueSet;
+    final promptValue = !root.loaded
+        ? null
+        : root.promptOk
+        ? l10n.hostPromptLockedValue
+        : l10n.hostRootPromptMissing;
     final phone = ref.watch(phoneProvider);
     final phoneValue = !phone.loaded || !phone.status.ready
         ? null
@@ -177,11 +188,26 @@ class SettingsScreen extends ConsumerWidget {
           title: l10n.hubGroupCapabilities,
           children: [
             SettingsTile(
+              icon: AppIcons.lock,
+              tint: SettingsHues.abilities,
+              spot: Spots.lockedPrompt,
+              subtitle: l10n.hostPromptLockedHint,
+              value: text(promptValue),
+              chevron: false,
+            ),
+            SettingsTile(
               icon: AppIcons.permissions,
               tint: SettingsHues.abilities,
               spot: SettingsIndex.entry(SettingsPageId.hostRoot),
               value: text(rootValue),
               onTap: () => _push(context, const HostRootPage()),
+            ),
+            SettingsTile(
+              icon: AppIcons.profile,
+              tint: SettingsHues.abilities,
+              spot: SettingsIndex.entry(SettingsPageId.hostPersona),
+              value: text(personaValue),
+              onTap: () => _push(context, const HostPersonaPage()),
             ),
             SettingsTile(
               icon: AppIcons.phoneControl,

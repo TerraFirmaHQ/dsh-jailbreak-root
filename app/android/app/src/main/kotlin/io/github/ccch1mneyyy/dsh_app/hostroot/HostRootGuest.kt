@@ -153,6 +153,18 @@ object HostRootGuest {
         runCatching { File(rootfs, ROOT_CONFIG.removePrefix("/")).delete() }
     }
 
+    /**
+     * One engine-log line. [requested] is what prepare decided; [present] is
+     * whether that patch path is actually on the launch command. No prompt
+     * text, persona text, token, or endpoint.
+     */
+    internal fun mountLog(name: String, requested: Boolean, present: Boolean, mountedDetail: String, absentDetail: String): String =
+        when {
+            requested && present -> "[dsh-app] $name mounted ($mountedDetail)"
+            requested -> "[dsh-app] $name not mounted (launch command has no patch)"
+            else -> "[dsh-app] $name not mounted ($absentDetail)"
+        }
+
     fun sha256(bytes: ByteArray): String =
         MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
 

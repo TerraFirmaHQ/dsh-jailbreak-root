@@ -8071,6 +8071,25 @@ class L10nEn extends L10n {
   String get hostRootDeny => 'Deny';
 
   @override
+  String get hostPersonaTitle => 'Custom persona';
+
+  @override
+  String get hostPersonaKeywords => 'persona,custom,blank';
+
+  @override
+  String get hostPromptLockedTitle => 'Built-in prompt';
+
+  @override
+  String get hostPromptLockedValue => 'Locked';
+
+  @override
+  String get hostPromptLockedHint =>
+      'Built in and not editable here. A persona is a later section and does not replace this text.';
+
+  @override
+  String get hostPromptLockedKeywords => 'prompt,locked,built-in';
+
+  @override
   String get hubSessionDetails => 'Chat details';
 
   @override

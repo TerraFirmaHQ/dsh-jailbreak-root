@@ -24,6 +24,7 @@ import '../../providers/providers_page.dart';
 import '../../remote/remote_screen.dart';
 import '../../share_hosted/hosted_links_page.dart';
 import '../about_page.dart';
+import '../host_persona_page.dart';
 import '../host_root_page.dart';
 import '../appearance/appearance_page.dart';
 import '../background_guide_page.dart';
@@ -60,6 +61,7 @@ Widget settingsPage(SettingsPageId id, {String? sessionId}) => switch (id) {
   SettingsPageId.phoneUnlocks => const PhoneUnlockPage(),
   SettingsPageId.engine => const EngineScreen(),
   SettingsPageId.hostRoot => const HostRootPage(),
+  SettingsPageId.hostPersona => const HostPersonaPage(),
   SettingsPageId.background => const BackgroundGuidePage(),
   SettingsPageId.systemAccess => const SystemAccessPage(),
   SettingsPageId.diagnostics => const DiagnosticsPage(),

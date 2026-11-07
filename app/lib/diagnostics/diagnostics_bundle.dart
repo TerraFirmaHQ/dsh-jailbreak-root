@@ -68,6 +68,16 @@ class DiagnosticsSnapshot {
   final List<AppErrorRecord> appErrors;
 }
 
+/// Installed Android version when the system reports it. [AppInfo.version]
+/// stays 1.0.2+1 unless the build passed DSH_APP_VERSION, so diagnostics
+/// must not prefer that placeholder over versionName and versionCode.
+String diagnosticsAppVersion(Map<String, Object?> app) {
+  final name = app['versionName'];
+  final code = app['versionCode'];
+  if (name is String && name.isNotEmpty && code is num) return '$name+${code.toInt()}';
+  return AppInfo.version;
+}
+
 abstract final class DiagnosticsBundle {
   static const mime = 'application/zip';
 
@@ -84,7 +94,7 @@ abstract final class DiagnosticsBundle {
     return {
       'generatedAt': s.at.toUtc().toIso8601String(),
       'timeZoneOffsetMinutes': s.at.timeZoneOffset.inMinutes,
-      'app': {'version': AppInfo.version, ...s.native.app},
+      'app': {...s.native.app, 'version': diagnosticsAppVersion(s.native.app)},
       'device': s.native.device,
       'runtime': {
         'phase': status.phase.name,

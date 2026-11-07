@@ -4,7 +4,6 @@
 
 import 'dart:convert';
 
-import '../state/app_info.dart';
 import 'diagnostics_bundle.dart';
 import 'redact.dart';
 
@@ -59,7 +58,7 @@ void _environment(StringBuffer b, DiagnosticsSnapshot s) {
   final manifest = s.native.manifest;
   b
     ..writeln('## 环境')
-    ..writeln('- App：${_join([AppInfo.version, app['versionName'], app['versionCode']?.toString()])}')
+    ..writeln('- App：${diagnosticsAppVersion(app)}')
     ..writeln('- 设备：${_join([device['manufacturer'], device['brand'], device['model'], _android(device)], mono: true)}')
     ..writeln('- 设备资源：${_join([_mb(device['memoryMb'], '内存'), _mb(device['freeStorageMb'], '剩余存储')])}')
     ..writeln('- ABI：${st.abi ?? '—'}');

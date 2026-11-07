@@ -214,6 +214,37 @@ class DshProcess(
         readyReported = false
         if (directFallbackReason == DirectLaunch.INCOMPATIBLE) listener.onLog("[dsh-app] direct fallback: proot hard-link backing files need compatible launch; user preference and data retained", "system")
         if (directFallbackReason == DirectLaunch.FAILED) listener.onLog("[dsh-app] direct fallback: direct launch failed before with this runtime; turn Direct on again to retry", "system")
+        val launchText = argv.joinToString(" ")
+        listener.onLog(
+            HostRootGuest.mountLog(
+                "locked prompt",
+                mounts.prompt,
+                launchText.contains(HostRootGuest.PROMPT_PATCH),
+                "first system segment",
+                "asset missing or hash rejected",
+            ),
+            "system",
+        )
+        listener.onLog(
+            HostRootGuest.mountLog(
+                "root tools",
+                mounts.root,
+                launchText.contains(HostRootGuest.ROOT_PATCH),
+                "mcp__root__*",
+                "switch off or safe mode, su not called",
+            ),
+            "system",
+        )
+        listener.onLog(
+            HostRootGuest.mountLog(
+                "persona",
+                mounts.persona,
+                launchText.contains(HostRootGuest.PERSONA_PATCH),
+                "after the locked prompt",
+                "blank, no section",
+            ),
+            "system",
+        )
         listener.onLog("[dsh-app] launch method: ${if (direct) "direct-glibc" else "proot"}${if (directEngine && safe) " (safe recovery)" else ""}", "system")
         listener.onLog("[dsh-app] launching ${builder.command().joinToString(" ") { redact(it) }}", "system")
         // stop() came in while this was being prepared: don't launch at all.

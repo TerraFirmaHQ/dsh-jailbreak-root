@@ -14090,6 +14090,42 @@ abstract class L10n {
   /// **'拒绝'**
   String get hostRootDeny;
 
+  /// No description provided for @hostPersonaTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'人设自定义'**
+  String get hostPersonaTitle;
+
+  /// No description provided for @hostPersonaKeywords.
+  ///
+  /// In zh, this message translates to:
+  /// **'人设,人格,自定义,空白'**
+  String get hostPersonaKeywords;
+
+  /// No description provided for @hostPromptLockedTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'破甲提示词'**
+  String get hostPromptLockedTitle;
+
+  /// No description provided for @hostPromptLockedValue.
+  ///
+  /// In zh, this message translates to:
+  /// **'已锁定'**
+  String get hostPromptLockedValue;
+
+  /// No description provided for @hostPromptLockedHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'已内置，不能在这里改。人设是后面单独的一段，不会替换这段原文。'**
+  String get hostPromptLockedHint;
+
+  /// No description provided for @hostPromptLockedKeywords.
+  ///
+  /// In zh, this message translates to:
+  /// **'破甲,提示词,锁定,内置'**
+  String get hostPromptLockedKeywords;
+
   /// No description provided for @hubSessionDetails.
   ///
   /// In zh, this message translates to:

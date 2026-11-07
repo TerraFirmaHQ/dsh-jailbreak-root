@@ -7654,6 +7654,24 @@ class L10nZh extends L10n {
   String get hostRootDeny => '拒绝';
 
   @override
+  String get hostPersonaTitle => '人设自定义';
+
+  @override
+  String get hostPersonaKeywords => '人设,人格,自定义,空白';
+
+  @override
+  String get hostPromptLockedTitle => '破甲提示词';
+
+  @override
+  String get hostPromptLockedValue => '已锁定';
+
+  @override
+  String get hostPromptLockedHint => '已内置，不能在这里改。人设是后面单独的一段，不会替换这段原文。';
+
+  @override
+  String get hostPromptLockedKeywords => '破甲,提示词,锁定,内置';
+
+  @override
   String get hubSessionDetails => '对话详情';
 
   @override

@@ -305,6 +305,30 @@ class PromptMountTest {
     }
 
     @Test
+    fun `mount log says whether the patch is on the launch command`() {
+        assertEquals(
+            "[dsh-app] locked prompt mounted (first system segment)",
+            HostRootGuest.mountLog("locked prompt", true, true, "first system segment", "asset missing or hash rejected"),
+        )
+        assertEquals(
+            "[dsh-app] locked prompt not mounted (asset missing or hash rejected)",
+            HostRootGuest.mountLog("locked prompt", false, false, "first system segment", "asset missing or hash rejected"),
+        )
+        assertEquals(
+            "[dsh-app] root tools not mounted (switch off or safe mode, su not called)",
+            HostRootGuest.mountLog("root tools", false, false, "mcp__root__*", "switch off or safe mode, su not called"),
+        )
+        assertEquals(
+            "[dsh-app] root tools mounted (mcp__root__*)",
+            HostRootGuest.mountLog("root tools", true, true, "mcp__root__*", "switch off or safe mode, su not called"),
+        )
+        assertEquals(
+            "[dsh-app] persona not mounted (blank, no section)",
+            HostRootGuest.mountLog("persona", false, false, "after the locked prompt", "blank, no section"),
+        )
+    }
+
+    @Test
     fun `prompt patch is inserted for normal and safe commands and root is not`() {
         val normal = "cd / && /usr/local/bin/dsh web --host 127.0.0.1 --port 3080"
         val safe = "cd / && /usr/local/bin/dsh web --profile safe --from-default-profile web --patch /etc/dsh-app/dsh-web.patch.yml --host 127.0.0.1 --port 3080"

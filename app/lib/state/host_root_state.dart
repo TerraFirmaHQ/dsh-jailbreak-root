@@ -98,14 +98,33 @@ class HostRootController extends Notifier<HostRootSnapshot> {
 
   Future<HostRootToggle> setChroot(bool on) => _set('setChrootEnabled', on, root: false);
 
-  Future<void> setPersona(String text) async {
+  /// Writes the persona the user just saved. Does not run on startup, so an
+  /// upgrade keeps whatever was already stored and a fresh install stays blank.
+  /// A running normal engine restarts so the separate persona section mounts
+  /// or drops. The locked prompt file is not touched.
+  Future<HostRootToggle> setPersona(String text) async {
     try {
       await methods.invokeMethod<void>('setPersona', {'text': text});
-      if (ref.mounted) state = state.copyWith(persona: text, clearError: true);
+      if (!ref.mounted) return const HostRootToggle(ok: true);
+      state = state.copyWith(persona: text, clearError: true);
+      final now = ref.read(localRuntimeProvider).status;
+      final restarting =
+          !now.inSafeMode && (now.phase == RuntimePhase.running || now.phase == RuntimePhase.starting);
+      if (restarting) {
+        state = state.copyWith(restarting: true);
+        unawaited(
+          EngineControl.restart(ref.container).whenComplete(() {
+            if (ref.mounted) state = state.copyWith(restarting: false);
+          }),
+        );
+      }
+      return HostRootToggle(ok: true, restarting: restarting);
     } on MissingPluginException {
       if (ref.mounted) state = state.copyWith(error: 'NO_CHANNEL');
+      return const HostRootToggle(ok: false, error: 'NO_CHANNEL');
     } catch (e) {
       if (ref.mounted) state = state.copyWith(error: '$e');
+      return HostRootToggle(ok: false, error: '$e');
     }
   }
 

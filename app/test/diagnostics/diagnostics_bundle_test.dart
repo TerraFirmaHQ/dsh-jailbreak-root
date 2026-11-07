@@ -10,7 +10,6 @@ import 'package:dsh_app/diagnostics/diagnostics_bundle.dart';
 import 'package:dsh_app/diagnostics/diagnostics_channel.dart';
 import 'package:dsh_app/diagnostics/diagnostics_export.dart';
 import 'package:dsh_app/runtime/runtime_bridge.dart';
-import 'package:dsh_app/state/app_info.dart';
 import 'package:dsh_app/state/artifacts.dart';
 import 'package:dsh_app/state/settings_state.dart';
 import 'package:flutter/material.dart' show ThemeMode;
@@ -124,7 +123,7 @@ void main() {
     test('summary: versions, device, Android, runtime manifest, connection', () {
       final summary = jsonDecode(files['summary.json']!) as Map<String, Object?>;
       expect(summary['generatedAt'], _at.toUtc().toIso8601String());
-      expect((summary['app']! as Map)['version'], AppInfo.version);
+      expect((summary['app']! as Map)['version'], '1.0.0+1');
       expect((summary['app']! as Map)['versionName'], '1.0.0');
       expect((summary['device']! as Map)['android'], '14');
       expect((summary['device']! as Map)['model'], '23113RKC6C');

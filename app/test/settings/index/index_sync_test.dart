@@ -181,7 +181,7 @@ List<Override> _running() => [
 
 class _OffRoot extends HostRootController {
   @override
-  HostRootSnapshot build() => const HostRootSnapshot(loaded: true);
+  HostRootSnapshot build() => const HostRootSnapshot(loaded: true, promptOk: true);
 }
 
 void main() {
@@ -194,10 +194,19 @@ void main() {
       hostRootProvider.overrideWith(_OffRoot.new),
     ]);
     await tester.pump();
+    final locked = find.widgetWithText(SettingsTile, '破甲提示词');
     final root = find.widgetWithText(SettingsTile, 'Root');
+    final persona = find.widgetWithText(SettingsTile, '人设自定义');
+    expect(locked, findsOneWidget);
     expect(root, findsOneWidget);
+    expect(persona, findsOneWidget);
+    expect(find.descendant(of: locked, matching: find.text('已锁定')), findsOneWidget);
     expect(find.descendant(of: root, matching: find.text('未开启')), findsOneWidget);
-    expect(tester.getTopLeft(root).dy, lessThan(tester.getTopLeft(find.text('手机操控')).dy));
+    expect(find.descendant(of: persona, matching: find.text('未设置')), findsOneWidget);
+    final phone = tester.getTopLeft(find.text('手机操控')).dy;
+    expect(tester.getTopLeft(locked).dy, lessThan(tester.getTopLeft(root).dy));
+    expect(tester.getTopLeft(root).dy, lessThan(tester.getTopLeft(persona).dy));
+    expect(tester.getTopLeft(persona).dy, lessThan(phone));
   });
 
   testWidgets('设置', (tester) async {
