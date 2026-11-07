@@ -71,5 +71,45 @@ void main() {
     final args = calls.single.arguments as Map;
     expect(args['id'], 'a2');
     expect(args['accept'], isFalse);
+    expect(args['session'], isFalse);
+  });
+
+  testWidgets('session remember is a third button only when the event says so', (tester) async {
+    final calls = <MethodCall>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(HostRootController.methods, (call) async {
+      calls.add(call);
+      return true;
+    });
+    addTearDown(() => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(HostRootController.methods, null));
+    final events = StreamController<dynamic>();
+    addTearDown(events.close);
+    await tester.pumpWidget(
+      MaterialApp(home: HostRootApprovalHost(events: events.stream, child: const SizedBox.shrink())),
+    );
+    events.add({
+      'type': 'approval',
+      'id': 'a3',
+      'preview': '这条命令会在安卓主机上以 uid 0 执行，不是沙箱。\nid &\nid  read\n全部子命令均为只读，被复合规则拦截',
+      'session': true,
+      'command': 'id &',
+    });
+    await tester.pumpAndSettle();
+    expect(find.text('本会话不再询问'), findsOneWidget);
+    await tester.tap(find.text('本会话不再询问'));
+    await tester.pumpAndSettle();
+    final args = calls.single.arguments as Map;
+    expect(args['accept'], isTrue);
+    expect(args['session'], isTrue);
+
+    events.add({
+      'type': 'approval',
+      'id': 'a4',
+      'preview': 'setprop debug.t 1  write',
+      'session': false,
+      'command': 'setprop debug.t 1',
+    });
+    await tester.pumpAndSettle();
+    expect(find.text('本会话不再询问'), findsNothing);
+    expect(find.text('允许'), findsOneWidget);
   });
 }

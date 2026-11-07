@@ -9,6 +9,13 @@ import 'package:flutter_test/flutter_test.dart';
 import '../shell/golden_harness.dart';
 
 void main() {
+  test('the default expression does not replace the locked prompt or touch approval', () {
+    final text = const PersonaExpression().compose();
+    expect(text, contains('称呼：你'));
+    expect(text, contains('也不改变审批'));
+    expect(text.contains('4fbd3a104fcd16065800e4e730a67f7781698300eec33af8dc67cfd4f328c118'), isFalse);
+  });
+
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('opening the page shows a saved persona and does not write', (tester) async {

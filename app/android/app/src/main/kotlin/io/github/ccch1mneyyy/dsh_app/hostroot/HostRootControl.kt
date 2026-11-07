@@ -231,8 +231,20 @@ object HostRootControl {
         return ok
     }
 
+    internal fun hasSessionMemory(key: String): Boolean = sessionMemory.contains(key)
+
     private fun audit(context: Context, name: String, args: Map<String, Any?>, out: ToolOutput) {
-        if (name != "shell" && name != "write_file" && name != "read_file") return
+        val line = auditLine(name, args, out) ?: return
+        runCatching {
+            val file = File(context.filesDir, "root_audit.jsonl")
+            file.appendText(line + "\n")
+        }
+        releaseOldSpools(File(context.cacheDir, "hostroot-spool"))
+    }
+
+    /** JSONL fields are time/cmd/verdict/reason/choice. Command output is not a field. */
+    internal fun auditLine(name: String, args: Map<String, Any?>, out: ToolOutput, time: Long = System.currentTimeMillis()): String? {
+        if (name != "shell" && name != "write_file" && name != "read_file") return null
         val cmd = RootPolicy.redact((args["command"] as? String) ?: (args["path"] as? String) ?: name)
         val classified = (args["command"] as? String)?.let { CommandClassifier.classifyCommand(it) }
         val choice = when {
@@ -240,19 +252,14 @@ object HostRootControl {
             out.isError -> "error"
             else -> "allow"
         }
-        val line = buildString {
-            append("{\"time\":").append(System.currentTimeMillis())
+        return buildString {
+            append("{\"time\":").append(time)
             append(",\"cmd\":").append(RootTools.jsonString(cmd))
             append(",\"verdict\":").append(RootTools.jsonString(classified?.reason ?: name))
             append(",\"reason\":").append(RootTools.jsonString(classified?.hit?.joinToString(",") ?: ""))
             append(",\"choice\":").append(RootTools.jsonString(choice))
             append("}")
         }
-        runCatching {
-            val file = File(context.filesDir, "root_audit.jsonl")
-            file.appendText(line + "\n")
-        }
-        releaseOldSpools(File(context.cacheDir, "hostroot-spool"))
     }
 
     /**
@@ -263,8 +270,8 @@ object HostRootControl {
     const val ENGINE_CACHE_GAP =
         "no /dsh-go/v1 route drops the DSH session projection cache or the provider prompt cache without deleting the session"
 
-    private fun releaseOldSpools(dir: File) {
-        val cutoff = System.currentTimeMillis() - 90_000
+    internal fun releaseOldSpools(dir: File, now: Long = System.currentTimeMillis()) {
+        val cutoff = now - 90_000
         dir.listFiles()?.forEach { if (it.isFile && it.lastModified() < cutoff) it.delete() }
     }
 }

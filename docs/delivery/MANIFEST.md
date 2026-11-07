@@ -14,7 +14,8 @@
 | BUILD.md | 版本、命令、干净目录构建 |
 | ROLLBACK.md | 回滚 |
 | UNFINISHED.md | 未完成和卡点 |
-| build-clean.log | 干净解压目录的构建原始日志（在归档旁边，不在 git 里） |
+| HOST-TESTS.md | 这轮 host 测试命令和结果 |
+| build-clean.log | 干净目录构建日志。记录源码归档 SHA、runtime SHA、解压 commit、`app-arm64-release.apk` 的 SHA 和大小、剥签名后的 SHA，以及转换命令。签名包和无签名包不是同一份字节 |
 
 D1 测试命令：
 
