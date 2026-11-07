@@ -9,9 +9,12 @@ import '../../state/host_root_state.dart';
 /// Root command approval. The native side blocks the tool until this answers.
 /// Nothing in the chat stream shows that wait, so the dialog has to.
 class HostRootApprovalHost extends StatefulWidget {
-  const HostRootApprovalHost({super.key, required this.child});
+  const HostRootApprovalHost({super.key, required this.child, this.events});
 
   final Widget child;
+
+  /// Test seam. Production uses `dsh/hostroot/events`.
+  final Stream<dynamic>? events;
 
   @override
   State<HostRootApprovalHost> createState() => _HostRootApprovalHostState();
@@ -25,6 +28,23 @@ class _HostRootApprovalHostState extends State<HostRootApprovalHost> {
   @override
   void initState() {
     super.initState();
+    final injected = widget.events;
+    if (injected != null) {
+      _sub = injected.listen(_onEvent, onError: (_) {});
+    } else {
+      unawaited(_openNative());
+    }
+  }
+
+  /// Widget tests have no native plugin. Opening the event channel there
+  /// reports a missing plugin and fails the test. A status call is the probe.
+  Future<void> _openNative() async {
+    try {
+      await HostRootController.methods.invokeMethod<Object?>('status');
+    } on MissingPluginException {
+      return;
+    } catch (_) {}
+    if (!mounted) return;
     _sub = _events.receiveBroadcastStream().listen(_onEvent, onError: (_) {});
   }
 

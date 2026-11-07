@@ -331,6 +331,122 @@ class PromptMountTest {
     }
 }
 
+class RootApprovalChainTest {
+    @After
+    fun clearListener() {
+        HostRootControl.onApproval = null
+    }
+
+    @Test
+    fun `simulated su write of data adb waits for the UI event then runs`() {
+        val seen = CountDownLatch(1)
+        var event: Map<String, Any?>? = null
+        HostRootControl.onApproval = {
+            event = it
+            seen.countDown()
+        }
+        var ran: String? = null
+        val worker = thread {
+            val out = RootTools.call(
+                "write_file",
+                mapOf("path" to "/data/adb/modules/hma/module.prop", "content" to "enabled=1\n"),
+                { true },
+                RootTools.Approver { command, preview, protected ->
+                    HostRootControl.requestApproval(command, preview, protected)
+                },
+                null,
+            ) { command, _, _ ->
+                ran = command
+                RootExec.Result(RootExec.State.OK, 0, "SIMULATED_NOT_A_PHONE uid=0\n", "", false, 1, null)
+            }
+            assertFalse(out.isError)
+            assertTrue(out.text.contains("SIMULATED_NOT_A_PHONE"))
+        }
+        assertTrue(seen.await(3, TimeUnit.SECONDS))
+        val ev = event!!
+        assertEquals("approval", ev["type"])
+        assertEquals(true, ev["protected"])
+        val preview = ev["preview"] as String
+        assertTrue(preview.contains("/data/adb"))
+        assertTrue(preview.contains("隐藏") || preview.contains("模块"))
+        assertTrue(HostRootControl.resolveApproval(ev["id"] as String, true))
+        worker.join(3_000)
+        assertFalse(worker.isAlive)
+        val script = ran!!
+        assertTrue(script.contains("/data/adb/modules/hma/module.prop"))
+        assertTrue(script.contains("base64 -d"))
+        assertFalse(script.contains("enabled=1"))
+    }
+
+    @Test
+    fun `ordinary write is not read only and a denied one does not run`() {
+        val seen = CountDownLatch(1)
+        var event: Map<String, Any?>? = null
+        HostRootControl.onApproval = {
+            event = it
+            seen.countDown()
+        }
+        var ran = false
+        val worker = thread {
+            val out = RootTools.call(
+                "write_file",
+                mapOf("path" to "/sdcard/Download/note.txt", "content" to "hello"),
+                { true },
+                RootTools.Approver { command, preview, protected ->
+                    HostRootControl.requestApproval(command, preview, protected)
+                },
+                null,
+            ) { _, _, _ ->
+                ran = true
+                error("simulated su should not run")
+            }
+            assertTrue(out.isError)
+            assertTrue(out.text.contains(RootTools.DENIED))
+        }
+        assertTrue(seen.await(3, TimeUnit.SECONDS))
+        val ev = event!!
+        assertEquals(false, ev["protected"])
+        assertTrue((ev["preview"] as String).contains("uid 0"))
+        assertTrue(HostRootControl.resolveApproval(ev["id"] as String, false))
+        worker.join(3_000)
+        assertFalse(worker.isAlive)
+        assertFalse(ran)
+    }
+
+    @Test
+    fun `root off never reaches approval or the simulated su runner`() {
+        var asked = false
+        var ran = false
+        HostRootControl.onApproval = { asked = true }
+        val out = RootTools.call(
+            "write_file",
+            mapOf("path" to "/data/adb/x", "content" to "nope"),
+            { false },
+            RootTools.Approver { _, _, _ -> asked = true; true },
+            null,
+        ) { _, _, _ ->
+            ran = true
+            error("su")
+        }
+        assertFalse(asked)
+        assertFalse(ran)
+        assertTrue(out.text.contains(RootTools.DISABLED))
+    }
+
+    @Test
+    fun `root overlay is a patch file and clearing it removes the mount`() {
+        val root = java.nio.file.Files.createTempDirectory("root-overlay").toFile()
+        val endpoint = io.github.ccch1mneyyy.dsh_app.phone.PhoneGuest.Endpoint(null, 9, "simulated-token")
+        assertTrue(HostRootGuest.writeRoot(root, endpoint))
+        val patch = HostRootGuest.rootPatch(root)
+        val text = patch.readText()
+        assertTrue(text.contains("serverName: root"))
+        assertTrue(text.contains("@deepseek-ai/dsh-mcp-client"))
+        HostRootGuest.clearRoot(root)
+        assertFalse(patch.exists())
+    }
+}
+
 class MigrationAndChrootTest {
     @Test
     fun `preflight records root keep and usr local opt drop and schedule downgrade`() {

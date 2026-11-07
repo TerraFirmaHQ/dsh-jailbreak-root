@@ -171,6 +171,14 @@ object HostRootControl {
 
     private fun ask(context: Context, command: String, preview: String, protectedChange: Boolean): Boolean {
         if (!rootEnabled(context)) return false
+        return requestApproval(command, preview, protectedChange) && rootEnabled(context)
+    }
+
+    /**
+     * The event the Flutter dialog answers. [resolveApproval] with the same id
+     * unblocks the tool. This does not call su.
+     */
+    internal fun requestApproval(command: String, preview: String, protectedChange: Boolean): Boolean {
         val id = approvals.begin(command, preview, protectedChange)
         onApproval?.invoke(
             mapOf(
@@ -181,6 +189,6 @@ object HostRootControl {
                 "command" to RootPolicy.redact(command),
             ),
         )
-        return approvals.await(id, command) && rootEnabled(context)
+        return approvals.await(id, command)
     }
 }
