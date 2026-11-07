@@ -915,17 +915,7 @@ class RuntimeController private constructor(private val app: Context) : DshProce
     }
 
     /** su only when chroot is already enabled and /proc could not be read. */
-    private fun readProcViaSu(path: String): String? = runCatching {
-        val process = ProcessBuilder(
-            "su", "-c", "cat ${io.github.ccch1mneyyy.dsh_app.hostroot.RootExec.quote(path)}",
-        ).start()
-        val text = process.inputStream.bufferedReader().readText()
-        if (!process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS)) {
-            process.destroyForcibly()
-            return null
-        }
-        if (process.exitValue() != 0) null else text
-    }.getOrNull()
+    private fun readProcViaSu(path: String): String? = ChrootLaunch.readViaSu(path)
 
     private fun log(line: String, stream: String) = runtimeLogs.accept(line, stream)
 

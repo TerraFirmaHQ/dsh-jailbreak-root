@@ -480,8 +480,9 @@ final _pages = <SettingsPageMeta>[
   SettingsPageMeta(
     SettingsPageId.hostRoot,
     title: (l) => l.hostRootTitle,
-    parent: SettingsPageId.engine,
-    keywords: (l) => l.hostRootTitle,
+    group: _abilities,
+    keywords: (l) => l.hostRootKeywords,
+    freq: Freq.medium,
     links: const ['host-root', 'root'],
   ),
   SettingsPageMeta(

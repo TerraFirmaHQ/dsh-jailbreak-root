@@ -1070,6 +1070,12 @@ abstract class L10n {
   /// **'它在酝酿'**
   String get activityWaitingBrew;
 
+  /// No description provided for @activityReplyStalled.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有收到模型回复。可以停止，停止后能重试。'**
+  String get activityReplyStalled;
+
   /// No description provided for @activityWaitingWater.
   ///
   /// In zh, this message translates to:
@@ -6319,6 +6325,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'生成中 · 可直接插话'**
   String get chatGeneratingSteerHint;
+
+  /// No description provided for @chatReplyStalled.
+  ///
+  /// In zh, this message translates to:
+  /// **'三分钟没有收到模型内容，这一轮已停止。可以再发一次。'**
+  String get chatReplyStalled;
 
   /// No description provided for @chatComposerHint.
   ///
@@ -14017,6 +14029,66 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'升级只保留 /root。/usr/local 和 /opt 需要重装。新引擎写入的定时任务不能保证被旧引擎读回。'**
   String get hostRootMigration;
+
+  /// No description provided for @hostRootKeywords.
+  ///
+  /// In zh, this message translates to:
+  /// **'主机,su,root,data/adb,隐藏,模块'**
+  String get hostRootKeywords;
+
+  /// No description provided for @hostRootRestarting.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在重启本机引擎。会话还在，root 工具随这次启动挂上或卸下。'**
+  String get hostRootRestarting;
+
+  /// No description provided for @hostRootPendingStart.
+  ///
+  /// In zh, this message translates to:
+  /// **'本机引擎没在跑。下次启动时才会按这个开关挂上或卸下工具。'**
+  String get hostRootPendingStart;
+
+  /// No description provided for @hostRootSafe.
+  ///
+  /// In zh, this message translates to:
+  /// **'安全模式不加载 root 工具，也没有为此调用 su。'**
+  String get hostRootSafe;
+
+  /// No description provided for @hostRootToolsOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'工具已登记。shell 以 uid 0 执行，read_file 可读 /data/adb。'**
+  String get hostRootToolsOn;
+
+  /// No description provided for @hostRootToolsOff.
+  ///
+  /// In zh, this message translates to:
+  /// **'开关关闭。不会调用 su，模型也看不到 root 工具。'**
+  String get hostRootToolsOff;
+
+  /// No description provided for @hostRootApprovalTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许这条 root 命令？'**
+  String get hostRootApprovalTitle;
+
+  /// No description provided for @hostRootApprovalProtected.
+  ///
+  /// In zh, this message translates to:
+  /// **'这会改动隐藏环境、模块、SELinux 或挂载。不点允许就不会执行。'**
+  String get hostRootApprovalProtected;
+
+  /// No description provided for @hostRootAllow.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许'**
+  String get hostRootAllow;
+
+  /// No description provided for @hostRootDeny.
+  ///
+  /// In zh, this message translates to:
+  /// **'拒绝'**
+  String get hostRootDeny;
 
   /// No description provided for @hubSessionDetails.
   ///

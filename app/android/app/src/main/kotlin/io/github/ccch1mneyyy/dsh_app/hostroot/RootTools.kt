@@ -58,7 +58,7 @@ object RootTools {
         enabled: () -> Boolean,
         approver: Approver,
         spoolDir: File?,
-        exec: (command: String, timeoutMs: Long, cwd: String?) -> RootExec.Result = { c, t, d ->
+        runner: (command: String, timeoutMs: Long, cwd: String?) -> RootExec.Result = { c, t, d ->
             RootExec.run(c, t, d, spoolDir)
         },
     ): ToolOutput {
@@ -68,7 +68,7 @@ object RootTools {
         return when (name) {
             "check_root" -> {
                 if (!enabled()) return ToolOutput("$DISABLED：root 开关是关的，没有调用 su。", isError = true)
-                render(exec("id -u", 8_000, null))
+                render(runner("id -u", 8_000, null))
             }
             "shell" -> {
                 val command = args["command"] as? String ?: return ToolOutput("缺少 command", isError = true)
@@ -80,14 +80,14 @@ object RootTools {
                 } else {
                     looked
                 }
-                runApproved(command, verdict, (args["timeoutMs"] as? Number)?.toLong(), args["cwd"] as? String, enabled, approver, exec)
+                runApproved(command, verdict, (args["timeoutMs"] as? Number)?.toLong(), args["cwd"] as? String, enabled, approver, runner)
             }
             "read_file" -> {
                 val path = args["path"] as? String ?: return ToolOutput("缺少 path", isError = true)
                 val why = RootFiles.rejectPath(path)
                 if (why != null) return ToolOutput("路径无效：$why", isError = true)
                 if (!enabled()) return ToolOutput("$DISABLED：root 开关是关的，没有调用 su。", isError = true)
-                render(exec(RootFiles.readCommand(path), 15_000, null))
+                render(runner(RootFiles.readCommand(path), 15_000, null))
             }
             "write_file" -> {
                 val path = args["path"] as? String ?: return ToolOutput("缺少 path", isError = true)
@@ -102,7 +102,7 @@ object RootTools {
                 } else {
                     RootPolicy.Verdict(RootPolicy.Level.APPROVAL, "写入文件")
                 }
-                runApproved(command, verdict, 20_000, null, enabled, approver, exec)
+                runApproved(command, verdict, 20_000, null, enabled, approver, runner)
             }
             else -> ToolOutput("未知工具 $name", isError = true)
         }
@@ -128,12 +128,12 @@ object RootTools {
         cwd: String?,
         enabled: () -> Boolean,
         approver: Approver,
-        exec: (String, Long, String?) -> RootExec.Result,
+        runner: (String, Long, String?) -> RootExec.Result,
     ): ToolOutput {
         val preview = RootPolicy.preview(command, verdict)
         val ok = approver.approve(command, preview, verdict.level == RootPolicy.Level.PROTECTED)
         if (!ok || !enabled()) return ToolOutput("$DENIED：没有执行。\n$preview", isError = true)
-        return render(exec(command, timeoutMs ?: RootExec.DEFAULT_TIMEOUT_MS, cwd))
+        return render(runner(command, timeoutMs ?: RootExec.DEFAULT_TIMEOUT_MS, cwd))
     }
 
     private fun render(result: RootExec.Result): ToolOutput {

@@ -1,0 +1,78 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../../l10n/l10n.dart';
+import '../../state/host_root_state.dart';
+
+/// Root command approval. The native side blocks the tool until this answers.
+/// Nothing in the chat stream shows that wait, so the dialog has to.
+class HostRootApprovalHost extends StatefulWidget {
+  const HostRootApprovalHost({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  State<HostRootApprovalHost> createState() => _HostRootApprovalHostState();
+}
+
+class _HostRootApprovalHostState extends State<HostRootApprovalHost> {
+  static const _events = EventChannel('dsh/hostroot/events');
+  StreamSubscription<dynamic>? _sub;
+  bool _showing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _sub = _events.receiveBroadcastStream().listen(_onEvent, onError: (_) {});
+  }
+
+  @override
+  void dispose() {
+    unawaited(_sub?.cancel());
+    super.dispose();
+  }
+
+  void _onEvent(dynamic event) {
+    if (_showing || event is! Map) return;
+    if (event['type'] != 'approval') return;
+    final id = event['id'] as String? ?? '';
+    if (id.isEmpty) return;
+    final preview = event['preview'] as String? ?? event['command'] as String? ?? '';
+    final protectedChange = event['protected'] == true;
+    unawaited(_ask(id, preview, protectedChange));
+  }
+
+  Future<void> _ask(String id, String preview, bool protectedChange) async {
+    if (!mounted) {
+      await _answer(id, false);
+      return;
+    }
+    _showing = true;
+    final l10n = context.l10n;
+    final accept = await showDialog<bool>(
+      context: context,
+      useRootNavigator: true,
+      builder: (dialog) => AlertDialog(
+        title: Text(l10n.hostRootApprovalTitle),
+        content: Text(protectedChange ? '${l10n.hostRootApprovalProtected}\n\n$preview' : preview),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialog, false), child: Text(l10n.hostRootDeny)),
+          FilledButton(onPressed: () => Navigator.pop(dialog, true), child: Text(l10n.hostRootAllow)),
+        ],
+      ),
+    );
+    _showing = false;
+    await _answer(id, accept == true);
+  }
+
+  Future<void> _answer(String id, bool accept) async {
+    try {
+      await HostRootController.methods.invokeMethod<bool>('resolveApproval', {'id': id, 'accept': accept});
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}

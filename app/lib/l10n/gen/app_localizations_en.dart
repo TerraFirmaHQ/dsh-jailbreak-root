@@ -523,6 +523,9 @@ class L10nEn extends L10n {
   String get activityWaitingBrew => 'Something’s brewing';
 
   @override
+  String get activityReplyStalled => 'No model reply yet. You can stop, then retry.';
+
+  @override
   String get activityWaitingWater => 'Model’s taking a sip';
 
   @override
@@ -3596,6 +3599,9 @@ class L10nEn extends L10n {
 
   @override
   String get chatGeneratingSteerHint => 'Generating · Type to steer';
+
+  @override
+  String get chatReplyStalled => 'No model content for three minutes, so this turn was stopped. Send it again.';
 
   @override
   String get chatComposerHint => 'Message DSH…';
@@ -8030,6 +8036,39 @@ class L10nEn extends L10n {
   @override
   String get hostRootMigration =>
       'An upgrade keeps /root only. /usr/local and /opt need installing again. Scheduled tasks written by the new engine are not guaranteed to load on an older engine.';
+
+  @override
+  String get hostRootKeywords => 'host,su,root,data/adb,hiding,modules';
+
+  @override
+  String get hostRootRestarting =>
+      'Restarting the on-device engine. Chats stay. Root tools mount or unmount with this start.';
+
+  @override
+  String get hostRootPendingStart =>
+      'The on-device engine is not running. Tools mount or unmount the next time it starts.';
+
+  @override
+  String get hostRootSafe => 'Safe mode does not load root tools, and su was not called for this.';
+
+  @override
+  String get hostRootToolsOn => 'Tools are registered. shell runs as uid 0, and read_file can read /data/adb.';
+
+  @override
+  String get hostRootToolsOff => 'The switch is off. su is not called, and the model has no root tools.';
+
+  @override
+  String get hostRootApprovalTitle => 'Allow this root command?';
+
+  @override
+  String get hostRootApprovalProtected =>
+      'This changes the hiding setup, a module, SELinux, or mounts. Nothing runs unless you allow it.';
+
+  @override
+  String get hostRootAllow => 'Allow';
+
+  @override
+  String get hostRootDeny => 'Deny';
 
   @override
   String get hubSessionDetails => 'Chat details';

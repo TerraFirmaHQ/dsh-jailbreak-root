@@ -78,6 +78,7 @@
   "activityWaitingText": "等它出字",
   "activityWaitingQueue": "还在排队",
   "activityWaitingBrew": "它在酝酿",
+  "activityReplyStalled": "还没有收到模型回复。可以停止，停止后能重试。",
   "activityWaitingWater": "模型在喝水",
   "activityWaitingWarmup": "等它热身",
   "activityWaitingMeditate": "模型在冥想",

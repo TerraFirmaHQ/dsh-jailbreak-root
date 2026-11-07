@@ -11,5 +11,15 @@
   "hostRootSave": "保存",
   "hostRootNoSu": "没有拿到 su。开关保持关闭。",
   "hostRootBattery": "电池豁免（读回确认）",
-  "hostRootMigration": "升级只保留 /root。/usr/local 和 /opt 需要重装。新引擎写入的定时任务不能保证被旧引擎读回。"
+  "hostRootMigration": "升级只保留 /root。/usr/local 和 /opt 需要重装。新引擎写入的定时任务不能保证被旧引擎读回。",
+  "hostRootKeywords": "主机,su,root,data/adb,隐藏,模块",
+  "hostRootRestarting": "正在重启本机引擎。会话还在，root 工具随这次启动挂上或卸下。",
+  "hostRootPendingStart": "本机引擎没在跑。下次启动时才会按这个开关挂上或卸下工具。",
+  "hostRootSafe": "安全模式不加载 root 工具，也没有为此调用 su。",
+  "hostRootToolsOn": "工具已登记。shell 以 uid 0 执行，read_file 可读 /data/adb。",
+  "hostRootToolsOff": "开关关闭。不会调用 su，模型也看不到 root 工具。",
+  "hostRootApprovalTitle": "允许这条 root 命令？",
+  "hostRootApprovalProtected": "这会改动隐藏环境、模块、SELinux 或挂载。不点允许就不会执行。",
+  "hostRootAllow": "允许",
+  "hostRootDeny": "拒绝"
 }

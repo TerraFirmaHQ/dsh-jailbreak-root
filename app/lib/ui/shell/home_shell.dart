@@ -33,6 +33,7 @@ import '../remote/remote_screen.dart';
 import '../safe_mode/safe_mode_notice_listener.dart';
 import '../session/session_detail_page.dart';
 import '../settings/search/settings_search_page.dart';
+import '../settings/host_root_approval.dart';
 import '../settings/settings_screen.dart';
 import '../share_code/share_code_host.dart';
 import '../star/star_prompt_host.dart';
@@ -336,6 +337,7 @@ class _HomeShellState extends ConsumerState<HomeShell> with TickerProviderStateM
                     children: [
                       // Notifications: routes taps, raises the in-app banner (draws nothing here).
                       ChatAlertHost(onReveal: _revealChat),
+                      const HostRootApprovalHost(child: SizedBox.shrink()),
                       // Background running cut off by the phone: one line under the header (draws nothing here).
                       const BackgroundNetHost(),
                       // Daily update check + install resume (draws nothing).

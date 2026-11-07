@@ -78,6 +78,7 @@
   "activityWaitingText": "Waiting for the first words",
   "activityWaitingQueue": "Still in the queue",
   "activityWaitingBrew": "Something’s brewing",
+  "activityReplyStalled": "No model reply yet. You can stop, then retry.",
   "activityWaitingWater": "Model’s taking a sip",
   "activityWaitingWarmup": "Letting it warm up",
   "activityWaitingMeditate": "Model’s meditating",

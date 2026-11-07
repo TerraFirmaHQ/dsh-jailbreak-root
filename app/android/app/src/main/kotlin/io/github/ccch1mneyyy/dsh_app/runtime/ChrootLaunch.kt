@@ -129,6 +129,20 @@ object ChrootLaunch {
     @Volatile internal var terminateStarter: (String) -> Process = suRunner
     @Volatile internal var residualStarter: (String) -> Process = suRunner
 
+    /**
+     * One `su -c cat` for a path the app could not read. Callers already decided
+     * chroot is on. This does not change mounts or modules.
+     */
+    fun readViaSu(path: String): String? = runCatching {
+        val process = suRunner("cat ${io.github.ccch1mneyyy.dsh_app.hostroot.RootExec.quote(path)}")
+        val text = process.inputStream.bufferedReader().readText()
+        if (!process.waitFor(3, TimeUnit.SECONDS)) {
+            process.destroyForcibly()
+            return null
+        }
+        if (process.exitValue() != 0) null else text
+    }.getOrNull()
+
     private fun probeSu(): Boolean {
         val process = try {
             ProcessBuilder("su", "-c", "id").start()

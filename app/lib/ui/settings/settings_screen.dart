@@ -13,6 +13,7 @@ import '../../state/connection_state.dart';
 import '../../state/engine_settings_state.dart';
 import '../../state/features_state.dart';
 import '../../state/hosts_state.dart';
+import '../../state/host_root_state.dart';
 import '../../state/phone_state.dart';
 import '../../state/plugins_state.dart';
 import '../../state/sessions_state.dart';
@@ -48,6 +49,7 @@ import '../shell/page_frame.dart';
 import '../theme/app_icons.dart';
 import '../theme/theme.dart';
 import '../update/update_tiles.dart' show UpdateBadge;
+import 'host_root_page.dart';
 import 'about_page.dart';
 import 'appearance/appearance_page.dart';
 import 'background_guide_page.dart';
@@ -103,6 +105,14 @@ class SettingsScreen extends ConsumerWidget {
         ? (replyPrefsSummary(ref) == null ? l10n.commonNotSet : l10n.hubValueSet)
         : null;
     // 能力.
+    final root = ref.watch(hostRootProvider);
+    final rootValue = !root.loaded
+        ? null
+        : root.restarting
+        ? l10n.hostRootRestarting
+        : root.rootEnabled
+        ? l10n.pluginsTurnedOn
+        : l10n.hubValueOff;
     final phone = ref.watch(phoneProvider);
     final phoneValue = !phone.loaded || !phone.status.ready
         ? null
@@ -166,6 +176,13 @@ class SettingsScreen extends ConsumerWidget {
         SettingsSection(
           title: l10n.hubGroupCapabilities,
           children: [
+            SettingsTile(
+              icon: AppIcons.permissions,
+              tint: SettingsHues.abilities,
+              spot: SettingsIndex.entry(SettingsPageId.hostRoot),
+              value: text(rootValue),
+              onTap: () => _push(context, const HostRootPage()),
+            ),
             SettingsTile(
               icon: AppIcons.phoneControl,
               tint: SettingsHues.abilities,

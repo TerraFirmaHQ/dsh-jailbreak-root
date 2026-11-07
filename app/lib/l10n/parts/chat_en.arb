@@ -57,6 +57,7 @@
   "chatTranscribingEllipsis": "Transcribing…",
   "chatConnectToSend": "Connect to the engine to send",
   "chatGeneratingSteerHint": "Generating · Type to steer",
+  "chatReplyStalled": "No model content for three minutes, so this turn was stopped. Send it again.",
   "chatComposerHint": "Message DSH…",
   "chatStopGenerating": "Stop generating",
   "chatVoiceInput": "Voice input",

@@ -517,6 +517,9 @@ class L10nZh extends L10n {
   String get activityWaitingBrew => '它在酝酿';
 
   @override
+  String get activityReplyStalled => '还没有收到模型回复。可以停止，停止后能重试。';
+
+  @override
   String get activityWaitingWater => '模型在喝水';
 
   @override
@@ -3410,6 +3413,9 @@ class L10nZh extends L10n {
 
   @override
   String get chatGeneratingSteerHint => '生成中 · 可直接插话';
+
+  @override
+  String get chatReplyStalled => '三分钟没有收到模型内容，这一轮已停止。可以再发一次。';
 
   @override
   String get chatComposerHint => '给 DSH 发消息…';
@@ -7616,6 +7622,36 @@ class L10nZh extends L10n {
 
   @override
   String get hostRootMigration => '升级只保留 /root。/usr/local 和 /opt 需要重装。新引擎写入的定时任务不能保证被旧引擎读回。';
+
+  @override
+  String get hostRootKeywords => '主机,su,root,data/adb,隐藏,模块';
+
+  @override
+  String get hostRootRestarting => '正在重启本机引擎。会话还在，root 工具随这次启动挂上或卸下。';
+
+  @override
+  String get hostRootPendingStart => '本机引擎没在跑。下次启动时才会按这个开关挂上或卸下工具。';
+
+  @override
+  String get hostRootSafe => '安全模式不加载 root 工具，也没有为此调用 su。';
+
+  @override
+  String get hostRootToolsOn => '工具已登记。shell 以 uid 0 执行，read_file 可读 /data/adb。';
+
+  @override
+  String get hostRootToolsOff => '开关关闭。不会调用 su，模型也看不到 root 工具。';
+
+  @override
+  String get hostRootApprovalTitle => '允许这条 root 命令？';
+
+  @override
+  String get hostRootApprovalProtected => '这会改动隐藏环境、模块、SELinux 或挂载。不点允许就不会执行。';
+
+  @override
+  String get hostRootAllow => '允许';
+
+  @override
+  String get hostRootDeny => '拒绝';
 
   @override
   String get hubSessionDetails => '对话详情';

@@ -1,27 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
+import '../../runtime/runtime_bridge.dart';
+import '../../runtime/runtime_state.dart';
+import '../../state/host_root_state.dart';
+import '../common/brief_notice.dart';
 
 /// Host root, the locked prompt, and the optional chroot switch.
-class HostRootPage extends StatefulWidget {
+/// The row lives in 设置 › 能力. Turning a switch restarts a running engine
+/// so the overlay actually mounts; sessions stay on disk.
+class HostRootPage extends ConsumerStatefulWidget {
   const HostRootPage({super.key});
 
   @override
-  State<HostRootPage> createState() => _HostRootPageState();
+  ConsumerState<HostRootPage> createState() => _HostRootPageState();
 }
 
-class _HostRootPageState extends State<HostRootPage> {
-  static const _channel = MethodChannel('dsh/hostroot');
-  Map<String, Object?> _status = const {};
+class _HostRootPageState extends ConsumerState<HostRootPage> {
   late final TextEditingController _persona;
-  String? _error;
+  var _personaReady = false;
 
   @override
   void initState() {
     super.initState();
     _persona = TextEditingController();
-    _load();
   }
 
   @override
@@ -30,32 +33,38 @@ class _HostRootPageState extends State<HostRootPage> {
     super.dispose();
   }
 
-  Future<void> _load() async {
-    try {
-      final raw = await _channel.invokeMapMethod<String, Object?>('status');
-      if (!mounted) return;
-      setState(() {
-        _status = raw ?? const {};
-        _persona.text = _status['persona'] as String? ?? '';
-        _error = null;
-      });
-    } catch (e) {
-      if (mounted) setState(() => _error = '$e');
-    }
-  }
-
-  Future<void> _set(String method, bool on) async {
-    final raw = await _channel.invokeMapMethod<String, Object?>(method, {'on': on});
+  Future<void> _toggle(bool root, bool on) async {
+    final result = root
+        ? await ref.read(hostRootProvider.notifier).setRoot(on)
+        : await ref.read(hostRootProvider.notifier).setChroot(on);
     if (!mounted) return;
-    setState(() => _error = raw?['error'] as String?);
-    await _load();
+    final l10n = context.l10n;
+    final String? text;
+    if (result.safe) {
+      text = l10n.hostRootSafe;
+    } else if (result.error == 'NO_SU') {
+      text = l10n.hostRootNoSu;
+    } else if (!result.ok) {
+      text = result.error;
+    } else if (result.restarting) {
+      text = l10n.hostRootRestarting;
+    } else if (ref.read(localRuntimeProvider).status.phase != RuntimePhase.running) {
+      text = l10n.hostRootPendingStart;
+    } else {
+      text = null;
+    }
+    if (text != null && text.isNotEmpty) showBriefNotice(context, text);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final promptOk = _status['promptOk'] == true;
-    final sha = _status['promptSha256'] as String? ?? '';
+    final status = ref.watch(hostRootProvider);
+    if (!_personaReady && status.loaded) {
+      _persona.text = status.persona;
+      _personaReady = true;
+    }
+    final promptOk = status.promptOk;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.hostRootTitle)),
       body: ListView(
@@ -63,18 +72,19 @@ class _HostRootPageState extends State<HostRootPage> {
         children: [
           Text(l10n.hostRootBody),
           const SizedBox(height: 12),
+          Text(status.rootEnabled ? l10n.hostRootToolsOn : l10n.hostRootToolsOff),
+          const SizedBox(height: 8),
           Text(promptOk ? l10n.hostRootPrompt : l10n.hostRootPromptMissing),
-          if (sha.isNotEmpty) SelectableText(sha),
           SwitchListTile(
             title: Text(l10n.hostRootSwitch),
-            value: _status['rootEnabled'] == true,
-            onChanged: (v) => _set('setRootEnabled', v),
+            value: status.rootEnabled,
+            onChanged: status.restarting ? null : (v) => _toggle(true, v),
           ),
           SwitchListTile(
             title: Text(l10n.hostRootChroot),
             subtitle: Text(l10n.hostRootChrootHint),
-            value: _status['chrootEnabled'] == true,
-            onChanged: (v) => _set('setChrootEnabled', v),
+            value: status.chrootEnabled,
+            onChanged: status.restarting ? null : (v) => _toggle(false, v),
           ),
           TextField(
             controller: _persona,
@@ -85,16 +95,14 @@ class _HostRootPageState extends State<HostRootPage> {
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton(
-              onPressed: () async {
-                await _channel.invokeMethod('setPersona', {'text': _persona.text});
-                if (mounted) setState(() {});
-              },
+              onPressed: () => ref.read(hostRootProvider.notifier).setPersona(_persona.text),
               child: Text(l10n.hostRootSave),
             ),
           ),
           Text(l10n.hostRootMigration),
-          if (_error == 'NO_SU') Text(l10n.hostRootNoSu),
-          if (_error != null && _error != 'NO_SU') Text(_error!),
+          if (status.safeBlocked) Text(l10n.hostRootSafe),
+          if (status.error == 'NO_SU') Text(l10n.hostRootNoSu),
+          if (status.error != null && status.error != 'NO_SU' && status.error != 'SAFE') Text(status.error!),
         ],
       ),
     );

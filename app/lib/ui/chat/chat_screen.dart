@@ -92,6 +92,7 @@ import 'slash_palette.dart';
 import 'trajectory_sheet.dart';
 import 'usage_sheet.dart';
 import 'voice/voice_controller.dart';
+import 'run_info.dart';
 import 'widgets/activity_strip.dart';
 import 'widgets/attachments.dart';
 import 'widgets/notice_row.dart';
@@ -362,6 +363,51 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   }
 
   Timer? _composerToastWait;
+  Timer? _replyStall;
+  DateTime? _replyWaitFrom;
+  bool _replyStalled = false;
+
+  void _disarmReplyStall() {
+    _replyStall?.cancel();
+    _replyStall = null;
+    _replyWaitFrom = null;
+    _replyStalled = false;
+  }
+
+  /// While a turn is waiting on the first model token, say so after 45s and
+  /// stop it after 3 minutes. Tool runs and streamed reasoning reset the clock.
+  void _armReplyStall(String sessionId) {
+    _disarmReplyStall();
+    _replyWaitFrom = DateTime.now();
+    _replyStall = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted) return;
+      final activity = runActivityOf(ref.read(chatProvider(sessionId)));
+      if (activity?.kind != ActivityKind.waiting) {
+        _replyWaitFrom = DateTime.now();
+        if (_replyStalled) setState(() => _replyStalled = false);
+        return;
+      }
+      final waited = DateTime.now().difference(_replyWaitFrom ?? DateTime.now());
+      if (waited >= const Duration(minutes: 3)) {
+        _replyStall?.cancel();
+        _replyStall = null;
+        if (_replyStalled) setState(() => _replyStalled = false);
+        unawaited(_stopStalled());
+        return;
+      }
+      if (waited >= const Duration(seconds: 45) && !_replyStalled) {
+        setState(() => _replyStalled = true);
+      }
+    });
+  }
+
+  Future<void> _stopStalled() async {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final text = context.l10n.chatReplyStalled;
+    await _stop();
+    messenger?.showSnackBar(SnackBar(content: Text(text)));
+  }
 
   /// A phone's composer opens into two rows while typing. A window too short for the
   /// extra row keeps it on one: the model is on the side panel's 信息 there.
@@ -379,6 +425,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     _creating = null;
     _syncWait = null;
     _composerToastWait?.cancel();
+    _disarmReplyStall();
     _input.removeListener(_saveDraft);
     _mentions.dispose();
     _voice.removeListener(_reportVoice);
@@ -1417,7 +1464,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
       ref.listen(chatProvider(sessionId).select((s) => s.running), (previous, running) {
         if (running) {
           _spoken = null;
+          _armReplyStall(sessionId);
         } else if (previous == true) {
+          _disarmReplyStall();
           final turns = ref.read(chatProvider(sessionId)).turns;
           _spoken = switch (turns.lastOrNull?.endReason?.kind) {
             'aborted' => l10n.commonStopped,
@@ -1744,7 +1793,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                                     duration: AppMotion.of(context, AppMotion.standard),
                                     curve: AppMotion.std,
                                     alignment: Alignment.bottomCenter,
-                                    child: connected && sessionId != null && !(chat?.controlReady ?? true)
+                                    child: _replyStalled && error == null
+                                        ? Padding(
+                                            padding: const EdgeInsets.only(bottom: 8),
+                                            child: ErrorBanner(
+                                              info: true,
+                                              message: l10n.activityReplyStalled,
+                                              action: (label: l10n.commonStop, onPressed: () => unawaited(_stop())),
+                                            ),
+                                          )
+                                        : connected && sessionId != null && !(chat?.controlReady ?? true)
                                         ? Padding(
                                             padding: const EdgeInsets.only(bottom: 8),
                                             child: ErrorBanner(

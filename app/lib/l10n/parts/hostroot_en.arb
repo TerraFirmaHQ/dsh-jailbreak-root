@@ -11,5 +11,15 @@
   "hostRootSave": "Save",
   "hostRootNoSu": "su was not granted. The switch stays off.",
   "hostRootBattery": "Battery exemption (read back)",
-  "hostRootMigration": "An upgrade keeps /root only. /usr/local and /opt need installing again. Scheduled tasks written by the new engine are not guaranteed to load on an older engine."
+  "hostRootMigration": "An upgrade keeps /root only. /usr/local and /opt need installing again. Scheduled tasks written by the new engine are not guaranteed to load on an older engine.",
+  "hostRootKeywords": "host,su,root,data/adb,hiding,modules",
+  "hostRootRestarting": "Restarting the on-device engine. Chats stay. Root tools mount or unmount with this start.",
+  "hostRootPendingStart": "The on-device engine is not running. Tools mount or unmount the next time it starts.",
+  "hostRootSafe": "Safe mode does not load root tools, and su was not called for this.",
+  "hostRootToolsOn": "Tools are registered. shell runs as uid 0, and read_file can read /data/adb.",
+  "hostRootToolsOff": "The switch is off. su is not called, and the model has no root tools.",
+  "hostRootApprovalTitle": "Allow this root command?",
+  "hostRootApprovalProtected": "This changes the hiding setup, a module, SELinux, or mounts. Nothing runs unless you allow it.",
+  "hostRootAllow": "Allow",
+  "hostRootDeny": "Deny"
 }

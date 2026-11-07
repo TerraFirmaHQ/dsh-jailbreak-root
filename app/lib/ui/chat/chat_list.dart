@@ -1078,7 +1078,7 @@ class _ChatListState extends ConsumerState<ChatList> with SingleTickerProviderSt
       // 换个说法、再发一次都没用的:Key、余额、账号额度、模型本身用不了。
       'error' =>
         !refused && !const {'AUTH', 'INVALID_CREDENTIAL', 'QUOTA'}.contains(code) && !code.startsWith('ACCOUNT_'),
-      'interrupted' || 'max-tokens' => true,
+      'interrupted' || 'max-tokens' || 'aborted' => true,
       _ => false,
     };
     if (!repeatable && !refused) return null;
@@ -1115,7 +1115,7 @@ class _ChatListState extends ConsumerState<ChatList> with SingleTickerProviderSt
     }
     if (prompt == null) return null;
     final chat = ref.read(chatProvider(widget.sessionId).notifier);
-    if (notice.kind == 'error' &&
+    if ((notice.kind == 'error' || notice.kind == 'aborted') &&
         !worked &&
         prompt.images.isEmpty &&
         prompt.files.isEmpty &&
