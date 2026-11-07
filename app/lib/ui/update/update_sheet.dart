@@ -18,7 +18,6 @@ import '../star/star_prompt_dialog.dart' show openStarProject;
 import '../theme/app_icons.dart';
 import '../theme/theme.dart';
 import '../common/brief_notice.dart';
-import '../../rony/rony_channel.dart' show kRonyOnlineUpdatesDisabled;
 
 /// The update offer: version, size, notes, and the download → install flow
 /// (progress lives in [appUpdateProvider], so closing the sheet doesn't stop it).
@@ -28,12 +27,6 @@ Future<void> showUpdateSheet(BuildContext context) =>
 /// Looks for an update on request (设置 → 关于): opens the sheet when there is
 /// one, otherwise says so in a snack bar.
 Future<void> checkForUpdates(BuildContext context, WidgetRef ref) async {
-  if (kRonyOnlineUpdatesDisabled) {
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-      const SnackBar(content: Text('dsh Ace7 已关闭在线更新：新版本去知识库/玩机/dsh-ace7 拿。')),
-    );
-    return;
-  }
   final controller = ref.read(appUpdateProvider.notifier);
   if (ref.read(appUpdateProvider).hasUpdate) return showUpdateSheet(context);
   final messenger = ScaffoldMessenger.maybeOf(context);

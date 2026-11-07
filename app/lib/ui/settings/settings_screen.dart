@@ -37,7 +37,6 @@ import '../features/permission_page.dart';
 import '../onboarding/api_key_page.dart' show maskApiKey;
 import '../pets/pet_settings_page.dart';
 import '../phone/phone_control_screen.dart';
-import '../phone/rony_tools_page.dart';
 import '../plugins/plugins_screen.dart';
 import '../plugins/seats/plugin_settings_tiles.dart';
 import '../plugins/seats/seat_probe.dart';
@@ -173,12 +172,6 @@ class SettingsScreen extends ConsumerWidget {
               spot: SettingsIndex.entry(SettingsPageId.phone),
               value: text(phoneValue, color: phoneValue == l10n.hubValueOneStep ? colors.warning : null),
               onTap: () => _push(context, const PhoneControlScreen()),
-            ),
-            SettingsTile(
-              icon: AppIcons.phoneControl,
-              tint: SettingsHues.abilities,
-              title: 'Root 与 MCP',
-              onTap: () => _push(context, const RonyToolsPage()),
             ),
             SettingsTile(
               icon: AppIcons.webSearch,

@@ -9,7 +9,6 @@ import '../settings/settings_widgets.dart';
 import '../theme/app_icons.dart';
 import '../theme/theme.dart';
 import 'update_sheet.dart';
-import '../../rony/rony_channel.dart' show kRonyOnlineUpdatesDisabled;
 
 /// 设置 → 关于: 「检查更新」 (marked when a new version is waiting) and the
 /// daily automatic check switch. Plain rows, lined up with the [InfoRow]s.
@@ -25,16 +24,6 @@ class AppUpdateTiles extends ConsumerWidget {
     final controller = ref.read(appUpdateProvider.notifier);
     final tint = this.tint;
     final l10n = context.l10n;
-    if (kRonyOnlineUpdatesDisabled) {
-      return SettingsTile(
-        icon: tint == null ? null : AppIcons.checkUpdate,
-        tint: tint ?? 0,
-        spot: Spots.updateCheck,
-        subtitle: 'dsh Ace7 已关闭在线更新',
-        value: Text('已关闭', style: TextStyle(color: DshColors.of(context).textTertiary)),
-        chevron: false,
-      );
-    }
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

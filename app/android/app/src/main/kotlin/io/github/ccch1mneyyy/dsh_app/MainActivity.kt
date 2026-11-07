@@ -63,7 +63,8 @@ class MainActivity : FlutterActivity() {
             engine.plugins.add(io.github.ccch1mneyyy.dsh_app.launch.LaunchClipPlugin())
             engine.plugins.add(io.github.ccch1mneyyy.dsh_app.icons.PictureShortcutPlugin())
             engine.plugins.add(io.github.ccch1mneyyy.dsh_app.usage.UsagePlugin())
-            engine.plugins.add(io.github.ccch1mneyyy.dsh_app.rony.RonyPlugin())
+            engine.plugins.add(io.github.ccch1mneyyy.dsh_app.companion.CompanionVoicePlugin())
+            engine.plugins.add(io.github.ccch1mneyyy.dsh_app.companion.CompanionWidgetPlugin())
             engine.dartExecutor.executeDartEntrypoint(DartExecutor.DartEntrypoint.createDefault())
             cache.put(ENGINE_ID, engine)
         }
@@ -131,31 +132,21 @@ class MainActivity : FlutterActivity() {
      * auto: fastest mode while Flutter is producing frames, released after the last one.
      * max: pinned. system: never declared.
      */
-    /**
-     * Ace7 / Rony: prefer [io.github.ccch1mneyyy.dsh_app.rony.RefreshRate] (supports mode-id pin for
-     * 165Hz). Falls back to upstream auto/max/system if prefs unavailable.
-     */
     private fun applyRefreshRate() {
-        preferFastestDisplayMode()
-    }
-
-    /** Public so RonyPlugin can re-apply after the owner changes 刷新率. */
-    fun preferFastestDisplayMode() {
-        val prefs = io.github.ccch1mneyyy.dsh_app.rony.RonyPrefs(this)
-        // Keep Flutter 设置→性能 in sync when Rony hasn't pinned a mode id.
-        if (prefs.refreshModeId == 0 && prefs.refreshMode in setOf("auto", "max", "system")) {
-            // Mirror the in-app performance setting into RonyPrefs when Flutter set it via dsh/app.
-            // refreshMode field below is the Flutter channel value; prefer RonyPrefs as source of truth.
+        @Suppress("DEPRECATION")
+        val display = windowManager.defaultDisplay
+        val now = display.mode
+        val fastest = display.supportedModes
+            .filter { it.physicalWidth == now.physicalWidth && it.physicalHeight == now.physicalHeight }
+            .maxByOrNull { it.refreshRate }
+        val want = when (refreshMode) {
+            "max" -> fastest
+            "system" -> null
+            else -> if (framesActive) fastest else null
         }
-        val mode = prefs.refreshMode
-        val modeId = prefs.refreshModeId
-        io.github.ccch1mneyyy.dsh_app.rony.RefreshRate.apply(this, mode, modeId)
-        window.decorView.post {
-            if (!isFinishing) io.github.ccch1mneyyy.dsh_app.rony.RefreshRate.apply(this, mode, modeId)
-        }
-        window.decorView.postDelayed({
-            if (!isFinishing) io.github.ccch1mneyyy.dsh_app.rony.RefreshRate.apply(this, mode, modeId)
-        }, 800)
+        val target = want?.modeId ?: 0
+        if (window.attributes.preferredDisplayModeId == target) return
+        window.attributes = window.attributes.apply { preferredDisplayModeId = target }
     }
 
     override fun onPause() {
@@ -176,12 +167,8 @@ class MainActivity : FlutterActivity() {
                 // to this activity closes the tab and shows the app again.
                 // 设置 → 性能 → 刷新率: auto | max | system, and whether Flutter is drawing.
                 "setRefreshRateMode" -> {
-                    when (val m = call.argument<String>("mode")) {
-                        "auto", "max", "system" -> {
-                            refreshMode = m!!
-                            io.github.ccch1mneyyy.dsh_app.rony.RonyPrefs(this).refreshMode = m
-                            io.github.ccch1mneyyy.dsh_app.rony.RonyPrefs(this).refreshModeId = 0
-                        }
+                    when (call.argument<String>("mode")) {
+                        "auto", "max", "system" -> refreshMode = call.argument<String>("mode")!!
                     }
                     applyRefreshRate()
                     result.success(null)

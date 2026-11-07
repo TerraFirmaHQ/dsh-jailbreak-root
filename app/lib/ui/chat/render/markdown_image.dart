@@ -24,6 +24,7 @@ import '../../theme/theme.dart';
 import '../artifact_preview.dart';
 import '../media/media_paths.dart';
 import '../widgets/image_actions.dart';
+import '../widgets/image_gallery.dart' show ViewerImage;
 
 /// Largest workspace image a reply downloads from a remote Host just to show
 /// it inline (the Host's own image limit is 20 MiB).
@@ -156,6 +157,38 @@ class MarkdownImageScope extends InheritedWidget {
       sessionId != oldWidget.sessionId || baseDir != oldWidget.baseDir;
 }
 
+/// A single rendered Markdown body, never the entire chat or another reply.
+/// Images are collected in element order on tap, including HTML/reference images
+/// already parsed by the Markdown renderer, without scanning Markdown source.
+class MarkdownGalleryScope extends InheritedWidget {
+  const MarkdownGalleryScope({super.key, required super.child});
+
+  static List<_MarkdownImageState> _imagesOf(BuildContext context) {
+    final root = context.getElementForInheritedWidgetOfExactType<MarkdownGalleryScope>();
+    if (root == null) return const [];
+    final images = <_MarkdownImageState>[];
+    void visit(Element element) {
+      if (element.widget is MarkdownGalleryScope) return;
+      if (element is StatefulElement && element.state is _MarkdownImageState) {
+        final image = element.state as _MarkdownImageState;
+        if (image._source is WorkspaceImageSource && image._engineUrl == null
+            ? image._workspaceGallery
+            : image._galleryImage != null) {
+          images.add(image);
+        }
+        return;
+      }
+      element.visitChildElements(visit);
+    }
+
+    root.visitChildElements(visit);
+    return images;
+  }
+
+  @override
+  bool updateShouldNotify(MarkdownGalleryScope oldWidget) => false;
+}
+
 // -----------------------------------------------------------------------------
 // Reading workspace images
 
@@ -211,10 +244,13 @@ class ArtifactImageReader implements WorkspaceImageReader {
 /// scrolling a reply back into view draws it at once instead of reading the
 /// file again. A failed read is forgotten, so the next attempt reads afresh.
 class CachedImageReader implements WorkspaceImageReader {
-  CachedImageReader(this.inner, {this.capacity = 64});
+  CachedImageReader(this.inner, {this.capacity = 64, this.keeps});
 
   final WorkspaceImageReader inner;
   final int capacity;
+
+  /// Whether a read image is worth holding; null holds all of them.
+  final bool Function(LoadedImage image)? keeps;
   final _pending = <(String, String), Future<LoadedImage>>{};
   final _done = <(String, String), LoadedImage>{};
 
@@ -236,6 +272,7 @@ class CachedImageReader implements WorkspaceImageReader {
         .then(
           (image) {
             _pending.remove(key);
+            if (keeps?.call(image) == false) return image;
             _done[key] = image;
             while (_done.length > capacity) {
               _done.remove(_done.keys.first);
@@ -255,6 +292,42 @@ class CachedImageReader implements WorkspaceImageReader {
     _done.remove((sessionId, path));
   }
 }
+
+/// Reads images the connected engine serves itself, such as a plugin's
+/// `/api/…` assets: they need the session's cookie, which NetworkImage can't
+/// send. [path] is the image's full URL or root-relative API path.
+class EngineImageReader implements WorkspaceImageReader {
+  const EngineImageReader(this.client);
+
+  final DshClient? client;
+
+  @override
+  Future<LoadedImage> read(String sessionId, String path) async {
+    final client = this.client;
+    if (client == null) throw const ArtifactError('offline');
+    final bytes = await client.readEngineUrl(path, maxBytes: maxMarkdownImageBytes);
+    return isSvgUrl(path) ? SvgImageBytes(bytes) : RasterImage(MemoryImage(bytes));
+  }
+}
+
+/// Largest engine image held in memory between reads. These hold their bytes,
+/// unlike workspace images (a file handle): small assets such as emoji repeat
+/// in a chat, and anything bigger is read again when it scrolls back.
+const maxHeldEngineImageBytes = 256 * 1024;
+
+/// Images from the engine's own address; one cache per connection, at most
+/// 8 MiB of bytes.
+final engineImageReaderProvider = Provider<CachedImageReader>(
+  (ref) => CachedImageReader(
+    EngineImageReader(ref.watch(artifactFilesProvider).connection?.client),
+    capacity: 32,
+    keeps: (image) => switch (image) {
+      RasterImage(provider: MemoryImage(:final bytes)) || SvgImageBytes(:final bytes) =>
+        bytes.length <= maxHeldEngineImageBytes,
+      _ => true,
+    },
+  ),
+);
 
 /// The reader reply images use; one cache per connection.
 final workspaceImageReaderProvider = Provider<CachedImageReader>(
@@ -343,6 +416,9 @@ class _MarkdownImageState extends ConsumerState<MarkdownImage> {
   /// Workspace images: the session and the path read.
   String? _sessionId;
   String? _path;
+
+  /// An image the connected engine serves itself: read with its cookie.
+  String? _engineUrl;
   Future<LoadedImage>? _future;
   LoadedImage? _loaded;
   Object? _error;
@@ -369,6 +445,23 @@ class _MarkdownImageState extends ConsumerState<MarkdownImage> {
 
   void _resolve() {
     final source = _source;
+    final url = source is WebImageSource ? source.url : widget.url.trim();
+    final engine =
+        (source is WebImageSource || source is WorkspaceImageSource) &&
+        (ref.read(artifactFilesProvider).connection?.client.isEngineUrl(url) ?? false);
+    if (source is WebImageSource || engine) {
+      final next = engine ? url : null;
+      if (next == _engineUrl && (next == null || _future != null || _loaded != null)) return;
+      _engineUrl = next;
+      _sessionId = null;
+      _path = null;
+      _future = null;
+      _loaded = null;
+      _error = null;
+      if (next != null) _load();
+      return;
+    }
+    _engineUrl = null;
     if (source is! WorkspaceImageSource) return;
     final scope = MarkdownImageScope.maybeOf(context);
     final sessionId = scope?.sessionId ?? ref.read(currentSessionProvider);
@@ -403,9 +496,10 @@ class _MarkdownImageState extends ConsumerState<MarkdownImage> {
   }
 
   void _load() {
-    final reader = ref.read(workspaceImageReaderProvider);
-    final sessionId = _sessionId!;
-    final path = _path!;
+    final engineUrl = _engineUrl;
+    final reader = ref.read(engineUrl != null ? engineImageReaderProvider : workspaceImageReaderProvider);
+    final sessionId = engineUrl != null ? '' : _sessionId!;
+    final path = engineUrl ?? _path!;
     _error = null;
     _loaded = reader.peek(sessionId, path);
     if (_loaded != null) {
@@ -428,16 +522,27 @@ class _MarkdownImageState extends ConsumerState<MarkdownImage> {
   /// The resized provider last drawn: a retry evicts it as well.
   ImageProvider? _inlineProvider;
 
+  /// Original provider for a rendered bitmap; hidden/error/SVG tiles stay out.
+  ImageProvider? _galleryImage;
+
+  /// Pending workspace bitmaps can be opened lazily by the artifact preview.
+  bool _workspaceGallery = false;
+
   void _retry() {
     _inlineProvider?.evict();
     setState(() {
       _attempt += 1;
       final source = _source;
-      if (source is WorkspaceImageSource && _sessionId != null && _path != null) {
+      if (_engineUrl != null) {
+        ref.read(engineImageReaderProvider).forget('', _engineUrl!);
+        _load();
+      } else if (source is WorkspaceImageSource && _sessionId != null && _path != null) {
         ref.read(workspaceImageReaderProvider).forget(_sessionId!, _path!);
         _load();
       } else if (source is WebImageSource) {
         PaintingBinding.instance.imageCache.evict(NetworkImage(source.url));
+        // The connection may have arrived since this image was first drawn.
+        _resolve();
       }
     });
   }
@@ -446,23 +551,60 @@ class _MarkdownImageState extends ConsumerState<MarkdownImage> {
     final source = _source;
     final sessionId = _sessionId;
     final path = _path;
+    // Workspace files keep their watcher, size gate, share and file actions.
+    // They form their own gallery, separate from web/data images in this body.
     if (source is WorkspaceImageSource && sessionId != null && path != null) {
+      final group = image == null
+          ? <_MarkdownImageState>[] // Preserve the single large-image fallback.
+          : MarkdownGalleryScope._imagesOf(context)
+                .where((state) => state._source is WorkspaceImageSource && state._sessionId == sessionId)
+                .toList();
+      final initial = group.indexOf(this);
+      final artifacts = initial < 0
+          ? null
+          : [for (final state in group) Artifact(path: state._path!, origin: ArtifactOrigin.linked, turn: 0)];
       Navigator.of(context).push(
         ArtifactPreviewPage.route(
           sessionId: sessionId,
           artifact: Artifact(path: path, origin: ArtifactOrigin.linked, turn: 0),
+          gallery: artifacts,
+          initial: initial < 0 ? 0 : initial,
         ),
       );
       return;
     }
     if (image != null) {
-      Navigator.of(context).push(ImageViewerPage.route(title: imageDisplayName(widget.url), image: image));
+      final group = MarkdownGalleryScope._imagesOf(context)
+          .where((state) => state._source is! WorkspaceImageSource || state._engineUrl != null)
+          .toList();
+      final initial = group.indexOf(this);
+      Navigator.of(context).push(
+        ImageViewerPage.galleryRoute(
+          images: initial < 0
+              ? [ViewerImage(name: imageDisplayName(widget.url), image: image)]
+              : [
+                  for (final state in group)
+                    ViewerImage(name: imageDisplayName(state.widget.url), image: state._galleryImage!),
+                ],
+          initial: initial < 0 ? 0 : initial,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // A replaced connection has its own cookie and cache: read through it again.
+    ref.listen(artifactFilesProvider.select((files) => files.connection?.client), (_, _) {
+      if (_source is! WebImageSource && _source is! WorkspaceImageSource) return;
+      setState(() {
+        _engineUrl = null;
+        _resolve();
+      });
+    });
     final l10n = context.l10n;
+    _galleryImage = null;
+    _workspaceGallery = false;
     // A media card above already shows this file: not a second time. Only
     // for a conversation already open (a previewed file never starts one).
     if (_source is WorkspaceImageSource &&
@@ -483,11 +625,27 @@ class _MarkdownImageState extends ConsumerState<MarkdownImage> {
       return _ImageError(name: name, message: message, action: l10n.chatImageTapToRetry, onTap: _retry);
     }
 
+    Widget read() {
+      final loaded = _loaded;
+      if (_error != null) return failed(_error);
+      if (loaded == null) return placeholder();
+      return switch (loaded) {
+        RasterImage(:final provider) => _raster(provider, placeholder: placeholder, failed: failed),
+        // The preview page shows bitmaps only.
+        SvgImageBytes(:final bytes) => _framed(
+          memorySvg(bytes, fit: BoxFit.contain, error: (_) => failed(null)),
+          onTap: null,
+        ),
+      };
+    }
+
     final source = _source;
     final Widget child;
     switch (source) {
       case UnsupportedImageSource():
         child = _ImageError(name: name, message: l10n.chatImageUnsupportedAddress);
+      case WebImageSource() when _engineUrl != null:
+        child = read();
       case WebImageSource(:final url) when isSvgUrl(url):
         child = _framed(
           NetworkSvg(
@@ -511,21 +669,13 @@ class _MarkdownImageState extends ConsumerState<MarkdownImage> {
           child = _raster(MemoryImage(bytes), placeholder: placeholder, failed: failed);
         }
       case WorkspaceImageSource():
-        final loaded = _loaded;
-        if (_error != null) {
-          child = failed(_error);
-        } else if (loaded == null) {
-          child = placeholder();
-        } else {
-          child = switch (loaded) {
-            RasterImage(:final provider) => _raster(provider, placeholder: placeholder, failed: failed),
-            // The preview page shows bitmaps only.
-            SvgImageBytes(:final bytes) => _framed(
-              memorySvg(bytes, fit: BoxFit.contain, error: (_) => failed(null)),
-              onTap: null,
-            ),
-          };
-        }
+        _workspaceGallery =
+            _sessionId != null &&
+            _path != null &&
+            previewModeOf(_path!) == PreviewMode.image &&
+            _error == null &&
+            _loaded is! SvgImageBytes;
+        child = read();
     }
     return Semantics(image: true, label: name, child: child);
   }
@@ -541,6 +691,7 @@ class _MarkdownImageState extends ConsumerState<MarkdownImage> {
     required Widget Function() placeholder,
     required Widget Function(Object? error) failed,
   }) {
+    _galleryImage = provider;
     final resized = inlineImageProvider(provider, MediaQuery.devicePixelRatioOf(context), _hint);
     _inlineProvider = resized;
     return _SizeProbe(
@@ -555,7 +706,11 @@ class _MarkdownImageState extends ConsumerState<MarkdownImage> {
           if (frame == null) return placeholder();
           return _framed(image, onTap: () => _open(provider), onLongPress: () => _actions(provider));
         },
-        errorBuilder: (context, error, _) => failed(error),
+        errorBuilder: (context, error, _) {
+          _galleryImage = null;
+          _workspaceGallery = false;
+          return failed(error);
+        },
       ),
     );
   }

@@ -11,7 +11,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import io.github.ccch1mneyyy.dsh_app.phone.PhoneControl
-import io.github.ccch1mneyyy.dsh_app.rony.RonyControl
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -241,7 +240,7 @@ class RuntimeController private constructor(private val app: Context) : DshProce
     fun publishDiagnostics(markdown: String): Map<String, Any?>? = try {
         if (!installer.isCurrent()) null
         else {
-            val file = GuestSetup.writeDiagnostics(installer.rootfs, markdown)
+            val file = GuestSetup.writeDiagnostics(installer.rootfs, markdown, safe = currentModeSafe())
             mapOf("path" to file.absolutePath, "bytes" to file.length())
         }
     } catch (_: Exception) {
@@ -313,7 +312,6 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                 PhoneStorage.syncShortcut(installer.rootfs, storage)
                 // Phone control: bridge up and guest files written before DSH starts; off in safe mode.
                 val phone = PhoneControl.get(app).prepareLaunch(installer.rootfs, safe) { log(it, "system") }
-                RonyControl.get(app).prepareLaunch(installer.rootfs, safe) { log(it, "system") }
                 if (!safe && !SessionSearchGuest.writeFiles(installer.rootfs)) {
                     log("[dsh-app] message search overlay not written; searching matches titles only", "system")
                 }
@@ -343,7 +341,6 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                 // Stopped (or started again) while this was queued: launching now would leave an orphan.
                 if (stopGen >= gen || gen != runGen) {
                     PhoneControl.get(app).onEngineStopped()
-                    RonyControl.get(app).onEngineStopped()
                     return@execute
                 }
                 val p = DshProcess(app, manifest, installer.rootfs, this)
@@ -353,10 +350,10 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                 timeline.spawned()
                 val direct = directEngine()
                 p.start(env, if (storage) PhoneStorage.binds() else emptyList(), safe, phone, direct.requested, direct.failed) { actualDirect ->
-                    GuestSetup.writeAgentsMd(installer.rootfs, storage, phone, pendingVisualReplies, actualDirect)
+                    // SafeMode.prepare writes its own briefing; leave the original home untouched.
+                    if (!safe) GuestSetup.writeAgentsMd(installer.rootfs, storage, phone, pendingVisualReplies, actualDirect)
                 }
                 if (phone) PhoneControl.get(app).launched(p.phoneMounted)
-                RonyControl.get(app).launched(p.rootMounted)
             } catch (e: Throwable) {
                 // Keep ownership while the old UID sweep runs, including a
                 // failure after spawning but before the waiter was allocated.
@@ -365,7 +362,6 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                 if (gen != runGen) return@execute
                 process = null
                 PhoneControl.get(app).onEngineStopped()
-                RonyControl.get(app).onEngineStopped()
                 if (stopGen >= gen) return@execute
                 error = "start failed: ${e.message}"
                 log("[dsh-app] $error", "system")
@@ -755,7 +751,6 @@ class RuntimeController private constructor(private val app: Context) : DshProce
             }
             process = null
             PhoneControl.get(app).onEngineStopped()
-            RonyControl.get(app).onEngineStopped()
             baseUrl = null
             token = null
             healthyAt = null
