@@ -1,14 +1,14 @@
 # clean build log
 exit_code=0
-extracted_commit=8e879158795fea96d7061737e71798e85c2d0cba
-source_archive=dsh-root-src-8e87915.tar.gz
-source_archive_sha256=db385b426d5144f18883413d162c1a8667c07615708dcf1dfebaacb3e1764248
-source_archive_bytes=350921094
+extracted_commit=49a5ffb50f7ecab4bdb3fb0e592605e4d24911df
+source_archive=dsh-root-src-49a5ffb.tar.gz
+source_archive_sha256=1bb1133718d73a0321cc66fc0ac7416118356556336cce0299915ae5d9176d0b
+source_archive_bytes=350931784
 runtime_archive=runtime-arm64-v8a.tar.gz
 runtime_archive_sha256=54a4640cd999689cf09e969e02b6a6943ef780d680c196adfa87aa483c306ca2
-extract_dir=/tmp/dsh-clean-11071753
+extract_dir=/tmp/dsh-clean-11071905
 note=git archive of extracted_commit was unpacked into an empty directory. runtime/out was absent until bootstrap extracted the pinned runtime tarball.
-command=tooling/bootstrap-locked-build.sh /tmp/dsh-clean-11071753 runtime-arm64-v8a.tar.gz 11071753
+command=tooling/bootstrap-locked-build.sh /tmp/dsh-clean-11071905 runtime-arm64-v8a.tar.gz 11071905
 flutter_version=3.47.7 revision abaf9c5237
 dart_version=3.13.5
 jdk=OpenJDK 21.0.12.1
@@ -19,23 +19,25 @@ platforms=android-35 android-36
 host_node=v22.23.4
 
 # gradle output inside the clean tree, before signature removal
-signed_apk=/tmp/dsh-clean-11071753/app/build/app/outputs/flutter-apk/app-arm64-release.apk
-signed_apk_sha256=2c8f1cf75852b838c454b04f46bfc0fe418f1e1d5fe1d78f74a7a21d82c835b9
-signed_apk_bytes=194423481
+signed_apk=/tmp/dsh-clean-11071905/app/build/app/outputs/flutter-apk/app-arm64-release.apk
+signed_apk_sha256=e86b6f7fc5997809090fef7fa1b361aa7d6f92e1c720416e9d569afc27158ec8
+signed_apk_bytes=194442461
 
 # conversion. The debug signing block is removed, then zipalign rewrites alignment.
 # The unsigned file is NOT byte-identical to app-arm64-release.apk.
+# Size dropped by the 12288-byte signing block. Hashes differ.
 strip=python drop APK Sig Block 42 (12288 bytes) and rewrite the EOCD central-directory offset
-zipalign=$HOME/dev/android-sdk/build-tools/36.0.0/zipalign -p -f 4 stripped aligned && mv aligned to the unsigned name
-zipalign_check=$HOME/dev/android-sdk/build-tools/36.0.0/zipalign -c -p 4 unsigned
+zipalign=$HOME/dev/android-sdk/build-tools/36.0.0/zipalign -p -f 4 /tmp/dsh-root-stripped-11071905.apk /tmp/dsh-root-unsigned-11071905.apk
+zipalign_check=$HOME/dev/android-sdk/build-tools/36.0.0/zipalign -c -p 4 /tmp/dsh-root-unsigned-11071905.apk
 unsigned_apk=dsh-root-1.0.12-arm64-prere-sign.apk
-unsigned_apk_sha256=7a15cec1fcf07b0f7617c2bf0d590fa8d847419d3919c6850d66c76dbed26e60
-unsigned_apk_bytes=194411193
-versionCode=11071753
+unsigned_apk_sha256=c4525f695a7f31f3c58f4dad18842a1b73466ef8e3d655fd78e994b11540889f
+unsigned_apk_bytes=194430173
+versionCode=11071905
 versionName=1.0.12
 package=io.github.ronyfork.dsh_app
 prompt_bytes=21403
 prompt_sha256=4fbd3a104fcd16065800e4e730a67f7781698300eec33af8dc67cfd4f328c118
+previous_candidate=11071753
 
 # flutter output
 Resolving dependencies...
@@ -68,24 +70,7 @@ Got dependencies!
 24 packages have newer versions incompatible with dependency constraints.
 Try `flutter pub outdated` for more information.
 Running Gradle task 'assembleArm64Release'...                   
-WARNING: Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP): flutter_webrtc
-Future versions of Flutter will fail to build if your app uses plugins that apply KGP.
-
-Please check the changelogs of these plugins and upgrade to a version that supports Built-in Kotlin.
-If no such version exists, report the issue to the plugin. If necessary, here is a guide on filing
-an issue against a plugin: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-app-developers#report-incompatible-kotlin-gradle-plugin-usage-to-plugin-authors
-
-If you are a plugin author, please migrate your plugin to Built-in Kotlin using this guide: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors
 Font asset "DshIcons.ttf" was tree-shaken, reducing it from 52936 to 48548 bytes (8.3% reduction). Tree-shaking can be disabled by providing the --no-tree-shake-icons flag when building your app.
-Font asset "MaterialIcons-Regular.otf" was tree-shaken, reducing it from 1645184 to 3864 bytes (99.8% reduction). Tree-shaking can be disabled by providing the --no-tree-shake-icons flag when building your app.
-warning: [options] source value 8 is obsolete and will be removed in a future release
-warning: [options] target value 8 is obsolete and will be removed in a future release
-warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
-Note: Some input files use or override a deprecated API.
-Note: Recompile with -Xlint:deprecation for details.
-Note: Some input files use unchecked or unsafe operations.
-Note: Recompile with -Xlint:unchecked for details.
-3 warnings
-Caught exception: Already watching path: /tmp/dsh-clean-11071753/app/android
-Running Gradle task 'assembleArm64Release'...                     222.0s
+Font asset "MaterialIcons-Regular.otf" was tree-shaken, reducing it from 1645184 to 3816 bytes (99.8% reduction). Tree-shaking can be disabled by providing the --no-tree-shake-icons flag when building your app.
+Running Gradle task 'assembleArm64Release'...                     221.0s
 ✓ Built build/app/outputs/flutter-apk/app-arm64-release.apk (194.4MB)
