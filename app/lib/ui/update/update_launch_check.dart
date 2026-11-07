@@ -41,8 +41,10 @@ class _UpdateLaunchCheckState extends ConsumerState<UpdateLaunchCheck> {
     super.dispose();
   }
 
+  bool _editionLocked() => true;
+
   Future<void> _run() async {
-    if (!mounted) return;
+    if (!mounted || _editionLocked()) return;
     final offer = await ref.read(appUpdateProvider.notifier).autoCheckIfDue();
     if (!offer || !mounted) return;
     // Don't cover a page or sheet the person is in, or interrupt typing (raw

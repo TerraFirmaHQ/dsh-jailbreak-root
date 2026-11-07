@@ -26,6 +26,8 @@ class HostRootPage extends ConsumerWidget {
         text = l10n.hostRootSafe;
       } else if (result.error == 'NO_SU') {
         text = l10n.hostRootNoSu;
+      } else if (result.error == 'MOUNTS_DISABLED') {
+        text = l10n.hostRootChrootHint;
       } else if (!result.ok) {
         text = result.error;
       } else if (result.restarting) {
@@ -56,8 +58,21 @@ class HostRootPage extends ConsumerWidget {
           SwitchListTile(
             title: Text(l10n.hostRootChroot),
             subtitle: Text(l10n.hostRootChrootHint),
-            value: status.chrootEnabled,
-            onChanged: status.restarting ? null : (v) => toggle(false, v),
+            value: false,
+            onChanged: status.restarting ? null : (v) => toggle(false, true),
+          ),
+          SwitchListTile(
+            title: Text(l10n.hostRootReadonlySkip),
+            subtitle: Text(l10n.hostRootReadonlySkipHint),
+            value: status.readonlySkip,
+            onChanged: (v) => ref.read(hostRootProvider.notifier).setReadonlySkip(v),
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: () => ref.read(hostRootProvider.notifier).clearSessionMemory(),
+              child: Text(l10n.hostRootClearMemory),
+            ),
           ),
           Text(l10n.hostRootMigration),
           if (status.safeBlocked) Text(l10n.hostRootSafe),

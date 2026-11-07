@@ -71,11 +71,14 @@ object ChrootLaunch {
      * Same contract as [DirectLaunch.select]: safe mode always wins, then the saved
      * preference, then the last failure, then the rootfs check.
      */
+    /**
+     * Mount-based chroot is disabled. This device stack has no Shamiko, so a
+     * root mount/overlay path must not run. su is not called from here.
+     */
+    const val MOUNTS_DISABLED = "mounts-disabled"
+
     fun select(rootfs: File, requested: Boolean, safe: Boolean, failed: Boolean = false, granted: Boolean = false): Selection {
-        if (!requested || safe || !granted) return Selection(false)
-        if (failed) return Selection(false, FAILED)
-        val reason = unavailable(rootfs)
-        return Selection(reason == null, reason)
+        return Selection(false, MOUNTS_DISABLED)
     }
 
     /**

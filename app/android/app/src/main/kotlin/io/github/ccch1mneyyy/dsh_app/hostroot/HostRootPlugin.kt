@@ -58,10 +58,19 @@ class HostRootPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChan
                 HostRootControl.setPersona(app, call.argument<String>("text") ?: "")
                 result.success(null)
             }
+            "setReadonlySkip" -> {
+                HostRootControl.setReadonlySkip(app, call.argument<Boolean>("on") == true)
+                result.success(mapOf("ok" to true))
+            }
+            "clearSessionMemory" -> {
+                HostRootControl.clearSessionMemory()
+                result.success(mapOf("ok" to true))
+            }
             "resolveApproval" -> {
                 val id = call.argument<String>("id").orEmpty()
                 val accept = call.argument<Boolean>("accept") == true
-                result.success(HostRootControl.resolveApproval(id, accept))
+                val session = call.argument<Boolean>("session") == true
+                result.success(HostRootControl.resolveApproval(id, accept, session))
             }
             "applyBattery" -> {
                 val id = call.argument<String>("id").orEmpty()

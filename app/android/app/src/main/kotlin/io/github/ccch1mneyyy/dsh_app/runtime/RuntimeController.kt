@@ -352,45 +352,14 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                 val direct = directEngine()
                 val runtimeVersion = runCatching { manifest.runtimeVersion }.getOrNull()
                 val chrootPref = io.github.ccch1mneyyy.dsh_app.hostroot.HostRootControl.chrootPreference(app, runtimeVersion)
-                if (!safe && chrootPref.enabled) {
-                    val record = EngineHandoff.load(app.filesDir)
-                    val outcome = ChrootSession.consider(
-                        record,
-                        installer.rootfs,
-                        android.os.Process.myUid(),
-                        phone,
-                        { pid ->
-                            ChrootSession.liveness(pid, { path -> readProc(path) }) { path ->
-                                readProcViaSu(path)
-                            }
-                        },
-                        AdoptedEngine.httpHealthCheck(),
-                    )
-                    when (outcome) {
-                        is ChrootSession.Outcome.Adopt -> {
-                            val adopted = DshProcess(app, manifest, installer.rootfs, this)
-                            launched = adopted
-                            process = adopted
-                            adopted.adopt(outcome.record)
-                            if (outcome.phone.reconnect) PhoneControl.get(app).launched(true)
-                            if (outcome.phone.notice) log("[dsh-app] ${io.github.ccch1mneyyy.dsh_app.hostroot.PhoneAdoption.NOTICE}", "system")
-                            return@execute
-                        }
-                        is ChrootSession.Outcome.Block -> {
-                            error = "chroot engine still recorded (${outcome.reason})"
-                            log("[dsh-app] $error", "system")
-                            setPhase(Phase.ERROR)
-                            return@execute
-                        }
-                        ChrootSession.Outcome.StartFresh -> Unit
-                    }
+                if (chrootPref.enabled) {
+                    log("[dsh-app] chroot mount path disabled; su not called", "system")
                 }
                 val p = DshProcess(app, manifest, installer.rootfs, this)
                 launched = p
                 lastLaunch = p.launchDiagnostics
                 process = p
                 timeline.spawned()
-                val chrootGranted = if (!safe && chrootPref.enabled) ChrootLaunch.granted() else false
                 p.start(
                     env,
                     if (storage) PhoneStorage.binds() else emptyList(),
@@ -401,9 +370,9 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                     { actualDirect ->
                         if (!safe) GuestSetup.writeAgentsMd(installer.rootfs, storage, phone, pendingVisualReplies, actualDirect, mounts.root)
                     },
-                    chrootRequested = !safe && chrootPref.enabled,
-                    chrootFailed = chrootPref.failed,
-                    chrootGranted = chrootGranted,
+                    chrootRequested = false,
+                    chrootFailed = false,
+                    chrootGranted = false,
                     mounts = mounts,
                 )
                 if (phone) PhoneControl.get(app).launched(p.phoneMounted)

@@ -6227,7 +6227,7 @@ abstract class L10n {
   /// No description provided for @chatOpenAttachmentFailed.
   ///
   /// In zh, this message translates to:
-  /// **'没能打开附件'**
+  /// **'没能打开附件。请把文件放到 /sdcard/Download/DSH-Go/ 后告知文件名'**
   String get chatOpenAttachmentFailed;
 
   /// No description provided for @chatReadFailed.
@@ -13979,8 +13979,80 @@ abstract class L10n {
   /// No description provided for @hostRootChrootHint.
   ///
   /// In zh, this message translates to:
-  /// **'默认关闭。日常仍用上游 PRoot，不需要 root。打开后引擎在 chroot 里以本应用 uid 运行。'**
+  /// **'这条挂载路径已禁用。日常仍用上游 PRoot，不会为此调用 su。'**
   String get hostRootChrootHint;
+
+  /// No description provided for @hostRootReadonlySkip.
+  ///
+  /// In zh, this message translates to:
+  /// **'只读命令免确认'**
+  String get hostRootReadonlySkip;
+
+  /// No description provided for @hostRootReadonlySkipHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认关闭。打开后只有分类为只读的命令直接执行。写入和未知命令仍要确认。分类不是隔离。'**
+  String get hostRootReadonlySkipHint;
+
+  /// No description provided for @hostRootClearMemory.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除本会话命令记忆'**
+  String get hostRootClearMemory;
+
+  /// No description provided for @hostRootSession.
+  ///
+  /// In zh, this message translates to:
+  /// **'本会话不再询问'**
+  String get hostRootSession;
+
+  /// No description provided for @hostPersonaCall.
+  ///
+  /// In zh, this message translates to:
+  /// **'称呼'**
+  String get hostPersonaCall;
+
+  /// No description provided for @hostPersonaSelf.
+  ///
+  /// In zh, this message translates to:
+  /// **'自称'**
+  String get hostPersonaSelf;
+
+  /// No description provided for @hostPersonaTone.
+  ///
+  /// In zh, this message translates to:
+  /// **'语气'**
+  String get hostPersonaTone;
+
+  /// No description provided for @hostPersonaSpeech.
+  ///
+  /// In zh, this message translates to:
+  /// **'口语程度'**
+  String get hostPersonaSpeech;
+
+  /// No description provided for @hostPersonaNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'补充'**
+  String get hostPersonaNote;
+
+  /// No description provided for @hostPersonaRestore.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复默认'**
+  String get hostPersonaRestore;
+
+  /// No description provided for @hostPersonaScope.
+  ///
+  /// In zh, this message translates to:
+  /// **'这些只影响表达，不覆盖破甲提示词，也不改变审批。'**
+  String get hostPersonaScope;
+
+  /// No description provided for @lockedEditionNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前为锁定版本'**
+  String get lockedEditionNotice;
 
   /// No description provided for @hostRootPrompt.
   ///
@@ -29597,7 +29669,7 @@ abstract class L10n {
   /// No description provided for @stateChatAttachmentInvalid.
   ///
   /// In zh, this message translates to:
-  /// **'这个附件发不了'**
+  /// **'这个附件发不了。请把文件放到 /sdcard/Download/DSH-Go/ 后告知文件名'**
   String get stateChatAttachmentInvalid;
 
   /// No description provided for @stateChatForkUnavailable.
@@ -29669,7 +29741,7 @@ abstract class L10n {
   /// No description provided for @stateAttachmentUploadFailed.
   ///
   /// In zh, this message translates to:
-  /// **'附件上传失败'**
+  /// **'附件上传失败。请把文件放到 /sdcard/Download/DSH-Go/ 后告知文件名'**
   String get stateAttachmentUploadFailed;
 
   /// No description provided for @stateChatImageModelRequired.

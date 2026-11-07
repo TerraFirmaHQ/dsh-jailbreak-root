@@ -16,6 +16,7 @@ class HostRootSnapshot {
     this.chrootEnabled = false,
     this.promptOk = false,
     this.persona = '',
+    this.readonlySkip = false,
     this.restarting = false,
     this.safeBlocked = false,
     this.error,
@@ -26,6 +27,7 @@ class HostRootSnapshot {
   final bool chrootEnabled;
   final bool promptOk;
   final String persona;
+  final bool readonlySkip;
   final bool restarting;
   final bool safeBlocked;
   final String? error;
@@ -36,6 +38,7 @@ class HostRootSnapshot {
     bool? chrootEnabled,
     bool? promptOk,
     String? persona,
+    bool? readonlySkip,
     bool? restarting,
     bool? safeBlocked,
     String? error,
@@ -46,6 +49,7 @@ class HostRootSnapshot {
     chrootEnabled: chrootEnabled ?? this.chrootEnabled,
     promptOk: promptOk ?? this.promptOk,
     persona: persona ?? this.persona,
+    readonlySkip: readonlySkip ?? this.readonlySkip,
     restarting: restarting ?? this.restarting,
     safeBlocked: safeBlocked ?? this.safeBlocked,
     error: clearError ? null : error ?? this.error,
@@ -89,6 +93,7 @@ class HostRootController extends Notifier<HostRootSnapshot> {
     chrootEnabled: raw?['chrootEnabled'] == true,
     promptOk: raw?['promptOk'] == true,
     persona: raw?['persona'] as String? ?? '',
+    readonlySkip: raw?['readonlySkip'] == true,
     restarting: state.restarting,
   );
 
@@ -97,6 +102,24 @@ class HostRootController extends Notifier<HostRootSnapshot> {
   Future<HostRootToggle> setRoot(bool on) => _set('setRootEnabled', on, root: true);
 
   Future<HostRootToggle> setChroot(bool on) => _set('setChrootEnabled', on, root: false);
+
+  /// User switch. Default off. The native tool reads it at call time.
+  Future<void> setReadonlySkip(bool on) async {
+    try {
+      await methods.invokeMethod<Object?>('setReadonlySkip', {'on': on});
+      if (ref.mounted) state = state.copyWith(readonlySkip: on, clearError: true);
+    } on MissingPluginException {
+      if (ref.mounted) state = state.copyWith(error: 'NO_CHANNEL');
+    } catch (e) {
+      if (ref.mounted) state = state.copyWith(error: '$e');
+    }
+  }
+
+  Future<void> clearSessionMemory() async {
+    try {
+      await methods.invokeMethod<Object?>('clearSessionMemory');
+    } catch (_) {}
+  }
 
   /// Writes the persona the user just saved. Does not run on startup, so an
   /// upgrade keeps whatever was already stored and a fresh install stays blank.

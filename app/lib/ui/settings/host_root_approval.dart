@@ -60,36 +60,58 @@ class _HostRootApprovalHostState extends State<HostRootApprovalHost> {
     final id = event['id'] as String? ?? '';
     if (id.isEmpty) return;
     final preview = event['preview'] as String? ?? event['command'] as String? ?? '';
+    final command = event['command'] as String? ?? '';
     final protectedChange = event['protected'] == true;
-    unawaited(_ask(id, preview, protectedChange));
+    final session = event['session'] == true;
+    unawaited(_ask(id, preview, command, protectedChange, session));
   }
 
-  Future<void> _ask(String id, String preview, bool protectedChange) async {
+  Future<void> _ask(String id, String preview, String command, bool protectedChange, bool session) async {
     if (!mounted) {
       await _answer(id, false);
       return;
     }
     _showing = true;
     final l10n = context.l10n;
-    final accept = await showDialog<bool>(
+    final choice = await showDialog<String>(
       context: context,
       useRootNavigator: true,
       builder: (dialog) => AlertDialog(
         title: Text(l10n.hostRootApprovalTitle),
-        content: Text(protectedChange ? '${l10n.hostRootApprovalProtected}\n\n$preview' : preview),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SelectableText(protectedChange ? '${l10n.hostRootApprovalProtected}\n\n$preview' : preview),
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                tooltip: l10n.hostRootAllow,
+                onPressed: () => Clipboard.setData(ClipboardData(text: command.isEmpty ? preview : command)),
+                icon: const Icon(Icons.copy),
+              ),
+            ),
+          ],
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialog, false), child: Text(l10n.hostRootDeny)),
-          FilledButton(onPressed: () => Navigator.pop(dialog, true), child: Text(l10n.hostRootAllow)),
+          TextButton(onPressed: () => Navigator.pop(dialog, 'deny'), child: Text(l10n.hostRootDeny)),
+          if (session)
+            TextButton(onPressed: () => Navigator.pop(dialog, 'session'), child: Text(l10n.hostRootSession)),
+          FilledButton(onPressed: () => Navigator.pop(dialog, 'allow'), child: Text(l10n.hostRootAllow)),
         ],
       ),
     );
     _showing = false;
-    await _answer(id, accept == true);
+    await _answer(id, choice == 'allow' || choice == 'session', session: choice == 'session');
   }
 
-  Future<void> _answer(String id, bool accept) async {
+  Future<void> _answer(String id, bool accept, {bool session = false}) async {
     try {
-      await HostRootController.methods.invokeMethod<bool>('resolveApproval', {'id': id, 'accept': accept});
+      await HostRootController.methods.invokeMethod<bool>('resolveApproval', {
+        'id': id,
+        'accept': accept,
+        'session': session,
+      });
     } catch (_) {}
   }
 

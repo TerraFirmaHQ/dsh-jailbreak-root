@@ -40,10 +40,14 @@ void main() {
     expect(find.text('升级前留下的人设'), findsOneWidget);
     expect(calls.where((c) => c.method == 'setPersona'), isEmpty);
 
-    await tester.enterText(find.byType(TextField), '新的人设');
+    await tester.enterText(find.byKey(const ValueKey('persona-note')), '新的人设');
     await tester.tap(find.text('保存'));
     await tester.pump();
     final saved = calls.where((c) => c.method == 'setPersona').single;
-    expect((saved.arguments as Map)['text'], '新的人设');
+    final text = (saved.arguments as Map)['text'] as String;
+    expect(text, contains('称呼：你'));
+    expect(text, contains('自称：我'));
+    expect(text, contains('新的人设'));
+    expect(text.contains('4fbd3a104fcd16065800e4e730a67f7781698300eec33af8dc67cfd4f328c118'), isFalse);
   });
 }

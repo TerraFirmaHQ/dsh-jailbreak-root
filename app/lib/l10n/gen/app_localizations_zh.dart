@@ -3364,7 +3364,7 @@ class L10nZh extends L10n {
   String get chatAttachmentPermission => '没有权限，可在系统设置中开启';
 
   @override
-  String get chatOpenAttachmentFailed => '没能打开附件';
+  String get chatOpenAttachmentFailed => '没能打开附件。请把文件放到 /sdcard/Download/DSH-Go/ 后告知文件名';
 
   @override
   String get chatReadFailed => '读取失败';
@@ -7597,7 +7597,43 @@ class L10nZh extends L10n {
   String get hostRootChroot => '可选 chroot 引擎';
 
   @override
-  String get hostRootChrootHint => '默认关闭。日常仍用上游 PRoot，不需要 root。打开后引擎在 chroot 里以本应用 uid 运行。';
+  String get hostRootChrootHint => '这条挂载路径已禁用。日常仍用上游 PRoot，不会为此调用 su。';
+
+  @override
+  String get hostRootReadonlySkip => '只读命令免确认';
+
+  @override
+  String get hostRootReadonlySkipHint => '默认关闭。打开后只有分类为只读的命令直接执行。写入和未知命令仍要确认。分类不是隔离。';
+
+  @override
+  String get hostRootClearMemory => '清除本会话命令记忆';
+
+  @override
+  String get hostRootSession => '本会话不再询问';
+
+  @override
+  String get hostPersonaCall => '称呼';
+
+  @override
+  String get hostPersonaSelf => '自称';
+
+  @override
+  String get hostPersonaTone => '语气';
+
+  @override
+  String get hostPersonaSpeech => '口语程度';
+
+  @override
+  String get hostPersonaNote => '补充';
+
+  @override
+  String get hostPersonaRestore => '恢复默认';
+
+  @override
+  String get hostPersonaScope => '这些只影响表达，不覆盖破甲提示词，也不改变审批。';
+
+  @override
+  String get lockedEditionNotice => '当前为锁定版本';
 
   @override
   String get hostRootPrompt => '内置提示词已锁定';
@@ -16109,7 +16145,7 @@ class L10nZh extends L10n {
   String get stateChatModelUnavailable => '这个模型现在用不了';
 
   @override
-  String get stateChatAttachmentInvalid => '这个附件发不了';
+  String get stateChatAttachmentInvalid => '这个附件发不了。请把文件放到 /sdcard/Download/DSH-Go/ 后告知文件名';
 
   @override
   String get stateChatForkUnavailable => '这里不能分叉';
@@ -16145,7 +16181,7 @@ class L10nZh extends L10n {
   String get stateChatTextOnlyModel => '当前模型未声明支持图片，已按文件发送。可换模型，或把自定义模型的输入类型设为「文本和图片」';
 
   @override
-  String get stateAttachmentUploadFailed => '附件上传失败';
+  String get stateAttachmentUploadFailed => '附件上传失败。请把文件放到 /sdcard/Download/DSH-Go/ 后告知文件名';
 
   @override
   String get stateChatImageModelRequired => '当前模型未声明支持图片。请换模型，或把自定义模型的输入类型设为「文本和图片」再发';

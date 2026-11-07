@@ -315,12 +315,12 @@ class PromptMountTest {
             HostRootGuest.mountLog("locked prompt", false, false, "first system segment", "asset missing or hash rejected"),
         )
         assertEquals(
-            "[dsh-app] root tools not mounted (switch off or safe mode, su not called)",
-            HostRootGuest.mountLog("root tools", false, false, "mcp__root__*", "switch off or safe mode, su not called"),
+            "[dsh-app] root tools not mounted (switch off or safe mode, self-check skipped, su not called)",
+            HostRootGuest.mountLog("root tools", false, false, "mcp__root__*", "switch off or safe mode, self-check skipped, su not called"),
         )
         assertEquals(
             "[dsh-app] root tools mounted (mcp__root__*)",
-            HostRootGuest.mountLog("root tools", true, true, "mcp__root__*", "switch off or safe mode, su not called"),
+            HostRootGuest.mountLog("root tools", true, true, "mcp__root__*", "switch off or safe mode, self-check skipped, su not called"),
         )
         assertEquals(
             "[dsh-app] persona not mounted (blank, no section)",

@@ -97,6 +97,8 @@ object RootExec {
         timeoutMs: Long = DEFAULT_TIMEOUT_MS,
         cwd: String? = null,
         spoolDir: File? = null,
+        cancelled: () -> Boolean = { false },
+        onPid: (Int) -> Unit = {},
     ): Result {
         val gen = generation.get()
         val started = System.nanoTime()
@@ -125,7 +127,16 @@ object RootExec {
         var revoked = false
         while (System.nanoTime() < deadline) {
             val pid = rootPid(err.text(), marker)
-            if (pid != null) livePids.add(pid)
+            if (pid != null) {
+                livePids.add(pid)
+                onPid(pid)
+            }
+            if (cancelled()) {
+                pid?.let { killTree(it); livePids.remove(it) }
+                process.destroyForcibly()
+                revoked = true
+                break
+            }
             if (generation.get() != gen) {
                 revoked = true
                 pid?.let { killTree(it); livePids.remove(it) }
@@ -152,7 +163,8 @@ object RootExec {
         rootPid(rawErr, marker)?.let { livePids.remove(it) }
         spool?.writeText(stdout)
         if (revoked) {
-            return Result(State.ERROR, -1, tail(stdout), tail(stderr), truncated || stdout.length > TAIL, ms(), spool?.path, "ROOT_REVOKED")
+            val detail = if (cancelled()) "已中断" else "ROOT_REVOKED"
+            return Result(State.ERROR, -1, tail(stdout), tail(stderr), truncated || stdout.length > TAIL, ms(), spool?.path, detail)
         }
         if (!finished) {
             val state = if (ok) State.TIMEOUT else State.DENIED
@@ -178,13 +190,20 @@ object RootExec {
     class Job(val id: String, val command: String) {
         @Volatile var result: Result? = null
         @Volatile var done = false
+        @Volatile var cancel = false
+        @Volatile var pid: Int = 0
+        @Volatile var finishedAt: Long = 0
     }
 
-    fun startJob(command: String, timeoutMs: Long, cwd: String?, spoolDir: File?): Job {
+    /** At most two live jobs. The thread ends when the command ends. Not a resident service. */
+    fun startJob(command: String, timeoutMs: Long, cwd: String?, spoolDir: File?): Job? {
+        releaseIdle()
+        if (jobs.values.count { !it.done } >= 2) return null
         val job = Job(marker(), command)
         jobs[job.id] = job
         thread(name = "dsh-root-job", isDaemon = true) {
-            job.result = run(command, timeoutMs, cwd, spoolDir)
+            job.result = run(command, timeoutMs, cwd, spoolDir, cancelled = { job.cancel }, onPid = { job.pid = it })
+            job.finishedAt = System.nanoTime()
             job.done = true
         }
         return job
@@ -192,7 +211,20 @@ object RootExec {
 
     fun job(id: String): Job? = jobs[id]
 
+    fun cancel(id: String): Boolean {
+        val job = jobs[id] ?: return false
+        job.cancel = true
+        if (job.pid > 0) killTree(job.pid)
+        return true
+    }
+
+    fun releaseIdle(now: Long = System.nanoTime()) {
+        val idle = 90_000_000_000L
+        jobs.entries.removeIf { it.value.done && it.value.finishedAt > 0 && now - it.value.finishedAt > idle }
+    }
+
     fun closeAll() {
+        jobs.values.forEach { it.cancel = true }
         jobs.clear()
     }
 

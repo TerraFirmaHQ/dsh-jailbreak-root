@@ -12,6 +12,7 @@ import java.util.Base64
  */
 object RootFiles {
     const val MAX_READ = 256 * 1024
+    const val MAX_CHUNK = 1024 * 1024
 
     fun rejectPath(path: String): String? = when {
         path.isEmpty() -> "empty"
@@ -21,10 +22,21 @@ object RootFiles {
     }
 
     /** Fixed read. `dd if=` plus a quoted path; no model-supplied shell. */
-    fun readCommand(path: String): String {
+    fun sizeCommand(path: String): String {
         rejectPath(path)?.let { error(it) }
-        val blocks = (MAX_READ + 4095) / 4096
-        return "dd if=${RootExec.quote(path)} bs=4096 count=$blocks status=none"
+        return "stat -c %s ${RootExec.quote(path)}"
+    }
+
+    fun readCommand(path: String, offset: Long = 0, limit: Int = MAX_READ): String {
+        rejectPath(path)?.let { error(it) }
+        val count = limit.coerceIn(1, MAX_CHUNK)
+        val skip = offset.coerceAtLeast(0)
+        return if (skip == 0L && count == MAX_READ) {
+            val blocks = (MAX_READ + 4095) / 4096
+            "dd if=${RootExec.quote(path)} bs=4096 count=$blocks status=none"
+        } else {
+            "dd if=${RootExec.quote(path)} bs=1 skip=$skip count=$count status=none"
+        }
     }
 
     /**

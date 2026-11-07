@@ -30,7 +30,7 @@ object HostRootGuest {
         |## 主机 Root
         |
         |- 用 `mcp__root__*` 操作安卓主机。`mcp__root__shell` 以 uid 0 在手机上执行，不是沙箱，也不是 PRoot 里看到的假 root。PRoot 里的 bash 碰不到安卓的 /data。
-        |- 读文件用 `read_file`（包括 /data/adb）。任意 shell 和写入都要用户看过预览才执行；文本看起来像只读也不等于隔离。对 KSU、Zygisk、HMA、模块、SELinux、挂载、resetprop 的修改会标明。用户取消就不执行，不要换一种写法绕过。
+        |- 读文件用 `read_file`（包括 /data/adb，可带 offset 和 limit）。写入和未知命令一定要用户看过预览才执行。只读免确认默认关闭，只有用户打开那个开关且分类为只读才跳过；分类不是隔离。对 KSU、Zygisk、HMA、模块、SELinux、挂载、resetprop 的修改会标明。用户取消就不执行，不要换一种写法绕过。
         |- root 开关关闭时这些工具不可用，不要尝试 su。
         |""".trimMargin()
 

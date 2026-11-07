@@ -283,10 +283,10 @@ void main() {
       await refused(tester, 'CLIENT_UPGRADE_REQUIRED', upgrade, extra: [appUpdateProvider.overrideWith(() => update)]);
       expect(find.text('这个模型需要新版引擎'), findsOneWidget);
       expect(find.widgetWithText(TextButton, '换模型'), findsNothing);
-      await tester.tap(find.widgetWithText(TextButton, '检查更新'));
+      await tester.tap(find.widgetWithText(TextButton, '当前为锁定版本'));
       await pumpFrames(tester, 3);
-      expect(update.checks, 1);
-      expect(find.text('已是最新版本'), findsOneWidget);
+      expect(update.checks, 0);
+      expect(find.text('当前为锁定版本'), findsWidgets);
     });
 
     testWidgets('on a remote host the engine is not the app’s: 换模型', (tester) async {

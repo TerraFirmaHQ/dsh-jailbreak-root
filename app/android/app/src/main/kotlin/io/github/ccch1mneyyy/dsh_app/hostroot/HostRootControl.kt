@@ -19,18 +19,27 @@ object HostRootControl {
     const val K_CHROOT = "chrootEnabled"
     const val K_CHROOT_FAILED = "chrootFailedRuntime"
     const val K_PERSONA = "persona"
+    const val K_READONLY_SKIP = "readonlySkip"
 
     data class Mounts(val prompt: Boolean, val persona: Boolean, val root: Boolean)
 
     @Volatile private var bridge: PhoneBridge? = null
     val approvals = ApprovalBoard()
     @Volatile var onApproval: ((Map<String, Any?>) -> Unit)? = null
+    @Volatile var selfCheckSummary: String = "skipped, su not called"
+    private val sessionMemory = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+    private val sessionChosen = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
     fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
     fun rootEnabled(context: Context): Boolean = prefs(context).getBoolean(K_ROOT, false)
-    fun chrootEnabled(context: Context): Boolean = prefs(context).getBoolean(K_CHROOT, false)
+    fun chrootEnabled(context: Context): Boolean {
+        if (prefs(context).getBoolean(K_CHROOT, false)) {
+            prefs(context).edit().putBoolean(K_CHROOT, false).apply()
+        }
+        return false
+    }
     fun persona(context: Context): String = prefs(context).getString(K_PERSONA, "") ?: ""
 
     fun status(context: Context): Map<String, Any?> {
@@ -48,7 +57,20 @@ object HostRootControl {
             "promptBytes" to bytes?.size,
             "promptOk" to (bytes != null && HostRootGuest.sha256(bytes) == HostRootGuest.EXPECTED_PROMPT_SHA256),
             "shellSandboxed" to false,
+            "readonlySkip" to readonlySkip(context),
+            "selfCheck" to selfCheckSummary,
+            "chrootMountsDisabled" to true,
         )
+    }
+
+    fun readonlySkip(context: Context): Boolean = prefs(context).getBoolean(K_READONLY_SKIP, false)
+
+    fun setReadonlySkip(context: Context, on: Boolean) {
+        prefs(context).edit().putBoolean(K_READONLY_SKIP, on).apply()
+    }
+
+    fun clearSessionMemory() {
+        sessionMemory.clear()
     }
 
     /** Turning the switch on is the only path that probes su from settings. */
@@ -57,6 +79,8 @@ object HostRootControl {
             prefs(context).edit().putBoolean(K_ROOT, false).apply()
             approvals.revoke()
             RootExec.revoke()
+            sessionMemory.clear()
+            selfCheckSummary = "skipped, su not called"
             stopBridge()
             return null
         }
@@ -69,16 +93,9 @@ object HostRootControl {
     }
 
     fun setChrootEnabled(context: Context, on: Boolean, runtimeVersion: String?): String? {
-        if (!on) {
-            prefs(context).edit().putBoolean(K_CHROOT, false).apply()
-            return null
-        }
-        if (!ChrootLaunch.granted(force = true)) {
-            prefs(context).edit().putBoolean(K_CHROOT, false).apply()
-            return "NO_SU"
-        }
-        prefs(context).edit().putBoolean(K_CHROOT, true).remove(K_CHROOT_FAILED).apply()
-        return null
+        // Mount path removed. Never probe su from this switch.
+        prefs(context).edit().putBoolean(K_CHROOT, false).apply()
+        return "MOUNTS_DISABLED"
     }
 
     fun setPersona(context: Context, text: String) {
@@ -116,7 +133,17 @@ object HostRootControl {
             context.assets.open("${HostRootGuest.PROMPT_ASSET}/persona.mjs").use { it.readBytes() }
         }.getOrDefault(ByteArray(0))
         val personaOn = HostRootGuest.writePersona(rootfs, personaText, plugin)
-        val root = if (rootEnabled(context)) startRoot(context, rootfs) else {
+        val root = if (rootEnabled(context)) {
+            selfCheckSummary = RootTools.call(
+                "check_root",
+                emptyMap(),
+                enabled = { true },
+                approver = RootTools.Approver { _, _, _ -> false },
+                spoolDir = null,
+            ).text
+            startRoot(context, rootfs)
+        } else {
+            selfCheckSummary = "skipped, su not called"
             stopBridge()
             HostRootGuest.clearRoot(rootfs)
             false
@@ -130,7 +157,10 @@ object HostRootControl {
         RootExec.closeAll()
     }
 
-    fun resolveApproval(id: String, accept: Boolean): Boolean = approvals.resolve(id, accept)
+    fun resolveApproval(id: String, accept: Boolean, session: Boolean = false): Boolean {
+        if (session && accept) sessionChosen.add(id)
+        return approvals.resolve(id, accept)
+    }
 
     fun applyBattery(context: Context, id: String): Map<String, Any?> {
         if (!rootEnabled(context)) return mapOf("ok" to false, "error" to RootTools.DISABLED)
@@ -167,7 +197,9 @@ object HostRootControl {
                 ask(context, command, preview, protectedChange)
             },
             spoolDir = File(context.cacheDir, "hostroot-spool"),
-        )
+            readonlySkip = { readonlySkip(context) },
+            sessionAllows = { key -> sessionMemory.contains(key) },
+        ).also { out -> audit(context, name, args, out) }
 
     private fun ask(context: Context, command: String, preview: String, protectedChange: Boolean): Boolean {
         if (!rootEnabled(context)) return false
@@ -179,16 +211,52 @@ object HostRootControl {
      * unblocks the tool. This does not call su.
      */
     internal fun requestApproval(command: String, preview: String, protectedChange: Boolean): Boolean {
-        val id = approvals.begin(command, preview, protectedChange)
+        val remember = preview.contains("@@session=1")
+        val shown = preview.replace("\n@@session=1", "")
+        val id = approvals.begin(command, shown, protectedChange)
+        val key = if (remember) CommandClassifier.sessionKey(command) else null
         onApproval?.invoke(
             mapOf(
                 "type" to "approval",
                 "id" to id,
-                "preview" to preview,
+                "preview" to shown,
                 "protected" to protectedChange,
-                "command" to RootPolicy.redact(command),
+                "session" to remember,
+                "command" to command,
             ),
         )
-        return approvals.await(id, command)
+        val ok = approvals.await(id, command)
+        if (ok && key != null && sessionChosen.remove(id)) sessionMemory.add(key)
+        else sessionChosen.remove(id)
+        return ok
+    }
+
+    private fun audit(context: Context, name: String, args: Map<String, Any?>, out: ToolOutput) {
+        if (name != "shell" && name != "write_file" && name != "read_file") return
+        val cmd = RootPolicy.redact((args["command"] as? String) ?: (args["path"] as? String) ?: name)
+        val classified = (args["command"] as? String)?.let { CommandClassifier.classifyCommand(it) }
+        val choice = when {
+            out.text.contains(RootTools.DENIED) -> "deny"
+            out.isError -> "error"
+            else -> "allow"
+        }
+        val line = buildString {
+            append("{\"time\":").append(System.currentTimeMillis())
+            append(",\"cmd\":").append(RootTools.jsonString(cmd))
+            append(",\"verdict\":").append(RootTools.jsonString(classified?.reason ?: name))
+            append(",\"reason\":").append(RootTools.jsonString(classified?.hit?.joinToString(",") ?: ""))
+            append(",\"choice\":").append(RootTools.jsonString(choice))
+            append("}")
+        }
+        runCatching {
+            val file = File(context.filesDir, "root_audit.jsonl")
+            file.appendText(line + "\n")
+        }
+        releaseOldSpools(File(context.cacheDir, "hostroot-spool"))
+    }
+
+    private fun releaseOldSpools(dir: File) {
+        val cutoff = System.currentTimeMillis() - 90_000
+        dir.listFiles()?.forEach { if (it.isFile && it.lastModified() < cutoff) it.delete() }
     }
 }

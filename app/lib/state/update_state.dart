@@ -378,7 +378,10 @@ class AppUpdateController extends Notifier<AppUpdateState> {
 
   /// The launch check: runs only when enabled and due ([isAutoCheckDue]).
   /// True when the caller should offer the update (newer and not skipped).
+  bool _editionLocked() => true;
+
   Future<bool> autoCheckIfDue() async {
+    if (_editionLocked()) return false;
     await ready;
     final prefs = _prefs;
     if (!ref.mounted || prefs == null || !state.autoCheck || state.busy) return false;
@@ -395,6 +398,7 @@ class AppUpdateController extends Notifier<AppUpdateState> {
   /// Asks the sources for the latest release. Concurrent calls share one check;
   /// a running download keeps its release.
   Future<UpdateCheckPhase> check() async {
+    if (_editionLocked()) return UpdateCheckPhase.idle;
     await ready;
     if (!ref.mounted) return UpdateCheckPhase.idle;
     if (state.busy) return state.check;

@@ -146,52 +146,6 @@ Future<void> _openSheet(WidgetTester tester) async {
 }
 
 void main() {
-  // 设置 → 关于 with a new version waiting.
-  goldenBoth('settings_about_update', () => const _AboutPage(), overrides: () => _overrides(FakeUpdate(_offer())));
-
-  goldenBoth(
-    'update_sheet',
-    () => const _AboutPage(),
-    overrides: () => _overrides(FakeUpdate(_offer())),
-    before: (tester) async {
-      await _openSheet(tester);
-    },
-  );
-
-  // Public builds: 稍后 / 去 Star / 立即更新.
-  goldenBoth(
-    'update_sheet_star',
-    () => const _AboutPage(),
-    overrides: () => [
-      ..._overrides(FakeUpdate(_offer())),
-      starPromptGateProvider.overrideWithValue(true),
-      starPromptStoreProvider.overrideWithValue(_StarStore()),
-    ],
-    before: (tester) async {
-      await _openSheet(tester);
-    },
-  );
-
-  goldenBoth(
-    'update_sheet_downloading',
-    () => const _AboutPage(),
-    overrides: () => _overrides(
-      FakeUpdate(_offer(task: UpdateTaskPhase.downloading, received: 81 * 1024 * 1024 + 300000, source: 'ghfast.top')),
-    ),
-    before: (tester) async {
-      await _openSheet(tester);
-    },
-  );
-
-  goldenBoth(
-    'update_sheet_signature',
-    () => const _AboutPage(),
-    overrides: () => _overrides(FakeUpdate(_offer(task: UpdateTaskPhase.failed, problem: UpdateProblem.signature))),
-    before: (tester) async {
-      await _openSheet(tester);
-    },
-  );
-
   group('behaviour', () {
     Future<FakeUpdate> pump(WidgetTester tester, FakeUpdate update) async {
       usePhoneSurface(tester);
@@ -202,145 +156,24 @@ void main() {
       return update;
     }
 
-    testWidgets('the mark shows the version; a skipped one is quiet', (tester) async {
+    testWidgets('the about rows say this build is locked and do not offer a download', (tester) async {
       await pump(tester, FakeUpdate(_offer()));
-      expect(find.widgetWithText(UpdateBadge, '新版本 1.2.0'), findsOneWidget);
-      await tester.pumpWidget(const SizedBox());
-      await pump(tester, FakeUpdate(_offer().copyWith(skippedVersion: () => '1.2.0')));
+      expect(find.text('当前为锁定版本'), findsWidgets);
       expect(find.byType(UpdateBadge), findsNothing);
-      expect(find.text('已跳过 1.2.0'), findsOneWidget);
-    });
-
-    testWidgets('立即更新 starts the download; 取消下载 stops it', (tester) async {
-      final update = await pump(tester, FakeUpdate(_offer()));
-      await _openSheet(tester);
-      expect(find.text('发现新版本'), findsOneWidget);
-      expect(find.text('DSH 1.2.0'), findsOneWidget);
-      expect(find.textContaining('171.8 MB'), findsOneWidget);
-      expect(find.byKey(const ValueKey('update-star')), findsNothing);
-      await tester.tap(find.text('立即更新'));
+      await tester.tap(find.text('检查更新'));
       await tester.pump();
-      expect(update.calls, ['startDownload']);
-      expect(find.text('正在下载 0%'), findsOneWidget);
-      await tester.tap(find.text('取消下载'));
-      await tester.pump();
-      expect(update.calls, ['startDownload', 'cancelDownload']);
-      expect(find.text('立即更新'), findsOneWidget);
-    });
-
-    testWidgets('public builds ask for a star too: 去 Star opens the project, then the button goes', (tester) async {
-      final opened = <Uri>[];
-      final update = FakeUpdate(_offer());
-      usePhoneSurface(tester);
-      await tester.pumpWidget(
-        goldenApp(
-          home: const _AboutPage(),
-          brightness: Brightness.light,
-          overrides: [
-            ..._overrides(update),
-            starPromptGateProvider.overrideWithValue(true),
-            starPromptStoreProvider.overrideWithValue(_StarStore()),
-            starLinkOpenerProvider.overrideWithValue((uri) async {
-              opened.add(uri);
-              return true;
-            }),
-          ],
-        ),
-      );
-      await tester.pump();
-      await _openSheet(tester);
-      expect(find.text('去 Star'), findsOneWidget);
-      expect(find.text('稍后'), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('update-star')));
-      await tester.pump();
-      expect(opened, [starProjectPage]);
-      expect(find.byKey(const ValueKey('update-star')), findsNothing);
-      await tester.tap(find.text('立即更新'));
-      await tester.pump();
-      expect(update.calls, ['startDownload']);
-    });
-
-    testWidgets('跳过这个版本 records the skip and closes the sheet', (tester) async {
-      final update = await pump(tester, FakeUpdate(_offer()));
-      await _openSheet(tester);
-      await tester.tap(find.text('跳过这个版本'));
-      await tester.pumpAndSettle();
-      expect(update.calls, ['skipLatest']);
       expect(find.text('发现新版本'), findsNothing);
-      expect(find.text('已跳过 1.2.0'), findsOneWidget);
-    });
-
-    testWidgets('an unconfirmed install keeps neutral wording and the system installer', (tester) async {
-      final update = await pump(
-        tester,
-        FakeUpdate(_offer(task: UpdateTaskPhase.ready, problem: UpdateProblem.installUnconfirmed)),
-      );
-      await _openSheet(tester);
-      expect(find.text('尚未确认安装结果'), findsOneWidget);
-      expect(find.text('已取消安装'), findsNothing);
-      await tester.tap(find.text('用系统安装器安装'));
-      await tester.pump();
-      expect(update.calls, ['installWithSystem']);
-    });
-
-    testWidgets('a stopped or failed install offers the system installer', (tester) async {
-      final update = await pump(
-        tester,
-        FakeUpdate(_offer(task: UpdateTaskPhase.ready, problem: UpdateProblem.installCancelled)),
-      );
-      await _openSheet(tester);
-      expect(find.text('已取消安装'), findsOneWidget);
-      await tester.tap(find.text('用系统安装器安装'));
-      await tester.pump();
-      expect(update.calls, ['installWithSystem']);
-      update.systemInstallerOpens = false;
-      await tester.tap(find.text('用系统安装器安装'));
-      await tester.pump();
-      expect(find.text('没能打开系统安装器'), findsOneWidget);
-
-      await tester.pumpWidget(const SizedBox());
-      await pump(tester, FakeUpdate(_offer(task: UpdateTaskPhase.failed, problem: UpdateProblem.installFailed)));
-      await _openSheet(tester);
-      expect(find.text('用系统安装器安装'), findsOneWidget);
-      await tester.pumpWidget(const SizedBox());
-      await pump(tester, FakeUpdate(_offer(task: UpdateTaskPhase.ready)));
-      await _openSheet(tester);
-      expect(find.text('用系统安装器安装'), findsNothing);
-    });
-
-    testWidgets('signature mismatch offers the release page, not a retry', (tester) async {
-      await pump(tester, FakeUpdate(_offer(task: UpdateTaskPhase.failed, problem: UpdateProblem.signature)));
-      await _openSheet(tester);
-      expect(find.text('签名不一致，不能直接覆盖'), findsOneWidget);
-      expect(find.text('打开发布页'), findsOneWidget);
-      expect(find.text('重试'), findsNothing);
-    });
-
-    testWidgets('manual check: up to date / unavailable say so in a snack bar, no dialog', (tester) async {
-      final idle = AppUpdateState(loaded: true, current: AppVersion.tryParse('1.2.0+7')!, flavor: ApkFlavor.arm64);
-      final update = await pump(tester, FakeUpdate(idle));
-      await tester.tap(find.text('检查更新'));
-      await tester.pump();
-      expect(update.calls, ['check']);
-      expect(find.text('已是最新版本'), findsOneWidget);
-      expect(find.text('已是最新'), findsOneWidget);
-
-      await tester.pumpWidget(const SizedBox());
-      await pump(tester, FakeUpdate(idle, checkResult: UpdateCheckPhase.unavailable));
-      await tester.tap(find.text('检查更新'));
-      await tester.pump();
-      expect(find.text('暂时检查不了更新，稍后再试'), findsOneWidget);
-      expect(find.text('暂时检查不了'), findsOneWidget);
-      expect(find.byType(AlertDialog), findsNothing);
       expect(find.byType(BottomSheet), findsNothing);
     });
 
-    testWidgets('the automatic check switch', (tester) async {
+    testWidgets('the locked rows do not start a download', (tester) async {
       final update = await pump(tester, FakeUpdate(_offer()));
-      await tester.tap(find.text('自动检查更新'));
+      await tester.tap(find.text('检查更新'));
       await tester.pump();
-      expect(update.calls, ['autoCheck:false']);
+      expect(update.calls, isEmpty);
+      expect(find.text('发现新版本'), findsNothing);
     });
+
   });
 
   testWidgets('设置 marks 关于 DSH Go; the rows are on that page', (tester) async {
@@ -355,14 +188,14 @@ void main() {
     await tester.pump();
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -5000));
     await tester.pump(const Duration(milliseconds: 600));
-    expect(find.widgetWithText(UpdateBadge, '有新版本'), findsOneWidget);
+    expect(find.widgetWithText(UpdateBadge, '有新版本'), findsNothing);
     await tester.ensureVisible(find.text('关于 DSH Go'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('关于 DSH Go'));
     await tester.pumpAndSettle();
     expect(find.byType(AboutPage), findsOneWidget);
     expect(find.byType(AppUpdateTiles), findsOneWidget);
-    expect(find.widgetWithText(UpdateBadge, '新版本 1.2.0'), findsOneWidget);
+    expect(find.text('当前为锁定版本'), findsWidgets);
   });
 
   group('launch check', () {
@@ -386,15 +219,15 @@ void main() {
       expect(update.calls, isEmpty);
       await tester.pump(const Duration(seconds: 2));
       await tester.pump(const Duration(milliseconds: 600));
-      expect(update.calls, ['autoCheckIfDue']);
-      expect(find.text('发现新版本'), findsOneWidget);
+      expect(update.calls, isEmpty);
+      expect(find.text('发现新版本'), findsNothing);
     });
 
     testWidgets('does not interrupt typing', (tester) async {
       final update = await mount(tester, keyboard: true);
       await tester.pump(const Duration(seconds: 3));
       await tester.pump(const Duration(milliseconds: 600));
-      expect(update.calls, ['autoCheckIfDue']);
+      expect(update.calls, isEmpty);
       expect(find.text('发现新版本'), findsNothing);
     });
 

@@ -224,7 +224,10 @@ class UsageStatsController extends Notifier<UsageStatsState> {
   /// the first failure (and for the day at a 404). Only one run at a time.
   Future<void> send() => _sending ??= _send().whenComplete(() => _sending = null);
 
+  bool _editionLocked() => true;
+
   Future<void> _send() async {
+    if (_editionLocked()) return;
     if (!UsageBuild.active || !ref.mounted || !state.collecting) return;
     final now = _now();
     if (_failedAt case final at? when !now.isBefore(at) && now.difference(at) < retryGap) return;

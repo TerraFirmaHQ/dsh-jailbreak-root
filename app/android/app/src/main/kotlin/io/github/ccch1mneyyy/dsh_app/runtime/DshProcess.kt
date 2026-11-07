@@ -231,7 +231,7 @@ class DshProcess(
                 mounts.root,
                 launchText.contains(HostRootGuest.ROOT_PATCH),
                 "mcp__root__*",
-                "switch off or safe mode, su not called",
+                "switch off or safe mode, self-check skipped, su not called",
             ),
             "system",
         )

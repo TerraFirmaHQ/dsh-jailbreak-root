@@ -3550,7 +3550,8 @@ class L10nEn extends L10n {
   String get chatAttachmentPermission => 'Permission denied. Turn it on in system settings.';
 
   @override
-  String get chatOpenAttachmentFailed => 'Couldn’t open attachment';
+  String get chatOpenAttachmentFailed =>
+      'Couldn’t open attachment. Put the file in /sdcard/Download/DSH-Go/ and send its name';
 
   @override
   String get chatReadFailed => 'Couldn’t read';
@@ -8009,7 +8010,45 @@ class L10nEn extends L10n {
 
   @override
   String get hostRootChrootHint =>
-      'Off by default. Everyday use stays on upstream PRoot and does not need root. When on, the engine runs in a chroot as this app\'s uid.';
+      'This mount path is disabled. Everyday use stays on upstream PRoot and does not call su for it.';
+
+  @override
+  String get hostRootReadonlySkip => 'Skip confirmation for read-only commands';
+
+  @override
+  String get hostRootReadonlySkipHint =>
+      'Off by default. When on, only commands classified read-only run directly. Writes and unknown commands still ask. Classification is not isolation.';
+
+  @override
+  String get hostRootClearMemory => 'Clear command memory for this session';
+
+  @override
+  String get hostRootSession => 'Don\'t ask again this session';
+
+  @override
+  String get hostPersonaCall => 'What to call you';
+
+  @override
+  String get hostPersonaSelf => 'What I call myself';
+
+  @override
+  String get hostPersonaTone => 'Tone';
+
+  @override
+  String get hostPersonaSpeech => 'How spoken';
+
+  @override
+  String get hostPersonaNote => 'Extra';
+
+  @override
+  String get hostPersonaRestore => 'Restore defaults';
+
+  @override
+  String get hostPersonaScope =>
+      'This only affects expression. It does not replace the locked prompt and it does not change approval.';
+
+  @override
+  String get lockedEditionNotice => 'This build is a locked version';
 
   @override
   String get hostRootPrompt => 'Built-in prompt is locked';
@@ -16967,7 +17006,8 @@ class L10nEn extends L10n {
   String get stateChatModelUnavailable => 'This model is unavailable';
 
   @override
-  String get stateChatAttachmentInvalid => 'Can’t send this attachment';
+  String get stateChatAttachmentInvalid =>
+      'Can’t send this attachment. Put the file in /sdcard/Download/DSH-Go/ and send its name';
 
   @override
   String get stateChatForkUnavailable => 'Can’t branch here';
@@ -17004,7 +17044,8 @@ class L10nEn extends L10n {
       'Sent as files: this model doesn’t list image input. Switch models or set its Input to Text + image.';
 
   @override
-  String get stateAttachmentUploadFailed => 'Couldn’t upload attachment';
+  String get stateAttachmentUploadFailed =>
+      'Couldn’t upload attachment. Put the file in /sdcard/Download/DSH-Go/ and send its name';
 
   @override
   String get stateChatImageModelRequired =>
