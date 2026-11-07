@@ -18,7 +18,15 @@ Scheduled tasks written by DSH 0.2.2-rc.1 are not guaranteed to load on an older
 
 ## Signing
 
-Cover-install needs the certificate that already signed the installed app. This workspace had no release keystore, `key.properties`, or published APK certificate. A debug-signed APK is not that certificate. This document does not claim an upgrade will apply.
+The installed app's certificate, checked from `dsh-rony-arm64-1.0.9-rony-ace7-11021745.apk` (versionCode 11021745), is Android Debug:
+
+`SHA-256 58ff469f18dc624e76b9a416128391548e847062edc8a00bc2f28a7932084402`
+
+The matching keystore stays on the build machine. This tree does not contain it, and this environment does not sign with a new debug key and call that continuity. The APK handed over here is the complete package **before** that re-sign. `versionCode` is the UTC+8 build minute and must be greater than 11021745. Package id stays `io.github.ronyfork.dsh_app`.
+
+## Launcher
+
+The default launcher glyph is the first frame of the DSH-TUI pixel whale girl (`app/tool/pet_src/whale-girl/sheets/idle.png`, x=13..61). The next frame is not included. Nearest-neighbor scale, kept inside the adaptive 66/108 safe circle so the head and tail survive circle and rounded-square masks. Copyright stays with ccch1mneyyy; see `ASSETS.md`. The in-app brand mark is unchanged.
 
 ## Provenance
 

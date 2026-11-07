@@ -483,7 +483,6 @@ final _pages = <SettingsPageMeta>[
     parent: SettingsPageId.engine,
     keywords: (l) => l.hostRootTitle,
     links: const ['host-root', 'root'],
-    row: false,
   ),
   SettingsPageMeta(
     SettingsPageId.remote,

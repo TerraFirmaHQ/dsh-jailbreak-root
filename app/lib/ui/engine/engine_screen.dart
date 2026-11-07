@@ -18,6 +18,7 @@ import '../safe_mode/safe_mode_card.dart';
 import '../safe_mode/safe_mode_settings.dart';
 import '../settings/background_guide_page.dart';
 import '../settings/diagnostics_page.dart';
+import '../settings/host_root_page.dart';
 import '../settings/settings_widgets.dart';
 import '../shell/page_frame.dart';
 import '../theme/app_icons.dart';
@@ -150,6 +151,11 @@ class EngineScreen extends ConsumerWidget {
                   spot: SettingsIndex.entry(SettingsPageId.diagnostics),
                   subtitle: l10n.phoneEngineDiagnosticsHint,
                   onTap: () => _push(context, const DiagnosticsPage()),
+                ),
+                SettingsTile(
+                  spot: SettingsIndex.entry(SettingsPageId.hostRoot),
+                  subtitle: l10n.hostRootSwitch,
+                  onTap: () => _push(context, const HostRootPage()),
                 ),
               ],
             ),
