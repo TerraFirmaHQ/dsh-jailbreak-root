@@ -1,14 +1,14 @@
 # clean build log
 exit_code=0
-extracted_commit=c85439d2020e45fb5f8a57d81ff3e738cef5d2d6
-source_archive=dsh-root-src-c85439d.tar.gz
-source_archive_sha256=46af214bb448f2602cdb50079442880bff9723676b138d55fb7a62b7f0539a07
-source_archive_bytes=350944560
+extracted_commit=73c6adaf79a1b30a13aeb6144a715d3e76331a61
+source_archive=dsh-root-src-73c6ada.tar.gz
+source_archive_sha256=a1d9bb1f7d70ba3fb0498f3789272eaed5259095b2366da11ca0029a41b15ed7
+source_archive_bytes=350951822
 runtime_archive=runtime-arm64-v8a.tar.gz
 runtime_archive_sha256=54a4640cd999689cf09e969e02b6a6943ef780d680c196adfa87aa483c306ca2
-extract_dir=/tmp/dsh-clean-11080129
-note=git archive of extracted_commit was unpacked into an empty directory. runtime/out was absent until bootstrap extracted the pinned runtime tarball. 11071905 is the previous package the phone was using. 11080120 was an intermediate build of f7d21d1 before txt/md import and is not this delivery.
-command=tooling/bootstrap-locked-build.sh /tmp/dsh-clean-11080129 runtime-arm64-v8a.tar.gz 11080129
+extract_dir=/tmp/dsh-clean-11080152
+note=git archive of extracted_commit was unpacked into an empty directory. runtime/out was absent until bootstrap. 11080129 did not read modelSelection.provider and is not this delivery.
+command=tooling/bootstrap-locked-build.sh /tmp/dsh-clean-11080152 runtime-arm64-v8a.tar.gz 11080152
 flutter_version=3.47.7 revision abaf9c5237
 dart_version=3.13.5
 jdk=OpenJDK 21.0.12.1
@@ -18,25 +18,23 @@ build_tools=36.0.0
 platforms=android-35 android-36
 host_node=v22.23.4
 
-# gradle output inside the clean tree, before signature removal
-signed_apk=/tmp/dsh-clean-11080129/app/build/app/outputs/flutter-apk/app-arm64-release.apk
-signed_apk_sha256=4beea8f426c365546555b0159e12978d5e5b5b62db9e0c76384eab2eabf58769
-signed_apk_bytes=194460648
+signed_apk=/tmp/dsh-clean-11080152/app/build/app/outputs/flutter-apk/app-arm64-release.apk
+signed_apk_sha256=15e3da48c355c135270e7cb41e4cc27bfea0e9d5ab583016e847453ad25c8cc0
+signed_apk_bytes=194460808
 
-# conversion. The debug signing block is removed, then zipalign rewrites alignment.
 # The unsigned file is NOT byte-identical to app-arm64-release.apk.
 strip=python3 /tmp/strip_apk_sig.py drop APK Sig Block 42 (12288 bytes) and rewrite the EOCD central-directory offset
-zipalign=$HOME/dev/android-sdk/build-tools/36.0.0/zipalign -p -f 4 /tmp/dsh-root-stripped-11080129.apk /tmp/dsh-root-unsigned-11080129.apk
-zipalign_check=$HOME/dev/android-sdk/build-tools/36.0.0/zipalign -c -p 4 /tmp/dsh-root-unsigned-11080129.apk
-unsigned_apk=dsh-root-1.0.12-arm64-11080129-prere-sign.apk
-unsigned_apk_sha256=4ace4f71b82ac88ea5a091f2dfe11530c8fcdff26c39992fd8d2238a6456bdba
-unsigned_apk_bytes=194448360
-versionCode=11080129
+zipalign=$HOME/dev/android-sdk/build-tools/36.0.0/zipalign -p -f 4 /tmp/dsh-root-stripped-11080152.apk /tmp/dsh-root-unsigned-11080152.apk
+zipalign_check=$HOME/dev/android-sdk/build-tools/36.0.0/zipalign -c -p 4 /tmp/dsh-root-unsigned-11080152.apk
+unsigned_apk=dsh-root-1.0.12-arm64-11080152-prere-sign.apk
+unsigned_apk_sha256=284e1cdb034d0f673f8e4e91fc748bd533121a1627d944d3edd70ac3dc215bba
+unsigned_apk_bytes=194448520
+versionCode=11080152
 versionName=1.0.12
 package=io.github.ronyfork.dsh_app
 prompt_bytes=21403
 prompt_sha256=4fbd3a104fcd16065800e4e730a67f7781698300eec33af8dc67cfd4f328c118
-previous_phone_package=11071905
+previous_delivery=11080129
 
 # flutter output
 Resolving dependencies...
@@ -71,5 +69,5 @@ Try `flutter pub outdated` for more information.
 Running Gradle task 'assembleArm64Release'...                   
 Font asset "DshIcons.ttf" was tree-shaken, reducing it from 52936 to 48548 bytes (8.3% reduction). Tree-shaking can be disabled by providing the --no-tree-shake-icons flag when building your app.
 Font asset "MaterialIcons-Regular.otf" was tree-shaken, reducing it from 1645184 to 3816 bytes (99.8% reduction). Tree-shaking can be disabled by providing the --no-tree-shake-icons flag when building your app.
-Running Gradle task 'assembleArm64Release'...                     230.7s
+Running Gradle task 'assembleArm64Release'...                     249.4s
 ✓ Built build/app/outputs/flutter-apk/app-arm64-release.apk (194.5MB)

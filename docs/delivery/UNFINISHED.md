@@ -7,9 +7,9 @@
 1. **D9 引擎缓存。** 桥没有释放 session projection cache 或供应商 prompt cache 的路由。spool 清理不算完成。缺的接口写在 D9-ENGINE-CACHE.md。
 2. **eta。** 依赖里没有唯一的 eta 包。同名插件有多个，没有选。见 REUSE.md。
 
-## 这轮没有拿真引擎打出的
+## 真引擎已经在本机打过
 
-- 渠道提示词的组装在 Dart 和 `channel_prompt.mjs` 里测过。没有 `DSH_PREFIX`，没有把两个渠道的 HTTP 体送到外部模型。引擎若在 assemble 的 context 里不提供 provider id，钩子用默认文本，不用另一家渠道的文本。会话历史文件没有被打开或改写。
+- `node --test runtime/tests/channel-prompt-live.test.mjs` 用 0.2.2-rc.1 和 `127.0.0.1` 假端点抓到了 A/B、显式空、切换和并发请求。没有访问外部模型。真机仍未跑。见 CHANNEL-PROMPT.md。
 
 ## 真机未验证
 
@@ -21,5 +21,5 @@
 - 关于页「检查更新」索引行已删。G1/G5 的关于页测试这轮重跑通过。
 - 使用统计和对话日志上传的入口已从欢迎页和隐私页拿掉。产品路径不上传，有 host 测试。
 - D2/D6/D7/D9 本应用缓存/D11/D12/R2/R3 序列化/R4/P2/G4 有 host 测试，见 HOST-TESTS.md。
-- 干净目录构建见 BUILD.md 和 build-clean.log。这轮 versionCode 是 11080129，源码是 `c85439d`。11071905 是上一包。11080120 不是这轮的包。
+- 干净目录构建见 BUILD.md 和 build-clean.log。这轮 versionCode 是 11080152，源码是 `73c6ada`。11080129 没有接通选中渠道。真机没跑。
 - B1/B2/B3、D1 的 17 例、D2 两按钮对话框、D3 自动允许、D4 审计字段、D7 UTF-8 分页有 host 测试。真机未验证，不能写成 P0 全过。
