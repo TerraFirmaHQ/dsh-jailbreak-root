@@ -48,7 +48,7 @@ flutter test test/channel_prompt/channel_prompt_test.dart test/channel_prompt/ch
 flutter test test/settings/index/index_sync_test.dart --name "能力里能看到 Root"
 ```
 
-`channel_prompt` 的 Dart 9 项和页面 2 项、审批 3 项、人设 2 项、设置页那一项都通过。Node 7 项通过。Gradle 的 `CommandClassifierTest`、`HostRootSpecHostTest`、`PromptMountTest` 同一轮 `BUILD SUCCESSFUL`。没有把外部模型的 HTTP 体跑出来。
+`channel_prompt` 的 Dart 测试 10 项（含 txt/md、大小写扩展、中文 emoji、CRLF、5000 字、BOM、非法 UTF-8、空文件、路径不当正文）和页面 4 项（取消替换、不保存重开仍是原文、保存后 JSON 含导入全文、BOM 与取消空文件不写）通过。审批 3 项、人设 2 项、设置页那一项通过。Node 7 项通过。Gradle 的 `CommandClassifierTest`、`HostRootSpecHostTest`、`PromptMountTest` 在导入文件之前那一轮 `BUILD SUCCESSFUL`，导入没有改分类器。没有把外部模型的 HTTP 体跑出来。
 
 本轮重跑：
 

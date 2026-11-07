@@ -1,9 +1,11 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 /// Channel system prompt.
 ///
 /// [systemPrompt] null means the channel was never given a text. An empty
 /// string means the user cleared it. The two are not collapsed, trimmed, or
 /// treated as the same falsy value.
-library;
 
 enum ChannelPromptStatus { builtinOff, empty, defaultText, custom }
 
@@ -95,6 +97,49 @@ ChannelPromptStatus channelPromptStatus(ChannelPromptRecord? record, String defa
   if (stored != null && stored.isEmpty) return ChannelPromptStatus.empty;
   if (stored == null || stored == defaultText) return ChannelPromptStatus.defaultText;
   return ChannelPromptStatus.custom;
+}
+
+enum PromptFileIssue { wrongType, unreadable, bom, utf8, emptyFirstLine, fence }
+
+class PromptFileRead {
+  const PromptFileRead({this.text, this.issue});
+
+  /// Exact file bytes as text. Null when [issue] is set. Never the path.
+  final String? text;
+  final PromptFileIssue? issue;
+}
+
+/// Reads a picked `.txt` or `.md`. MIME is ignored. The name is only the
+/// extension. Empty bytes are an explicit empty draft, not a missing file.
+PromptFileRead readPromptFile({required String name, Uint8List? bytes, Object? error}) {
+  if (error != null || bytes == null) return const PromptFileRead(issue: PromptFileIssue.unreadable);
+  final base = _baseName(name);
+  final dot = base.lastIndexOf('.');
+  final ext = dot < 0 ? '' : base.substring(dot + 1).toLowerCase();
+  if (ext != 'txt' && ext != 'md') return const PromptFileRead(issue: PromptFileIssue.wrongType);
+  if (bytes.isEmpty) return const PromptFileRead(text: '');
+  if (bytes.length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF) {
+    return const PromptFileRead(issue: PromptFileIssue.bom);
+  }
+  final String text;
+  try {
+    text = utf8.decode(bytes);
+  } on FormatException {
+    return const PromptFileRead(issue: PromptFileIssue.utf8);
+  }
+  final issue = validateChannelPrompt(text);
+  return switch (issue) {
+    ChannelPromptIssue.bom => const PromptFileRead(issue: PromptFileIssue.bom),
+    ChannelPromptIssue.emptyFirstLine => const PromptFileRead(issue: PromptFileIssue.emptyFirstLine),
+    ChannelPromptIssue.endsWithFence => const PromptFileRead(issue: PromptFileIssue.fence),
+    null => PromptFileRead(text: text),
+  };
+}
+
+String _baseName(String name) {
+  final normalized = name.replaceAll('\\', '/');
+  final slash = normalized.lastIndexOf('/');
+  return slash < 0 ? normalized : normalized.substring(slash + 1);
 }
 
 /// User text check. Empty is the explicit clear and is valid. Nothing is rewritten.

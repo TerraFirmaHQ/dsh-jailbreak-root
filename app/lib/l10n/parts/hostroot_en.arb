@@ -59,5 +59,15 @@
   "channelPromptStatusOff": "Built-in off",
   "channelPromptStatusEmpty": "Empty",
   "channelPromptStatusDefault": "Default",
-  "channelPromptStatusCustom": "Custom"
+  "channelPromptStatusCustom": "Custom",
+  "channelPromptImport": "Import file",
+  "channelPromptImportReplace": "Replace the draft with this file? It is not appended. Nothing is stored until you save.",
+  "channelPromptImportEmpty": "This file is empty. The draft becomes empty, and saving does not fill the default back in.",
+  "channelPromptImportDo": "Replace",
+  "channelPromptImportType": "Only .txt or .md can be imported. The draft is unchanged.",
+  "channelPromptImportRead": "The file could not be read. The draft is unchanged.",
+  "channelPromptImportUtf8": "The file is not valid UTF-8. The draft is unchanged.",
+  "channelPromptImportBom": "The file starts with a UTF-8 BOM. The draft was not changed.",
+  "channelPromptImportFirst": "The imported first line is empty. The draft was not changed.",
+  "channelPromptImportFence": "The imported text ends with ```. The draft was not changed."
 }

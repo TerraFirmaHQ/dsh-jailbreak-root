@@ -8192,6 +8192,38 @@ class L10nEn extends L10n {
   String get channelPromptStatusCustom => 'Custom';
 
   @override
+  String get channelPromptImport => 'Import file';
+
+  @override
+  String get channelPromptImportReplace =>
+      'Replace the draft with this file? It is not appended. Nothing is stored until you save.';
+
+  @override
+  String get channelPromptImportEmpty =>
+      'This file is empty. The draft becomes empty, and saving does not fill the default back in.';
+
+  @override
+  String get channelPromptImportDo => 'Replace';
+
+  @override
+  String get channelPromptImportType => 'Only .txt or .md can be imported. The draft is unchanged.';
+
+  @override
+  String get channelPromptImportRead => 'The file could not be read. The draft is unchanged.';
+
+  @override
+  String get channelPromptImportUtf8 => 'The file is not valid UTF-8. The draft is unchanged.';
+
+  @override
+  String get channelPromptImportBom => 'The file starts with a UTF-8 BOM. The draft was not changed.';
+
+  @override
+  String get channelPromptImportFirst => 'The imported first line is empty. The draft was not changed.';
+
+  @override
+  String get channelPromptImportFence => 'The imported text ends with ```. The draft was not changed.';
+
+  @override
   String get hubSessionDetails => 'Chat details';
 
   @override

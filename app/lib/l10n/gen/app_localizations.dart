@@ -14318,6 +14318,66 @@ abstract class L10n {
   /// **'自定义'**
   String get channelPromptStatusCustom;
 
+  /// No description provided for @channelPromptImport.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入文件'**
+  String get channelPromptImport;
+
+  /// No description provided for @channelPromptImportReplace.
+  ///
+  /// In zh, this message translates to:
+  /// **'用文件内容替换当前草稿？不会接在原文后面。点保存才写入。'**
+  String get channelPromptImportReplace;
+
+  /// No description provided for @channelPromptImportEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'这个文件是空的。替换后草稿为空，保存后不会填回默认。'**
+  String get channelPromptImportEmpty;
+
+  /// No description provided for @channelPromptImportDo.
+  ///
+  /// In zh, this message translates to:
+  /// **'替换'**
+  String get channelPromptImportDo;
+
+  /// No description provided for @channelPromptImportType.
+  ///
+  /// In zh, this message translates to:
+  /// **'只能导入 .txt 或 .md。草稿没变。'**
+  String get channelPromptImportType;
+
+  /// No description provided for @channelPromptImportRead.
+  ///
+  /// In zh, this message translates to:
+  /// **'读不到这个文件。草稿没变。'**
+  String get channelPromptImportRead;
+
+  /// No description provided for @channelPromptImportUtf8.
+  ///
+  /// In zh, this message translates to:
+  /// **'不是合法的 UTF-8。草稿没变。'**
+  String get channelPromptImportUtf8;
+
+  /// No description provided for @channelPromptImportBom.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件以 UTF-8 BOM 开头，没有改草稿。'**
+  String get channelPromptImportBom;
+
+  /// No description provided for @channelPromptImportFirst.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入的首行是空的，没有改草稿。'**
+  String get channelPromptImportFirst;
+
+  /// No description provided for @channelPromptImportFence.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入的文本以 ``` 结尾，没有改草稿。'**
+  String get channelPromptImportFence;
+
   /// No description provided for @hubSessionDetails.
   ///
   /// In zh, this message translates to:

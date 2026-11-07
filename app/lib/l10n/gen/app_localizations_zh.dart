@@ -7768,6 +7768,36 @@ class L10nZh extends L10n {
   String get channelPromptStatusCustom => '自定义';
 
   @override
+  String get channelPromptImport => '导入文件';
+
+  @override
+  String get channelPromptImportReplace => '用文件内容替换当前草稿？不会接在原文后面。点保存才写入。';
+
+  @override
+  String get channelPromptImportEmpty => '这个文件是空的。替换后草稿为空，保存后不会填回默认。';
+
+  @override
+  String get channelPromptImportDo => '替换';
+
+  @override
+  String get channelPromptImportType => '只能导入 .txt 或 .md。草稿没变。';
+
+  @override
+  String get channelPromptImportRead => '读不到这个文件。草稿没变。';
+
+  @override
+  String get channelPromptImportUtf8 => '不是合法的 UTF-8。草稿没变。';
+
+  @override
+  String get channelPromptImportBom => '文件以 UTF-8 BOM 开头，没有改草稿。';
+
+  @override
+  String get channelPromptImportFirst => '导入的首行是空的，没有改草稿。';
+
+  @override
+  String get channelPromptImportFence => '导入的文本以 ``` 结尾，没有改草稿。';
+
+  @override
   String get hubSessionDetails => '对话详情';
 
   @override

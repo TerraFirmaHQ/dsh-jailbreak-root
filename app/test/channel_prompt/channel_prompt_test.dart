@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:dsh_app/channel_prompt/channel_prompt.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -107,6 +108,22 @@ void main() {
     expect(merged.single.text, 'CHANNEL\n\nPERSONA\n\ncall the tool');
     final native = rewriteSections(sections, null, 'anthropic-messages');
     expect(native.map((s) => s.text), ['PERSONA', 'call the tool']);
+  });
+
+  test('txt and md imports keep bytes and reject a bad file without rewriting it', () {
+    final good = readPromptFile(name: r'C:\下载\笔记.TXT', bytes: Uint8List.fromList(utf8.encode('你好🙂\r\n第二行')));
+    expect(good.text, '你好🙂\r\n第二行');
+    expect(good.text!.contains('下载'), isFalse);
+    expect(readPromptFile(name: 'A.MD', bytes: Uint8List.fromList(utf8.encode('md'))).text, 'md');
+    expect(readPromptFile(name: 'empty.md', bytes: Uint8List(0)).text, '');
+    final long = '${'汉' * 5000}🙂';
+    expect(readPromptFile(name: 'long.txt', bytes: Uint8List.fromList(utf8.encode(long))).text, long);
+    expect(readPromptFile(name: 'x.markdown', bytes: Uint8List.fromList(utf8.encode('a'))).issue, PromptFileIssue.wrongType);
+    expect(readPromptFile(name: 'a.txt', bytes: Uint8List.fromList([0xEF, 0xBB, 0xBF, 0x61])).issue, PromptFileIssue.bom);
+    expect(readPromptFile(name: 'a.txt', bytes: Uint8List.fromList([0xFF, 0x61])).issue, PromptFileIssue.utf8);
+    expect(readPromptFile(name: 'a.txt', error: 'denied').issue, PromptFileIssue.unreadable);
+    expect(readPromptFile(name: 'a.txt', bytes: Uint8List.fromList(utf8.encode('\n第二行'))).issue, PromptFileIssue.emptyFirstLine);
+    expect(readPromptFile(name: 'a.md', bytes: Uint8List.fromList(utf8.encode('正文```'))).issue, PromptFileIssue.fence);
   });
 
   test('the shipped default file is unchanged', () {

@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:characters/characters.dart';
 import 'package:crypto/crypto.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -60,12 +62,30 @@ class _DefaultPromptPageState extends State<DefaultPromptPage> {
 }
 
 /// One channel's system prompt. Opening this page does not write.
+class PickedPromptFile {
+  const PickedPromptFile({required this.name, required this.bytes});
+
+  final String name;
+  final Uint8List bytes;
+}
+
+/// System document picker. MIME is not a filter: a manager that mislabels
+/// `.md` can still return it. The bytes are checked afterwards.
+Future<PickedPromptFile?> pickPromptFile() async {
+  final file = await FilePicker.pickFile(type: FileType.any);
+  if (file == null) return null;
+  return PickedPromptFile(name: file.name, bytes: await file.readAsBytes());
+}
+
 class ChannelPromptPage extends ConsumerStatefulWidget {
-  const ChannelPromptPage({super.key, required this.providerId, this.api, this.defaultText});
+  const ChannelPromptPage({super.key, required this.providerId, this.api, this.defaultText, this.pick});
 
   final String providerId;
   final String? api;
   final String? defaultText;
+
+  /// Test seam. Production uses [pickPromptFile].
+  final Future<PickedPromptFile?> Function()? pick;
 
   @override
   ConsumerState<ChannelPromptPage> createState() => _ChannelPromptPageState();
@@ -81,6 +101,7 @@ class _ChannelPromptPageState extends ConsumerState<ChannelPromptPage> {
   String _default = '';
   String? _savedText;
   ChannelPromptIssue? _issue;
+  PromptFileIssue? _importIssue;
 
   @override
   void initState() {
@@ -145,6 +166,47 @@ class _ChannelPromptPageState extends ConsumerState<ChannelPromptPage> {
     if (mounted) Navigator.of(context).maybePop();
   }
 
+  Future<void> _import() async {
+    final pick = widget.pick ?? pickPromptFile;
+    PickedPromptFile? picked;
+    Object? error;
+    try {
+      picked = await pick();
+    } catch (caught) {
+      error = caught;
+    }
+    if (!mounted) return;
+    if (picked == null && error == null) return;
+    final read = readPromptFile(name: picked?.name ?? '', bytes: picked?.bytes, error: error);
+    if (read.issue != null || read.text == null) {
+      setState(() => _importIssue = read.issue ?? PromptFileIssue.unreadable);
+      return;
+    }
+    final next = read.text!;
+    if (_text.text.isNotEmpty) {
+      final l10n = context.l10n;
+      final preview = next.isEmpty ? l10n.channelPromptImportEmpty : next.characters.take(240).toString();
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (dialog) => AlertDialog(
+          title: Text(l10n.channelPromptImportReplace),
+          content: next.isEmpty ? Text(l10n.channelPromptImportEmpty) : SelectableText(preview),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialog, false), child: Text(l10n.channelPromptCancel)),
+            FilledButton(onPressed: () => Navigator.pop(dialog, true), child: Text(l10n.channelPromptImportDo)),
+          ],
+        ),
+      );
+      if (ok != true || !mounted) return;
+    }
+    setState(() {
+      _text.text = next;
+      _explicitString = true;
+      _importIssue = null;
+      _issue = null;
+    });
+  }
+
   Future<void> _confirm(String title, VoidCallback apply) async {
     final l10n = context.l10n;
     final ok = await showDialog<bool>(
@@ -173,6 +235,7 @@ class _ChannelPromptPageState extends ConsumerState<ChannelPromptPage> {
       });
     }
     final issue = _issue;
+    final imported = _importIssue;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.channelPromptTitle)),
       body: ListView(
@@ -201,8 +264,24 @@ class _ChannelPromptPageState extends ConsumerState<ChannelPromptPage> {
               errorStyle: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
+          if (imported != null)
+            Text(
+              switch (imported) {
+                PromptFileIssue.wrongType => l10n.channelPromptImportType,
+                PromptFileIssue.unreadable => l10n.channelPromptImportRead,
+                PromptFileIssue.bom => l10n.channelPromptImportBom,
+                PromptFileIssue.utf8 => l10n.channelPromptImportUtf8,
+                PromptFileIssue.emptyFirstLine => l10n.channelPromptImportFirst,
+                PromptFileIssue.fence => l10n.channelPromptImportFence,
+              },
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
           const SizedBox(height: 8),
           Text('$_count'),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(onPressed: _ready ? _import : null, child: Text(l10n.channelPromptImport)),
+          ),
           const SizedBox(height: 12),
           FilledButton(onPressed: _ready ? _save : null, child: Text(l10n.hostRootSave)),
           TextButton(
