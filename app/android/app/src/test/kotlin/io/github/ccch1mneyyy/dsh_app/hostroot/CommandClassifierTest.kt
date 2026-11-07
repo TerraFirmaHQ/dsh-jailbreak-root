@@ -153,6 +153,14 @@ class CommandClassifierTest {
     private data class Case(val id: String, val command: String, val readonly: Boolean, val verdict: String)
 }
 
+class EngineCacheGapTest {
+    @Test
+    fun `idle spool cleanup is not an engine cache release`() {
+        assertTrue(HostRootControl.ENGINE_CACHE_GAP.contains("/dsh-go/v1"))
+        assertFalse(HostRootControl.ENGINE_CACHE_GAP.contains("released"))
+    }
+}
+
 class HostRootPerfTest {
     @Test
     fun `twenty host rounds record memory and token estimate`() {

@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../l10n/l10n.dart';
 import '../settings/settings_widgets.dart';
 import '../theme/app_icons.dart';
 import '../theme/theme.dart';
 
-/// 设置 → 关于: 「检查更新」 (marked when a new version is waiting) and the
-/// daily automatic check switch. Plain rows, lined up with the [InfoRow]s.
+/// 设置 → 关于: one locked-version row. There is no check and no automatic check.
 class AppUpdateTiles extends ConsumerWidget {
   const AppUpdateTiles({super.key, this.tint});
 
@@ -17,30 +15,12 @@ class AppUpdateTiles extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tint = this.tint;
-    final l10n = context.l10n;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SettingsTile(
-          icon: tint == null ? null : AppIcons.checkUpdate,
-          tint: tint ?? 0,
-          spot: Spots.updateCheck,
-          value: Text(l10n.lockedEditionNotice),
-          onTap: () => ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(l10n.lockedEditionNotice))),
-        ),
-        const SizedBox(height: 2),
-        SettingsSwitchTile(
-          icon: tint == null ? null : AppIcons.autoUpdate,
-          tint: tint ?? 0,
-          spot: Spots.updateAuto,
-          subtitle: l10n.lockedEditionNotice,
-          value: false,
-          onChanged: (_) {},
-        ),
-      ],
+    return SettingsTile(
+      icon: tint == null ? null : AppIcons.info,
+      tint: tint ?? 0,
+      spot: Spots.lockedEdition,
     );
   }
-
 }
 
 /// The "new version" mark: a dot and a short label on a tinted pill.

@@ -44,6 +44,7 @@ void main() {
   void Function()? resume;
 
   setUp(() async {
+    UsageStatsController.suppressUpload = false;
     UsageBuild.active = true;
     received = [];
     replies = [];
@@ -63,6 +64,7 @@ void main() {
   });
 
   tearDown(() async {
+    UsageStatsController.suppressUpload = true;
     UsageBuild.active = wasActive;
     await server.close(force: true);
   });

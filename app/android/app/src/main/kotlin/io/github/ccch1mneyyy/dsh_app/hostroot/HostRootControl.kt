@@ -255,6 +255,14 @@ object HostRootControl {
         releaseOldSpools(File(context.cacheDir, "hostroot-spool"))
     }
 
+    /**
+     * Idle release that exists in this process: spool files and finished job
+     * records. The engine process has no route for this. See
+     * [ENGINE_CACHE_GAP].
+     */
+    const val ENGINE_CACHE_GAP =
+        "no /dsh-go/v1 route drops the DSH session projection cache or the provider prompt cache without deleting the session"
+
     private fun releaseOldSpools(dir: File) {
         val cutoff = System.currentTimeMillis() - 90_000
         dir.listFiles()?.forEach { if (it.isFile && it.lastModified() < cutoff) it.delete() }

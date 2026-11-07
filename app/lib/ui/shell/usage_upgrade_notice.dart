@@ -93,10 +93,12 @@ class _UsageUpgradeNoticeState extends ConsumerState<UsageUpgradeNotice> {
   bool _shown = false;
 
   @override
+  bool _editionLocked() => true;
+
   void initState() {
     super.initState();
-    // Builds that count nothing have nothing to tell.
-    if (!UsageBuild.active) return;
+    // This edition does not ask to send usage statistics.
+    if (_editionLocked() || !UsageBuild.active) return;
     ref.listenManual(usageStatsProvider, (_, s) => _schedule(s), fireImmediately: true);
   }
 

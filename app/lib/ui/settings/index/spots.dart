@@ -1048,17 +1048,11 @@ abstract final class Spots {
     title: (l) => l.commonVersion,
     keywords: (l) => l.searchKwVersion,
   );
-  static final updateCheck = SettingSpot(
-    'update-check',
+  static final lockedEdition = SettingSpot(
+    'locked-edition',
     page: SettingsPageId.about,
-    title: (l) => l.updateCheck,
-    keywords: (l) => l.searchKwUpdate,
-  );
-  static final updateAuto = SettingSpot(
-    'update-auto',
-    page: SettingsPageId.about,
-    title: (l) => l.updateAutoCheck,
-    keywords: (l) => l.searchKwUpdateAuto,
+    title: (l) => l.lockedEditionNotice,
+    keywords: (l) => l.lockedEditionNotice,
   );
   static final star = SettingSpot(
     'star',
@@ -1127,8 +1121,6 @@ final _rows = <SettingSpot>[
   Spots.notifyLive,
   Spots.notifySystem,
   Spots.shareConfig,
-  Spots.usageStats,
-  Spots.chatLogUpload,
   Spots.autoStart,
   Spots.autoSafe,
   Spots.safeMode,
@@ -1141,8 +1133,7 @@ final _rows = <SettingSpot>[
   Spots.parallelCalls,
   Spots.commandTimeout,
   Spots.version,
-  Spots.updateCheck,
-  Spots.updateAuto,
+  Spots.lockedEdition,
   Spots.star,
   Spots.licenses,
 ];

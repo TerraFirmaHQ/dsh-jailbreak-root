@@ -11,7 +11,7 @@
 | D5 / D8 | shell 结果是 JSON：`stdout` `stderr` `exitCode` `spoolPath`。正文不把 spool 路径拼进 stdout | 只读跳过的返回里有 `stdout` 字段 | 未测 |
 | D6 | 失败时带 `stage` `error` `next`。超时的 next 写明可转后台 | 代码在 `failureOf`。没有单独断言超时文案的测试 | 未测 |
 | D7 | `read_file` 的 `offset` `limit`，默认 256KB，最大 1MB。更大时 `needChunk/totalSize/nextOffset` | 路径拒绝和原读文件测试仍走这条函数。没有对真实大文件的测试 | 未测 |
-| D9 | 超过 64KB 的 stdout 换成摘要，完整内容在 spool。已结束任务和超过 90 秒的 spool 在下次调用或桥关闭时丢掉 | `summarize` 单测。`PERF-host.txt` 是 JVM，不是手机 | 未测。不能写成 Mem 增量 <300MB 已通过 |
+| D9 | 超过 64KB 的 stdout 换成摘要，完整内容在 spool。90 秒只清 spool 和已结束任务，**没有**清引擎缓存。见 D9-ENGINE-CACHE.md | `summarize` 单测；`EngineCacheGapTest` 锁住「没有接口」这句话。`PERF-host.txt` 不是手机 | 未测。标准未达到 |
 | D10 | 摘要是前 40 行、后 10 行、总行数、路径。token 按字符数/4 估算 | 80 行样例包含头尾行。20 轮平均摘要 token 见 PERF-host.txt，低于 8K 的是摘要文本，不是模型账单 | 未测 |
 | D11 | 无障碍未连接时 `isError=false`，`decision=a11y-down`，并写明 root 兜底命令仍要审批 | 没有对应 widget/JVM 测试 | 未测 |
 | D12 | 打不开或传不了附件时的三句文案都带 `/sdcard/Download/DSH-Go/` | 文案生成过。没有跑附件失败界面 | 未测 |
@@ -24,8 +24,8 @@
 | P2-2 / P2-3 | 人设页是称呼、自称、语气、口语程度、补充、恢复默认。保存进 persona 字符串，不进审批 | widget 测试：打开不写；保存含四个字段和旧补充 | 未测 |
 | P2-4 | 没有找到不挂载、不常驻、不依赖 LSPosed 的现成人设插件可直接嵌进这段。默认方案写了短句、口语、可以「不知道 / 等我看看」、不要机械列表 | 保存在人设字符串里 | 未测是否改变模型口气 |
 | P2-5 | 未改刷新率算法，仍按当前分辨率取系统最高模式。没有写 120 | 读代码。没有 165Hz 计数 | 未测 |
-| G1 | 启动检查、`autoCheckIfDue`、`check()` 在锁定开关后立即返回。关于页不下载。首页不挂新版本标记。模型过旧的按钮改成锁定说明 | 测试已改成期望不调用检查。还没在这次命令里跑完该文件 | 未测 |
-| G2 | `usage` 的 `_send` 在锁定开关后立即返回，不 POST | 代码。没有抓包 | 未测 |
+| G1 | 关于页和设置索引里不再有「检查更新」和「自动检查更新」。单独一行标题就是「当前为锁定版本」，没有点击检查。启动检查直接返回。首页不挂新版本标记 | `index_sync_test` 关于页通过。`update_golden_test` 断言找不到「检查更新」 | 未测 |
+| G2 | 欢迎页、升级提示、隐私页都不再出现使用统计或对话日志上传。产品路径 `suppressUpload` 为 true 时 `count` / `foreground` / `_send` 直接返回 | 隐私和欢迎的索引/界面测试通过。协议单测把 `suppressUpload` 设回 false 才发请求，那不是产品路径 | 未测 |
 | G3 | 不跑版本检查，服务端不能在这次启动里改本机版本号。Android versionName 仍来自构建参数 | 代码 | 未测 |
 | G4 | 已有旧 rootfs 时，原来的 `initialOnboardingStep` 就不进欢迎页。这次没有改这段，避免把已有数据的升级流程弄丢 | 原逻辑，这次没加新测试 | 未测 |
 | G5 | 文案「当前为锁定版本」出现在关于页的值和开关说明，以及模型过旧按钮 | 文案在 arb。界面测试待跑 | 未测 |

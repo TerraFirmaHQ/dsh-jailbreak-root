@@ -156,22 +156,14 @@ void main() {
       return update;
     }
 
-    testWidgets('the about rows say this build is locked and do not offer a download', (tester) async {
-      await pump(tester, FakeUpdate(_offer()));
-      expect(find.text('当前为锁定版本'), findsWidgets);
-      expect(find.byType(UpdateBadge), findsNothing);
-      await tester.tap(find.text('检查更新'));
-      await tester.pump();
-      expect(find.text('发现新版本'), findsNothing);
-      expect(find.byType(BottomSheet), findsNothing);
-    });
-
-    testWidgets('the locked rows do not start a download', (tester) async {
+    testWidgets('the about page has a locked-version row and no update entry', (tester) async {
       final update = await pump(tester, FakeUpdate(_offer()));
-      await tester.tap(find.text('检查更新'));
-      await tester.pump();
+      expect(find.text('当前为锁定版本'), findsOneWidget);
+      expect(find.text('检查更新'), findsNothing);
+      expect(find.text('自动检查更新'), findsNothing);
+      expect(find.byType(UpdateBadge), findsNothing);
       expect(update.calls, isEmpty);
-      expect(find.text('发现新版本'), findsNothing);
+      expect(find.byType(BottomSheet), findsNothing);
     });
 
   });
