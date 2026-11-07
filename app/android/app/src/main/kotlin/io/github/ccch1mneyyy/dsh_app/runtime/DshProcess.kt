@@ -193,23 +193,11 @@ class DshProcess(
             env.clear()
             env.putAll(plan.environment)
         }
-        // Optional chroot. select() does not spawn su; the command below is the only su,
-        // and only when the user turned the switch on and a previous probe said it was granted.
-        val chrootSelection = if (direct) ChrootLaunch.Selection(false) else ChrootLaunch.select(rootfs, chrootRequested, safe, chrootFailed, chrootGranted)
-        if (chrootSelection.root) {
-            val plan = ChrootLaunch.prepare(rootfs, argv, AndroidProcess.myUid(), ChrootLaunch.supplementaryGroups())
-            chrootActive = true
-            chrootMounts = plan.mountTargets
-            val script = File(context.filesDir, "chroot-launch.sh")
-            script.writeText(plan.script)
-            builder.command(listOf("su", "-c", "exec sh ${DirectLaunch.quote(script.absolutePath)}")).directory(context.filesDir)
-            env.clear()
-            env["PATH"] = "/system/bin:/system/xbin"
-            listener.onLog("[dsh-app] launch method: root-chroot", "system")
-        } else if (chrootRequested && !safe && !direct) {
-            listener.onLog("[dsh-app] chroot left off (${chrootSelection.fallbackReason ?: "not granted"}); staying on proot", "system")
+        // Mount-based chroot is not a launch method. A saved preference cannot
+        // reach su or a mount script from here.
+        if (chrootRequested && !direct) {
+            listener.onLog("[dsh-app] chroot mount path disabled; su not called", "system")
         }
-        if (chrootActive) launchDiagnostics.selected("chroot", chrootSelection.fallbackReason)
 
         readyReported = false
         if (directFallbackReason == DirectLaunch.INCOMPATIBLE) listener.onLog("[dsh-app] direct fallback: proot hard-link backing files need compatible launch; user preference and data retained", "system")

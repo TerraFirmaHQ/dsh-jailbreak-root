@@ -31,12 +31,48 @@ object RootFiles {
         rejectPath(path)?.let { error(it) }
         val count = limit.coerceIn(1, MAX_CHUNK)
         val skip = offset.coerceAtLeast(0)
-        return if (skip == 0L && count == MAX_READ) {
-            val blocks = (MAX_READ + 4095) / 4096
-            "dd if=${RootExec.quote(path)} bs=4096 count=$blocks status=none"
-        } else {
-            "dd if=${RootExec.quote(path)} bs=1 skip=$skip count=$count status=none"
+        return "dd if=${RootExec.quote(path)} bs=1 skip=$skip count=$count status=none | base64 -w 0"
+    }
+
+    data class Utf8Slice(val text: String, val consumed: Int)
+
+    /**
+     * Takes a complete UTF-8 prefix. A cut in the middle of a character is not
+     * consumed, so the next offset lands on that character. Leading continuation
+     * bytes and illegal bytes are consumed so a bad offset still moves forward.
+     */
+    fun utf8Slice(bytes: ByteArray): Utf8Slice {
+        var i = 0
+        val text = StringBuilder()
+        while (i < bytes.size && (bytes[i].toInt() and 0xC0) == 0x80) i++
+        while (i < bytes.size) {
+            val b = bytes[i].toInt() and 0xFF
+            val need = when {
+                b < 0x80 -> 1
+                b and 0xE0 == 0xC0 && b >= 0xC2 -> 2
+                b and 0xF0 == 0xE0 -> 3
+                b and 0xF8 == 0xF0 && b <= 0xF4 -> 4
+                else -> 0
+            }
+            if (need == 0) {
+                text.append('\uFFFD')
+                i++
+                continue
+            }
+            if (i + need > bytes.size) break
+            var ok = true
+            for (k in 1 until need) {
+                if ((bytes[i + k].toInt() and 0xC0) != 0x80) ok = false
+            }
+            if (!ok) {
+                text.append('\uFFFD')
+                i++
+                continue
+            }
+            text.append(String(bytes, i, need, Charsets.UTF_8))
+            i += need
         }
+        return Utf8Slice(text.toString(), i)
     }
 
     /**

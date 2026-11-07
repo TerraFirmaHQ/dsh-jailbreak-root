@@ -62,11 +62,10 @@ class _HostRootApprovalHostState extends State<HostRootApprovalHost> {
     final preview = event['preview'] as String? ?? event['command'] as String? ?? '';
     final command = event['command'] as String? ?? '';
     final protectedChange = event['protected'] == true;
-    final session = event['session'] == true;
-    unawaited(_ask(id, preview, command, protectedChange, session));
+    unawaited(_ask(id, preview, command, protectedChange));
   }
 
-  Future<void> _ask(String id, String preview, String command, bool protectedChange, bool session) async {
+  Future<void> _ask(String id, String preview, String command, bool protectedChange) async {
     if (!mounted) {
       await _answer(id, false);
       return;
@@ -80,23 +79,22 @@ class _HostRootApprovalHostState extends State<HostRootApprovalHost> {
         title: Text(l10n.hostRootApprovalTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SelectableText(protectedChange ? '${l10n.hostRootApprovalProtected}\n\n$preview' : preview),
-            Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                tooltip: l10n.hostRootAllow,
-                onPressed: () => Clipboard.setData(ClipboardData(text: command.isEmpty ? preview : command)),
-                icon: const Icon(Icons.copy),
-              ),
+            if (protectedChange) Text(l10n.hostRootApprovalProtected),
+            SelectableText(
+              command.isEmpty ? preview : command,
+              style: const TextStyle(fontFamily: 'monospace'),
+            ),
+            ExpansionTile(
+              title: Text(l10n.hostRootAudit),
+              initiallyExpanded: false,
+              children: [SelectableText(preview)],
             ),
           ],
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(dialog, 'deny'), child: Text(l10n.hostRootDeny)),
-          if (session)
-            TextButton(onPressed: () => Navigator.pop(dialog, 'session'), child: Text(l10n.hostRootSession)),
           FilledButton(onPressed: () => Navigator.pop(dialog, 'allow'), child: Text(l10n.hostRootAllow)),
         ],
       ),

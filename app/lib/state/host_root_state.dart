@@ -17,6 +17,7 @@ class HostRootSnapshot {
     this.promptOk = false,
     this.persona = '',
     this.readonlySkip = false,
+    this.autoAllowShell = false,
     this.restarting = false,
     this.safeBlocked = false,
     this.error,
@@ -28,6 +29,7 @@ class HostRootSnapshot {
   final bool promptOk;
   final String persona;
   final bool readonlySkip;
+  final bool autoAllowShell;
   final bool restarting;
   final bool safeBlocked;
   final String? error;
@@ -39,6 +41,7 @@ class HostRootSnapshot {
     bool? promptOk,
     String? persona,
     bool? readonlySkip,
+    bool? autoAllowShell,
     bool? restarting,
     bool? safeBlocked,
     String? error,
@@ -50,6 +53,7 @@ class HostRootSnapshot {
     promptOk: promptOk ?? this.promptOk,
     persona: persona ?? this.persona,
     readonlySkip: readonlySkip ?? this.readonlySkip,
+    autoAllowShell: autoAllowShell ?? this.autoAllowShell,
     restarting: restarting ?? this.restarting,
     safeBlocked: safeBlocked ?? this.safeBlocked,
     error: clearError ? null : error ?? this.error,
@@ -94,6 +98,7 @@ class HostRootController extends Notifier<HostRootSnapshot> {
     promptOk: raw?['promptOk'] == true,
     persona: raw?['persona'] as String? ?? '',
     readonlySkip: raw?['readonlySkip'] == true,
+    autoAllowShell: raw?['autoAllowShell'] == true,
     restarting: state.restarting,
   );
 
@@ -104,6 +109,17 @@ class HostRootController extends Notifier<HostRootSnapshot> {
   Future<HostRootToggle> setChroot(bool on) => _set('setChrootEnabled', on, root: false);
 
   /// User switch. Default off. The native tool reads it at call time.
+  Future<void> setAutoAllow(bool on) async {
+    try {
+      await methods.invokeMethod<Object?>('setAutoAllow', {'on': on});
+      if (ref.mounted) state = state.copyWith(autoAllowShell: on, clearError: true);
+    } on MissingPluginException {
+      if (ref.mounted) state = state.copyWith(error: 'NO_CHANNEL');
+    } catch (e) {
+      if (ref.mounted) state = state.copyWith(error: '$e');
+    }
+  }
+
   Future<void> setReadonlySkip(bool on) async {
     try {
       await methods.invokeMethod<Object?>('setReadonlySkip', {'on': on});

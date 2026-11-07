@@ -9,7 +9,7 @@ import java.io.File
 
 class CommandClassifierTest {
     @Test
-    fun `twelve cases print the classifier result`() {
+    fun `seventeen cases print the classifier result`() {
         val cases = listOf(
             Case("R1", "id", true, "read"),
             Case("R2", "getprop ro.product.model", true, "read"),
@@ -17,12 +17,17 @@ class CommandClassifierTest {
             Case("R4", "pm list packages | grep x", true, "read"),
             Case("R5", "iptables -L PG_OUT -n", true, "read"),
             Case("R6", "dumpsys package x | head -20", true, "read"),
-            Case("W1", "echo 1 > /data/local/tmp/t", false, "write"),
+            Case("R7", "ps -A -o RSS,NAME 2>/dev/null | sort -rn | head -8", true, "read"),
+            Case("R8", "echo ---; ps -A 2>/dev/null | head -5", true, "read"),
+            Case("R9", "ls -l /data/adb/modules 2>&1 | head", true, "read"),
+            Case("R10", "awk '{print \$1}' /proc/meminfo | head -3", true, "read"),
+            Case("W1", "echo x > /data/local/tmp/a", false, "write"),
             Case("W2", "pm disable-user --user 0 x", false, "write"),
             Case("W3", "sh -c \"rm -rf /data/x\"", false, "write"),
             Case("W4", "setprop debug.t 1", false, "write"),
             Case("W5", "iptables -F", false, "write"),
-            Case("W6", "getprop a; rm -f /data/x", false, "write"),
+            Case("W6", "sed -i 's/a/b/' /data/x", false, "write"),
+            Case("W7", "awk 'BEGIN{system(\"rm -rf /data/x\")}'", false, "write"),
         )
         val lines = cases.map { item ->
             val result = CommandClassifier.classifyCommand(item.command)
@@ -34,15 +39,16 @@ class CommandClassifierTest {
             }
             if (item.id == "W1") assertTrue(result.hit.contains("redirect"))
             if (item.id == "W3") assertTrue(result.hit.contains("sh-c+rm"))
-            if (item.id == "W6") assertTrue(result.reason.contains("rm -f /data/x"))
+            if (item.id == "W6") assertTrue(result.hit.contains("sed-i"))
+            if (item.id == "W7") assertTrue(result.hit.contains("awk"))
             line(item.id, item.command, result)
         }
         val text = lines.joinToString("\n") + "\n"
         print(text)
         val dir = File("/workspace/docs/delivery")
         dir.mkdirs()
-        File(dir, "D1-12-stdout.txt").writeText(text)
-        assertEquals(12, lines.size)
+        File(dir, "D1-17-stdout.txt").writeText(text)
+        assertEquals(17, lines.size)
     }
 
     @Test
@@ -63,12 +69,22 @@ class CommandClassifierTest {
         assertFalse(find.readonly)
         assertTrue(find.hit.contains("find-exec"))
 
-        val blocked = CommandClassifier.classifyCommand("id &")
-        assertFalse(blocked.readonly)
-        assertTrue(blocked.compoundBlocked)
-        assertTrue(blocked.subcommands.all { it.verdict == "read" })
-        assertTrue(blocked.reason.contains("全部子命令均为只读，被复合规则拦截"))
-        assertEquals("id", CommandClassifier.sessionKey("id &"))
+        val phone = CommandClassifier.classifyCommand(
+            "ps -A -o PID,RSS,NAME 2>/dev/null | grep -E \"dsh_app|MainThread\" | head -5; echo ---; ps -A -o RSS,NAME 2>/dev/null | sort -rn | head -8",
+        )
+        assertTrue(phone.readonly)
+        assertTrue(phone.subcommands.all { it.verdict == "read" })
+        val nullRedirect = CommandClassifier.classifyCommand("ps -A 2>/dev/null")
+        assertTrue(nullRedirect.readonly)
+        val fd = CommandClassifier.classifyCommand("echo ok &>/dev/null")
+        assertTrue(fd.readonly)
+        assertEquals(1, fd.subcommands.size)
+        val pathRedirect = CommandClassifier.classifyCommand("echo x 2>/sdcard/err")
+        assertFalse(pathRedirect.readonly)
+        assertFalse(CommandClassifier.classifyCommand("sort -o /tmp/out").readonly)
+        assertFalse(CommandClassifier.classifyCommand("date -s 01010000").readonly)
+        assertFalse(CommandClassifier.classifyCommand("sed -e 'w /tmp/x'").readonly)
+        assertFalse(CommandClassifier.classifyCommand("awk '{print | getline}'").readonly)
         assertNull(CommandClassifier.sessionKey("rm -f /data/x"))
     }
 

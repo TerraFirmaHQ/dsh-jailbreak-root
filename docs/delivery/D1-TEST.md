@@ -5,4 +5,4 @@
   --tests io.github.ccch1mneyyy.dsh_app.hostroot.CommandClassifierTest --offline
 ```
 
-通过时，测试把 12 行 JSON 打到 stdout，并写入 `docs/delivery/D1-12-stdout.txt`。原始 12 行就是那个文件，不要改写。
+通过时，测试把 17 行 JSON 写入 `docs/delivery/D1-17-stdout.txt`。那 17 行是测试打印的原文。`D1-12-stdout.txt` 是上一轮的 12 例，不再当这轮的结果。

@@ -7678,7 +7678,19 @@ class L10nZh extends L10n {
   String get hostRootToolsOff => '开关关闭。不会调用 su，模型也看不到 root 工具。';
 
   @override
-  String get hostRootApprovalTitle => '允许这条 root 命令？';
+  String get hostRootApprovalTitle => '允许执行？';
+
+  @override
+  String get hostRootAutoAllow => '自动允许 root 命令（不再逐条询问）';
+
+  @override
+  String get hostRootAutoAllowHint => '默认关闭。打开后 shell 不再逐条询问，仍会分类并写入本机审计。关闭后恢复询问。不会因此调用 su。';
+
+  @override
+  String get hostRootAudit => '查看审计';
+
+  @override
+  String get hostRootAuditClear => '清空审计';
 
   @override
   String get hostRootApprovalProtected => '这会改动隐藏环境、模块、SELinux 或挂载。不点允许就不会执行。';

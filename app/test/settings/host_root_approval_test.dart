@@ -35,7 +35,11 @@ void main() {
       'command': 'redacted',
     });
     await tester.pumpAndSettle();
-    expect(find.text('允许这条 root 命令？'), findsOneWidget);
+    expect(find.text('允许执行？'), findsOneWidget);
+    expect(find.text('redacted'), findsOneWidget);
+    expect(find.textContaining('/data/adb'), findsNothing);
+    await tester.tap(find.text('查看审计'));
+    await tester.pumpAndSettle();
     expect(find.textContaining('/data/adb'), findsOneWidget);
     await tester.tap(find.text('允许'));
     await tester.pumpAndSettle();
@@ -44,7 +48,7 @@ void main() {
     final args = calls.single.arguments as Map;
     expect(args['id'], 'a1');
     expect(args['accept'], isTrue);
-    expect(find.text('允许这条 root 命令？'), findsNothing);
+    expect(find.text('允许执行？'), findsNothing);
   });
 
   testWidgets('deny resolves the same id as not accepted', (tester) async {
@@ -94,12 +98,14 @@ void main() {
       'command': 'id &',
     });
     await tester.pumpAndSettle();
-    expect(find.text('本会话不再询问'), findsOneWidget);
-    await tester.tap(find.text('本会话不再询问'));
+    expect(find.text('允许执行？'), findsOneWidget);
+    expect(find.text('id &'), findsWidgets);
+    expect(find.text('本会话不再询问'), findsNothing);
+    await tester.tap(find.text('允许'));
     await tester.pumpAndSettle();
     final args = calls.single.arguments as Map;
     expect(args['accept'], isTrue);
-    expect(args['session'], isTrue);
+    expect(args['session'], isFalse);
 
     events.add({
       'type': 'approval',

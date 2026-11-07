@@ -49,7 +49,14 @@ class DiagnosticsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
-            "info" -> background(result) { mapOf("app" to app(), "device" to device(), "manifest" to manifest(), "voice" to VoiceDiagnostics.snapshot(context)) }
+            "info" -> background(result) {
+                mapOf(
+                    "app" to app(),
+                    "device" to device() + mapOf("rootToolMeta" to io.github.ccch1mneyyy.dsh_app.hostroot.HostRootControl.auditMeta(context)),
+                    "manifest" to manifest(),
+                    "voice" to VoiceDiagnostics.snapshot(context),
+                )
+            }
             "engineLog" -> {
                 val maxBytes = (call.argument<Int>("maxBytes") ?: DEFAULT_LOG_BYTES).coerceIn(1024, MAX_LOG_BYTES)
                 background(result) { engineLog(maxBytes) }

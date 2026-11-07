@@ -10,9 +10,20 @@
   --tests io.github.ccch1mneyyy.dsh_app.phone.A11yDownHostTest --offline
 ```
 
-结果：`BUILD SUCCESSFUL`。`HostRootSpecHostTest` 9 项，0 失败。`A11yDownHostTest` 1 项，0 失败。时间戳 2026-11-07T09:51:08Z。
+上一轮（2026-11-07T09:51:08Z）`HostRootSpecHostTest` 9 项、`A11yDownHostTest` 1 项通过。本轮改了分类器和分页，那 9 项的期望已经换掉，不能再引用旧数字。
 
-覆盖：D2 第三按钮只给只读误判；未知和写入没有 session key，写入即使 `sessionAllows` 为 true 也要问。D6 超时的 stage/error/next。D7 默认 256KB、上限 1MB、`needChunk`。D9 stdout 超过 64KB 的摘要、stderr 分字段、90 秒删 spool、90 秒后 job 出表。R2 两个任务封顶、查询、取消。R3 审计行没有命令输出。R4 路径归一和 `clearSessionMemory`。
+本轮实际命令：
+
+```bash
+/tmp/gradle/gradle-9.3.1/bin/gradle -p app/android :app:testArm64DebugUnitTest \
+  --tests io.github.ccch1mneyyy.dsh_app.hostroot.CommandClassifierTest \
+  --tests io.github.ccch1mneyyy.dsh_app.hostroot.HostRootSpecHostTest \
+  --tests io.github.ccch1mneyyy.dsh_app.hostroot.RootHostTest --offline
+```
+
+结果：`BUILD SUCCESSFUL`。`CommandClassifierTest` 5 项 0 失败，`HostRootSpecHostTest` 12 项 0 失败。时间戳 2026-11-07T11:02:44Z。`A11yDownHostTest` 这轮没重跑，`PhoneCore` 没改。
+
+覆盖：B1/B2/B3 和 17 例写进 `D1-17-stdout.txt`。真机弹窗那条 `ps … 2>/dev/null` 流水线在分类器里是只读。D2 预览不再带 `@@session=1`。D3 自动允许开时 `setprop` 不询问且带 `"approval":"auto"`；root 关时 runner 不被调用。D6 超时字段仍在。D7 改为 `bs=1` + base64，UTF-8 分页能拼回「你好🙂」，坏字节前进。D9 摘要、90 秒 spool、job 出表仍在。R2 封顶、查询、取消仍在。R3 审计行有 `exitCode`，没有 stdout 正文。引擎启动源码不再包含 root-chroot 那条日志。
 
 ## Dart
 
@@ -26,7 +37,15 @@ flutter test test/update/update_golden_test.dart --name "locked-version"
 flutter test test/settings/index/index_sync_test.dart --name "关于"
 ```
 
-结果都是 `All tests passed`。覆盖：D2 对话框、D12 文案、P2 人设不含破甲 hash、G2 产品路径不上传、G4 旧 rootfs 不进欢迎页、G1/G5 关于页只有锁定版本说明。
+人设、附件、使用统计、欢迎页、关于页这几条是上一轮的结果，本轮没改那些文件，没有重跑。
+
+本轮重跑：
+
+```bash
+flutter test test/settings/host_root_approval_test.dart
+```
+
+结果：`All tests passed`，3 项。对话框标题是「允许执行？」。分类明细默认不在界面上，点「查看审计」才出现。没有「本会话不再询问」。
 
 ## 不好在 host 上冒充通过的
 

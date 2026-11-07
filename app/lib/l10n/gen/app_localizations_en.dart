@@ -8097,7 +8097,20 @@ class L10nEn extends L10n {
   String get hostRootToolsOff => 'The switch is off. su is not called, and the model has no root tools.';
 
   @override
-  String get hostRootApprovalTitle => 'Allow this root command?';
+  String get hostRootApprovalTitle => 'Allow this command?';
+
+  @override
+  String get hostRootAutoAllow => 'Allow root commands automatically';
+
+  @override
+  String get hostRootAutoAllowHint =>
+      'Off by default. When on, shell commands are not asked one by one. They are still classified and written to the on-device audit. Turning it off asks again. This does not call su by itself.';
+
+  @override
+  String get hostRootAudit => 'View audit';
+
+  @override
+  String get hostRootAuditClear => 'Clear audit';
 
   @override
   String get hostRootApprovalProtected =>

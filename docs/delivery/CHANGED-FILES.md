@@ -4,20 +4,21 @@
 
 | 文件 | 条目 |
 |---|---|
-| `app/android/.../hostroot/CommandClassifier.kt` | D1 R4 |
+| `app/android/.../hostroot/CommandClassifier.kt` | B1 B2 B3 D1 R4 |
 | `app/android/.../hostroot/CommandClassifierTest.kt` | D1 D9 D10 |
-| `app/android/.../hostroot/RootTools.kt` | D1 D3 D4 D5 D6 D7 D8 D9 D10 R2 |
+| `app/android/.../hostroot/RootTools.kt` | B3 D1 D3 D4 D5 D6 D7 D8 D9 D10 R2 |
 | `app/android/.../hostroot/RootFiles.kt` | D7 |
 | `app/android/.../hostroot/RootExec.kt` | D9 R2 |
-| `app/android/.../hostroot/HostRootControl.kt` | D2 D3 R1 R3 R4 |
-| `app/android/.../hostroot/HostRootPlugin.kt` | D2 D3 R4 |
+| `app/android/.../hostroot/HostRootControl.kt` | D2 D3 D4 R1 R3 R4 |
+| `app/android/.../hostroot/HostRootPlugin.kt` | D2 D3 D4 R4 |
+| `app/android/.../diagnostics/DiagnosticsPlugin.kt` | D4 诊断只带哈希 |
 | `app/android/.../hostroot/HostRootGuest.kt` | D3 文案 |
 | `app/android/.../runtime/ChrootLaunch.kt` | 禁挂载 |
 | `app/android/.../runtime/RuntimeController.kt` | 禁挂载。启动不再为 chroot 调用 su |
-| `app/android/.../runtime/DshProcess.kt` | R1 日志 |
+| `app/android/.../runtime/DshProcess.kt` | 禁挂载。引擎启动不再走 root-chroot |
 | `app/android/.../phone/PhoneCore.kt` | D11 |
-| `app/lib/state/host_root_state.dart` | D3 R4 |
-| `app/lib/ui/settings/host_root_page.dart` | D3 禁挂载 |
+| `app/lib/state/host_root_state.dart` | D3 D4 R4 |
+| `app/lib/ui/settings/host_root_page.dart` | D3 D4 禁挂载 |
 | `app/lib/ui/settings/host_root_approval.dart` | D2 |
 | `app/lib/ui/settings/host_persona_page.dart` | P2-2 P2-3 P2-4 |
 | `app/lib/l10n/parts/hostroot_zh.arb` `hostroot_en.arb` 及生成物 | D2 D3 P2 G5 |

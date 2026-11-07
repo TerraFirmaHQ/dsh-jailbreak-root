@@ -19,11 +19,13 @@ object CommandClassifier {
     private val simpleRead = setOf(
         "getprop", "id", "whoami", "ps", "uptime", "date", "df", "du", "ls", "stat",
         "cat", "head", "tail", "wc", "grep", "ss", "netstat", "free", "uname", "dumpsys",
+        "echo", "printf", "sort", "uniq", "cut", "tr", "nl", "tac", "rev",
+        "basename", "dirname", "which", "type", "test", "true", "false", "seq", "sleep",
     )
     private val writeNames = setOf(
         "rm", "mv", "cp", "chmod", "chown", "ln", "mkdir", "rmdir", "touch", "truncate",
         "dd", "setprop", "resetprop", "reboot", "kill", "killall", "pkill", "eval", "exec",
-        "insmod", "rmmod", "modprobe", "tee",
+        "insmod", "rmmod", "modprobe",
     )
     private val pmWrite = setOf("install", "uninstall", "disable-user", "enable", "clear", "grant", "revoke", "set-installer")
     private val pmRead = setOf("list", "path", "dump")
@@ -35,9 +37,8 @@ object CommandClassifier {
         val hits = linkedSetOf<String>()
         subs.forEach { sub -> if (sub.reason != null && sub.verdict != "read") hits += sub.reason }
         val allRead = subs.isNotEmpty() && subs.all { it.verdict == "read" }
-        val compoundBlocked = allRead && rawHasBareBackground(raw)
-        if (compoundBlocked) hits += "compound-blocked"
-        val readonly = allRead && !compoundBlocked
+        val compoundBlocked = false
+        val readonly = allRead
         val reason = when {
             readonly -> "全部为只读"
             compoundBlocked -> "全部子命令均为只读，被复合规则拦截"
@@ -96,7 +97,18 @@ object CommandClassifier {
             if (c == '|' && raw.getOrNull(i + 1) == '|') {
                 push(); i += 2; continue
             }
-            if (c == '|' || c == '&') {
+            if (c == '&') {
+                val prev = buf.lastOrNull()
+                val next = raw.getOrNull(i + 1)
+                // `>&` and `&>` are file-descriptor redirects, not a background split.
+                if (prev == '>' || next == '>') {
+                    buf.append(c)
+                    i++
+                    continue
+                }
+                push(); i++; continue
+            }
+            if (c == '|') {
                 push(); i++; continue
             }
             buf.append(c)
@@ -108,7 +120,7 @@ object CommandClassifier {
 
     private fun classifySegment(segment: String): Sub {
         if (hasSubst(segment)) return Sub(segment, "write", "subst")
-        if (hasRedirect(segment)) return Sub(segment, "write", "redirect")
+        if (redirectTargets(segment).any { !isNullSink(it) }) return Sub(segment, "write", "redirect")
         val words = words(segment)
         if (words.isEmpty()) return Sub(segment, "unknown", "empty")
         val first = words[0]
@@ -162,6 +174,19 @@ object CommandClassifier {
         if (first == "ip") {
             return if (second == "addr" || second == "route") Sub(segment, "read", null) else Sub(segment, "unknown", "ip")
         }
+        if (first == "tee") {
+            val files = words.drop(1).filter { !it.startsWith("-") }
+            return if (files.any { !isNullSink(it) }) Sub(segment, "write", "tee") else Sub(segment, "read", null)
+        }
+        if (first == "sort" && words.any { it == "-o" || it.startsWith("-o") && it.length > 2 || it == "--output" || it.startsWith("--output=") }) {
+            return Sub(segment, "write", "sort-o")
+        }
+        if (first == "uniq" && words.any { it == "-o" || it.startsWith("--output") }) return Sub(segment, "write", "uniq-o")
+        if (first == "date" && words.any { it == "-s" || it == "--set" || it.startsWith("--set=") }) {
+            return Sub(segment, "write", "date-s")
+        }
+        if (first == "awk") return awkVerdict(segment, words)
+        if (first == "sed") return sedVerdict(segment, words)
         if (first == "find") {
             return if (words.any { it == "-delete" || it == "-exec" || it == "-execdir" }) Sub(segment, "write", "find-exec")
             else Sub(segment, "read", null)
@@ -219,9 +244,25 @@ object CommandClassifier {
         return false
     }
 
-    private fun hasRedirect(segment: String): Boolean {
+    /** Targets of shell redirects outside quotes. `>&1` and `&>/dev/null` stay one operator. */
+    internal fun redirectTargets(segment: String): List<String> {
+        val out = mutableListOf<String>()
         var quote: Char? = null
         var i = 0
+        fun target(): String {
+            while (i < segment.length && segment[i].isWhitespace()) i++
+            if (i >= segment.length) return ""
+            if (segment[i] == '&') {
+                val start = i
+                i++
+                while (i < segment.length && segment[i].isDigit()) i++
+                if (i < segment.length && segment[i] == '-') i++
+                return segment.substring(start, i)
+            }
+            val start = i
+            while (i < segment.length && !segment[i].isWhitespace() && segment[i] != ';' && segment[i] != '|' && segment[i] != '&') i++
+            return segment.substring(start, i)
+        }
         while (i < segment.length) {
             val c = segment[i]
             if (quote != null) {
@@ -234,15 +275,59 @@ object CommandClassifier {
                 i++
                 continue
             }
-            if (c == '>') return true
+            if (c == '>' && segment.getOrNull(i + 1) == '>') {
+                i += 2
+                out += target()
+                continue
+            }
+            if (c == '&' && segment.getOrNull(i + 1) == '>') {
+                i += 2
+                if (segment.getOrNull(i) == '>') i++
+                out += target()
+                continue
+            }
+            if (c == '>' && segment.getOrNull(i + 1) == '&') {
+                i += 2
+                val fd = i < segment.length && (segment[i].isDigit() || segment[i] == '-')
+                if (fd) {
+                    val start = i
+                    if (segment[i] == '-') i++ else while (i < segment.length && segment[i].isDigit()) i++
+                    out += "&" + segment.substring(start, i)
+                } else {
+                    out += target()
+                }
+                continue
+            }
+            if (c == '>') {
+                i++
+                out += target()
+                continue
+            }
             i++
         }
+        return out
+    }
+
+    private fun isNullSink(target: String): Boolean {
+        if (target == "/dev/null" || target == "/dev/stdout" || target == "/dev/stderr") return true
+        if (target.startsWith("/dev/fd/") && target.drop(8).all { it.isDigit() }) return true
+        if (target.startsWith("&") && (target.drop(1).all { it.isDigit() } || target == "&-")) return true
         return false
     }
 
-    /** A trailing background operator after an otherwise read-only command. */
-    private fun rawHasBareBackground(raw: String): Boolean {
-        val trimmed = raw.trimEnd()
-        return trimmed.endsWith("&") && !trimmed.endsWith("&&")
+    private fun awkVerdict(segment: String, words: List<String>): Sub {
+        val program = words.drop(1).filter { !it.startsWith("-") }.joinToString(" ")
+        val write = program.contains("system(") || program.contains(">") ||
+            (program.contains("getline") && program.contains("|"))
+        return if (write) Sub(segment, "write", "awk") else Sub(segment, "read", null)
+    }
+
+    private fun sedVerdict(segment: String, words: List<String>): Sub {
+        if (words.any { it == "-i" || it.startsWith("-i") || it == "--in-place" }) return Sub(segment, "write", "sed-i")
+        val script = words.drop(1).filter { !it.startsWith("-") }.joinToString("\n")
+        val write = Regex("""(^|[;\n{])\s*[wW]\s+\S""").containsMatchIn(script) ||
+            Regex("""(^|[;\n{])\s*e(\s|$)""").containsMatchIn(script) ||
+            Regex("""/e(\s|$)""").containsMatchIn(script)
+        return if (write) Sub(segment, "write", "sed-write") else Sub(segment, "read", null)
     }
 }

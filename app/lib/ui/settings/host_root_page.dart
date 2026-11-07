@@ -56,10 +56,38 @@ class HostRootPage extends ConsumerWidget {
             onChanged: status.restarting ? null : (v) => toggle(true, v),
           ),
           SwitchListTile(
+            title: Text(l10n.hostRootAutoAllow),
+            subtitle: Text(l10n.hostRootAutoAllowHint),
+            value: status.autoAllowShell,
+            onChanged: (v) => ref.read(hostRootProvider.notifier).setAutoAllow(v),
+          ),
+          SwitchListTile(
             title: Text(l10n.hostRootChroot),
             subtitle: Text(l10n.hostRootChrootHint),
             value: false,
             onChanged: status.restarting ? null : (v) => toggle(false, true),
+          ),
+          Row(
+            children: [
+              TextButton(
+                onPressed: () async {
+                  final text = await HostRootController.methods.invokeMethod<String>('readAudit');
+                  if (!context.mounted) return;
+                  await showDialog<void>(
+                    context: context,
+                    builder: (dialog) => AlertDialog(
+                      title: Text(l10n.hostRootAudit),
+                      content: SingleChildScrollView(child: SelectableText(text ?? '')),
+                    ),
+                  );
+                },
+                child: Text(l10n.hostRootAudit),
+              ),
+              TextButton(
+                onPressed: () => HostRootController.methods.invokeMethod<Object?>('clearAudit'),
+                child: Text(l10n.hostRootAuditClear),
+              ),
+            ],
           ),
           SwitchListTile(
             title: Text(l10n.hostRootReadonlySkip),

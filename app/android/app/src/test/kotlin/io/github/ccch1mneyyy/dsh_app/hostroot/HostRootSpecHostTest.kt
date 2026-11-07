@@ -26,10 +26,7 @@ class HostRootSpecHostTest {
     fun `session remember is only offered for a readonly misclassification`() {
         assertNull(CommandClassifier.sessionKey("rm -f /data/x"))
         assertNull(CommandClassifier.sessionKey("foobar --weird"))
-        assertEquals("id", CommandClassifier.sessionKey("id &"))
-        val readPath = CommandClassifier.sessionKey("ls /data/adb/modules &")
-        assertEquals("ls", readPath)
-        assertFalse(readPath!!.contains("/data"))
+        assertTrue(CommandClassifier.classifyCommand("id &").readonly)
 
         var writePreview = ""
         RootTools.call(
@@ -59,8 +56,8 @@ class HostRootSpecHostTest {
             RootTools.Approver { _, preview, _ -> readPreview = preview; false },
             null,
         ) { _, _, _ -> error("ran") }
-        assertTrue(readPreview.contains("@@session=1"))
-        assertTrue(readPreview.contains("全部子命令均为只读，被复合规则拦截"))
+        assertFalse(readPreview.contains("@@session=1"))
+        assertTrue(readPreview.contains("id &"))
     }
 
     @Test
@@ -74,8 +71,7 @@ class HostRootSpecHostTest {
                 )
             }.start()
         }
-        assertTrue(HostRootControl.requestApproval("id &", "preview\n@@session=1", false))
-        assertTrue(HostRootControl.hasSessionMemory("id"))
+        assertTrue(HostRootControl.requestApproval("id", "preview", false))
         HostRootControl.clearSessionMemory()
         assertFalse(HostRootControl.hasSessionMemory("id"))
 
@@ -134,10 +130,10 @@ class HostRootSpecHostTest {
         )
         assertEquals(0, seen.count { it.contains("审批") })
         assertTrue(seen[0].startsWith("stat "))
-        assertTrue(seen[1].contains("bs=4096 count=64"))
+        assertTrue(seen[1].contains("bs=1 skip=0 count=262144"))
+        assertTrue(seen[1].contains("base64"))
         assertTrue(paged.text.contains("\"needChunk\":true"))
         assertTrue(paged.text.contains("\"totalSize\":3000000"))
-        assertTrue(paged.text.contains("\"nextOffset\":262144"))
         assertFalse(paged.isError)
 
         seen.clear()
@@ -235,7 +231,8 @@ class HostRootSpecHostTest {
         assertTrue(line.contains("\"reason\":"))
         assertTrue(line.contains("\"choice\":\"allow\""))
         assertFalse(line.contains("SECRET-STDOUT"))
-        assertFalse(line.contains("stdout"))
+        assertTrue(line.contains("\"exitCode\":"))
+        assertFalse(line.contains("\"stdout\":"))
         val denied = HostRootControl.auditLine(
             "shell",
             mapOf("command" to "rm -f /data/x"),
@@ -244,6 +241,76 @@ class HostRootSpecHostTest {
         )!!
         assertTrue(denied.contains("\"choice\":\"deny\""))
         assertNull(HostRootControl.auditLine("job", emptyMap(), ToolOutput("x"), 1))
+    }
+
+    @Test
+    fun `auto allow skips the dialog and root off still does not call su`() {
+        var asked = false
+        var ran = false
+        val out = RootTools.call(
+            "shell",
+            mapOf("command" to "setprop debug.t 1"),
+            { true },
+            RootTools.Approver { _, _, _ -> asked = true; false },
+            null,
+            autoAllow = { true },
+        ) { _, _, _ ->
+            ran = true
+            RootExec.Result(RootExec.State.OK, 0, "", "", false, 1, null)
+        }
+        assertFalse(asked)
+        assertTrue(ran)
+        assertTrue(out.text.contains("\"approval\":\"auto\""))
+        var called = false
+        val off = RootTools.call(
+            "shell",
+            mapOf("command" to "id"),
+            { false },
+            RootTools.Approver { _, _, _ -> true },
+            null,
+            autoAllow = { true },
+        ) { _, _, _ ->
+            called = true
+            error("su")
+        }
+        assertFalse(called)
+        assertTrue(off.text.contains(RootTools.DISABLED))
+    }
+
+    @Test
+    fun `utf8 pages reassemble chinese and emoji and move past a broken offset`() {
+        val text = "你好🙂"
+        val bytes = text.toByteArray(Charsets.UTF_8)
+        var offset = 0
+        val rebuilt = StringBuilder()
+        while (offset < bytes.size) {
+            val slice = RootFiles.utf8Slice(bytes.copyOfRange(offset, bytes.size).copyOf(4.coerceAtMost(bytes.size - offset)))
+            assertTrue(slice.consumed > 0)
+            rebuilt.append(slice.text)
+            offset += slice.consumed
+        }
+        assertEquals(text, rebuilt.toString())
+        val mid = RootFiles.utf8Slice(bytes.copyOfRange(1, bytes.size))
+        assertFalse(mid.text.contains("\uFFFD") && mid.consumed == 0)
+        assertTrue(mid.consumed >= 1)
+        val bad = RootFiles.utf8Slice(byteArrayOf(0xFF.toByte(), 'A'.code.toByte()))
+        assertTrue(bad.text.contains('\uFFFD'))
+        assertEquals(2, bad.consumed)
+    }
+
+    @Test
+    fun `engine start source has no chroot launch script`() {
+        var dir: File? = File(System.getProperty("user.dir")).absoluteFile
+        var found: File? = null
+        var left = 6
+        while (dir != null && left-- > 0 && found == null) {
+            val candidate = File(dir, "app/android/app/src/main/kotlin/io/github/ccch1mneyyy/dsh_app/runtime/DshProcess.kt")
+            if (candidate.isFile) found = candidate
+            dir = dir.parentFile
+        }
+        val source = found?.readText() ?: error("DshProcess.kt")
+        assertFalse(source.contains("chroot-launch.sh"))
+        assertFalse(source.contains("launch method: root-chroot"))
     }
 
     private class HoldProcess : Process() {

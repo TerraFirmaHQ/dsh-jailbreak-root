@@ -73,6 +73,7 @@ object RootTools {
         approver: Approver,
         spoolDir: File?,
         readonlySkip: () -> Boolean = { false },
+        autoAllow: () -> Boolean = { false },
         sessionAllows: (String) -> Boolean = { false },
         runner: (command: String, timeoutMs: Long, cwd: String?) -> RootExec.Result = { c, t, d ->
             RootExec.run(c, t, d, spoolDir)
@@ -114,9 +115,10 @@ object RootTools {
                 val timeout = ((args["timeoutMs"] as? Number)?.toLong() ?: SHELL_TIMEOUT_MS).coerceIn(500, RootExec.MAX_TIMEOUT_MS)
                 val cwd = args["cwd"] as? String
                 val key = CommandClassifier.sessionKey(command)
+                val auto = autoAllow()
                 val skip = classified.readonly && readonlySkip()
                 val remembered = key != null && sessionAllows(key)
-                if (!skip && !remembered) {
+                if (!auto && !skip && !remembered) {
                     val preview = previewOf(command, classified)
                     val ok = approver.approve(command, preview, verdict.level == RootPolicy.Level.PROTECTED)
                     if (!ok || !enabled()) return ToolOutput("$DENIED：没有执行。\n$preview", isError = true)
@@ -124,9 +126,11 @@ object RootTools {
                 if (args["background"] == true) {
                     val job = RootExec.startJob(command, timeout, cwd, spoolDir)
                         ?: return ToolOutput("后台任务已满（最多 2 个）。先查 job 或等当前任务结束。", isError = true)
-                    return ToolOutput("""{"job":${jsonString(job.id)},"bounded":true,"timeoutMs":$timeout}""")
+                    val body = """{"job":${jsonString(job.id)},"bounded":true,"timeoutMs":$timeout}"""
+                    return if (!auto) ToolOutput(body) else ToolOutput(body.removeSuffix("}") + ",\"approval\":\"auto\"}")
                 }
-                present(runner(command, timeout, cwd))
+                val ran = present(runner(command, timeout, cwd))
+                if (!auto) ran else ToolOutput(ran.text.removeSuffix("}") + ",\"approval\":\"auto\"}", isError = ran.isError)
             }
             "read_file" -> {
                 val path = args["path"] as? String ?: return ToolOutput("缺少 path", isError = true)
@@ -136,7 +140,12 @@ object RootTools {
                 val limit = (args["limit"] as? Number)?.toInt()?.coerceIn(1, RootFiles.MAX_CHUNK) ?: RootFiles.MAX_READ
                 val size = runner(RootFiles.sizeCommand(path), 8_000, null).stdout.trim().toLongOrNull()
                 val read = runner(RootFiles.readCommand(path, offset, limit), 15_000, null)
-                present(read, extra = if (size != null && offset + limit < size) chunkHint(size, offset + limit) else "")
+                val bytes = decodeRead(read.stdout)
+                val slice = RootFiles.utf8Slice(bytes)
+                val next = offset + slice.consumed
+                val shown = read.copy(stdout = slice.text)
+                val paging = size != null && next < size
+                present(shown, extra = if (paging) chunkHint(size, next) else "")
             }
             "write_file" -> {
                 val path = args["path"] as? String ?: return ToolOutput("缺少 path", isError = true)
@@ -220,6 +229,10 @@ ksud -V
             append("\"stdout\":").append(jsonString(stdout))
             append(",\"stderr\":").append(jsonString(result.stderr))
             append(",\"exitCode\":").append(result.exitCode)
+            append(",\"durationMs\":").append(result.durationMs)
+            val rawBytes = result.stdout.toByteArray(Charsets.UTF_8).size.toLong()
+            val spoolBytes = result.spool?.let { runCatching { File(it).length() }.getOrDefault(0L) } ?: 0L
+            append(",\"stdoutBytes\":").append(maxOf(rawBytes, spoolBytes))
             if (result.spool != null) append(",\"spoolPath\":").append(jsonString(result.spool))
             append(",\"state\":").append(jsonString(result.state.name.lowercase()))
             if (failure != null) append(",").append(failure)
@@ -334,7 +347,17 @@ ksud -V
     }
 
     private fun chunkHint(total: Long, next: Long) =
-        "\"needChunk\":true,\"totalSize\":$total,\"nextOffset\":$next"
+        "\"needChunk\":true,\"totalSize\":$total,\"nextOffset\":$next,\"paging\":true"
+
+    private fun decodeRead(stdout: String): ByteArray {
+        val trimmed = stdout.trim()
+        if (trimmed.isEmpty()) return ByteArray(0)
+        return try {
+            java.util.Base64.getMimeDecoder().decode(trimmed)
+        } catch (_: IllegalArgumentException) {
+            trimmed.toByteArray(Charsets.UTF_8)
+        }
+    }
 
     internal fun jsonString(s: String): String = buildString {
         append('"')

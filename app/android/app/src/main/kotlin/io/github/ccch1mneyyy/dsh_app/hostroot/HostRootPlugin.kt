@@ -58,6 +58,15 @@ class HostRootPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChan
                 HostRootControl.setPersona(app, call.argument<String>("text") ?: "")
                 result.success(null)
             }
+            "setAutoAllow" -> {
+                HostRootControl.setAutoAllow(app, call.argument<Boolean>("on") == true)
+                result.success(mapOf("ok" to true))
+            }
+            "readAudit" -> result.success(HostRootControl.readAudit(app))
+            "clearAudit" -> {
+                HostRootControl.clearAudit(app)
+                result.success(mapOf("ok" to true))
+            }
             "setReadonlySkip" -> {
                 HostRootControl.setReadonlySkip(app, call.argument<Boolean>("on") == true)
                 result.success(mapOf("ok" to true))

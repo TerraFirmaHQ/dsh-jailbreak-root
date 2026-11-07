@@ -20,6 +20,7 @@ object HostRootControl {
     const val K_CHROOT_FAILED = "chrootFailedRuntime"
     const val K_PERSONA = "persona"
     const val K_READONLY_SKIP = "readonlySkip"
+    const val K_AUTO_ALLOW = "autoAllowShell"
 
     data class Mounts(val prompt: Boolean, val persona: Boolean, val root: Boolean)
 
@@ -58,6 +59,7 @@ object HostRootControl {
             "promptOk" to (bytes != null && HostRootGuest.sha256(bytes) == HostRootGuest.EXPECTED_PROMPT_SHA256),
             "shellSandboxed" to false,
             "readonlySkip" to readonlySkip(context),
+            "autoAllowShell" to autoAllow(context),
             "selfCheck" to selfCheckSummary,
             "chrootMountsDisabled" to true,
         )
@@ -67,6 +69,46 @@ object HostRootControl {
 
     fun setReadonlySkip(context: Context, on: Boolean) {
         prefs(context).edit().putBoolean(K_READONLY_SKIP, on).apply()
+    }
+
+    /** Explicit user switch. Default off. Not migrated from any older key. */
+    fun autoAllow(context: Context): Boolean = prefs(context).getBoolean(K_AUTO_ALLOW, false)
+
+    fun setAutoAllow(context: Context, on: Boolean) {
+        prefs(context).edit().putBoolean(K_AUTO_ALLOW, on).apply()
+    }
+
+    fun readAudit(context: Context): String =
+        runCatching { File(context.filesDir, "root_audit.jsonl").readText() }.getOrDefault("")
+
+    fun clearAudit(context: Context) {
+        runCatching { File(context.filesDir, "root_audit.jsonl").delete() }
+    }
+
+    /** Diagnostics only. Command text and output stay out. */
+    fun auditMeta(context: Context): List<Map<String, Any?>> {
+        val file = File(context.filesDir, "root_audit.jsonl")
+        if (!file.isFile) return emptyList()
+        return file.readLines().takeLast(40).mapNotNull { line ->
+            if (!line.startsWith("{")) return@mapNotNull null
+            fun field(name: String): String? =
+                Regex(""""$name":("(?:\\.|[^"\\])*"|-?\d+|null)""").find(line)?.groupValues?.get(1)?.trim('"')
+            val cmd = field("cmd") ?: return@mapNotNull null
+            mapOf(
+                "cmdHash" to sha256Short(cmd),
+                "verdict" to field("verdict"),
+                "choice" to field("choice"),
+                "exitCode" to field("exitCode"),
+                "durationMs" to field("durationMs"),
+                "bytes" to field("stdoutBytes"),
+                "paging" to field("paging"),
+            )
+        }
+    }
+
+    private fun sha256Short(text: String): String {
+        val digest = java.security.MessageDigest.getInstance("SHA-256").digest(text.toByteArray())
+        return digest.joinToString("") { "%02x".format(it) }.take(16)
     }
 
     fun clearSessionMemory() {
@@ -198,6 +240,7 @@ object HostRootControl {
             },
             spoolDir = File(context.cacheDir, "hostroot-spool"),
             readonlySkip = { readonlySkip(context) },
+            autoAllow = { autoAllow(context) },
             sessionAllows = { key -> sessionMemory.contains(key) },
         ).also { out -> audit(context, name, args, out) }
 
@@ -249,6 +292,7 @@ object HostRootControl {
         val classified = (args["command"] as? String)?.let { CommandClassifier.classifyCommand(it) }
         val choice = when {
             out.text.contains(RootTools.DENIED) -> "deny"
+            out.text.contains("\"approval\":\"auto\"") -> "auto"
             out.isError -> "error"
             else -> "allow"
         }
@@ -258,6 +302,13 @@ object HostRootControl {
             append(",\"verdict\":").append(RootTools.jsonString(classified?.reason ?: name))
             append(",\"reason\":").append(RootTools.jsonString(classified?.hit?.joinToString(",") ?: ""))
             append(",\"choice\":").append(RootTools.jsonString(choice))
+            val exit = Regex(""""exitCode":(-?\d+)""").find(out.text)?.groupValues?.get(1)
+            append(",\"exitCode\":").append(exit ?: "null")
+            val duration = Regex(""""durationMs":(-?\d+)""").find(out.text)?.groupValues?.get(1)
+            if (duration != null) append(",\"durationMs\":").append(duration)
+            val bytes = Regex(""""stdoutBytes":(-?\d+)""").find(out.text)?.groupValues?.get(1)
+            if (bytes != null) append(",\"stdoutBytes\":").append(bytes)
+            if (out.text.contains("\"paging\":true")) append(",\"paging\":true")
             append("}")
         }
     }

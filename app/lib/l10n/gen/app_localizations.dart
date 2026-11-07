@@ -14141,8 +14141,32 @@ abstract class L10n {
   /// No description provided for @hostRootApprovalTitle.
   ///
   /// In zh, this message translates to:
-  /// **'允许这条 root 命令？'**
+  /// **'允许执行？'**
   String get hostRootApprovalTitle;
+
+  /// No description provided for @hostRootAutoAllow.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动允许 root 命令（不再逐条询问）'**
+  String get hostRootAutoAllow;
+
+  /// No description provided for @hostRootAutoAllowHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认关闭。打开后 shell 不再逐条询问，仍会分类并写入本机审计。关闭后恢复询问。不会因此调用 su。'**
+  String get hostRootAutoAllowHint;
+
+  /// No description provided for @hostRootAudit.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看审计'**
+  String get hostRootAudit;
+
+  /// No description provided for @hostRootAuditClear.
+  ///
+  /// In zh, this message translates to:
+  /// **'清空审计'**
+  String get hostRootAuditClear;
 
   /// No description provided for @hostRootApprovalProtected.
   ///
