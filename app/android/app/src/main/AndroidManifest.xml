@@ -7,7 +7,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <!-- The live activity (notify/LiveActivity.kt): Android 16 QPR1+ promotes it to a Live Update.
          Normal, granted at install; older systems skip a permission they don't define. -->
     <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
@@ -274,15 +273,20 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".notify.NotifyActionReceiver" android:exported="false" />
-        <receiver android:name=".rony.RootApprovalReceiver" android:exported="false" />
-        <activity
-            android:name=".rony.RootApprovalActivity"
+        <!-- 伙伴小屋 on the home screen (companion/CompanionWidget.kt). -->
+        <receiver
+            android:name=".companion.CompanionWidgetProvider"
             android:exported="false"
-            android:excludeFromRecents="true"
-            android:taskAffinity="io.github.ronyfork.dsh_app.root_approval"
-            android:launchMode="standard"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+            android:label="@string/companion_widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/companion_widget_info" />
+        </receiver>
+
+        <receiver android:name=".notify.NotifyActionReceiver" android:exported="false" />
         <receiver android:name=".phone.a11y.A11yKeeper$Receiver" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
@@ -324,6 +328,11 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- 伙伴小屋's voice (CompanionVoicePlugin): finding the system's speech engine once the
+             target SDK reaches 30. Harmless at 28. -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE"/>
         </intent>
     </queries>
 </manifest>

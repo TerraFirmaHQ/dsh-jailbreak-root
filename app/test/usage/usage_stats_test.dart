@@ -77,12 +77,25 @@ Future<Map<String, Object?>> stored() async {
 void main() {
   final wasActive = UsageBuild.active;
   setUp(() {
+    UsageStatsController.suppressUpload = false;
     UsageBuild.active = true;
     http = FakeUsageHttp();
     now = DateTime(2026, 10, 28, 9);
     resume = null;
   });
-  tearDown(() => UsageBuild.active = wasActive);
+  tearDown(() {
+    UsageStatsController.suppressUpload = true;
+    UsageBuild.active = wasActive;
+  });
+
+  test('the locked product path does not count or upload', () async {
+    UsageStatsController.suppressUpload = true;
+    final c = await start(prefs: noticed);
+    await c.count(UsageCount.turns, 3);
+    await c.comeBack();
+    expect(http.requests, isEmpty);
+    expect(http.urls, isEmpty);
+  });
 
   test('nothing is counted or sent before the person has seen the switch', () async {
     final c = await start();

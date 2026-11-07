@@ -155,7 +155,10 @@ class UsageStatsController extends Notifier<UsageStatsState> {
   }
 
   /// One more [c] today.
-  void count(UsageCount c) => _record((ledger, now) => ledger.count(c, now));
+  void count(UsageCount c) {
+    if (_editionLocked()) return;
+    _record((ledger, now) => ledger.count(c, now));
+  }
 
   /// The host's plugin list was read: [installed] plugins on it.
   void plugins(int installed) => _record((ledger, now) => ledger.plugins(installed, now));
@@ -212,6 +215,7 @@ class UsageStatsController extends Notifier<UsageStatsState> {
   /// The app came to the front: today is a day in use, and the days before
   /// that haven't gone out yet go now.
   Future<void> foreground() async {
+    if (_editionLocked()) return;
     if (!UsageBuild.active) return;
     await _loaded;
     if (!ref.mounted || !state.collecting) return;
@@ -224,7 +228,15 @@ class UsageStatsController extends Notifier<UsageStatsState> {
   /// the first failure (and for the day at a 404). Only one run at a time.
   Future<void> send() => _sending ??= _send().whenComplete(() => _sending = null);
 
+  /// Production stays true. Protocol tests set this false to exercise the
+  /// sender that the locked edition does not call.
+  @visibleForTesting
+  static bool suppressUpload = true;
+
+  bool _editionLocked() => suppressUpload;
+
   Future<void> _send() async {
+    if (_editionLocked()) return;
     if (!UsageBuild.active || !ref.mounted || !state.collecting) return;
     final now = _now();
     if (_failedAt case final at? when !now.isBefore(at) && now.difference(at) < retryGap) return;

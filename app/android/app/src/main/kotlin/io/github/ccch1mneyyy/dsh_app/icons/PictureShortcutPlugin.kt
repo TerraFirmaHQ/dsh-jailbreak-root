@@ -15,6 +15,7 @@ import android.os.Looper
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import io.github.ccch1mneyyy.dsh_app.i18n.AppStrings
 import io.github.ccch1mneyyy.dsh_app.shortcuts.EntryActivity
 import io.github.ccch1mneyyy.dsh_app.shortcuts.ShortcutsPlugin
 
@@ -126,7 +127,7 @@ internal object PictureShortcuts {
 
     fun label(raw: String?): String {
         val clean = raw.orEmpty().replace(Regex("\\s+"), " ").trim()
-        if (clean.isEmpty()) return "DSH Go"
+        if (clean.isEmpty()) return AppStrings.APP_NAME
         return if (clean.codePointCount(0, clean.length) <= MAX_LABEL) clean
         else clean.substring(0, clean.offsetByCodePoints(0, MAX_LABEL))
     }

@@ -83,8 +83,9 @@ object GuestSetup {
     private const val DIAGNOSTICS_FILE = "root/.dsh/dsh-app/diagnostics.md"
 
     /** Writes [markdown] where the engine's file tools can read it; returns the host file. */
-    fun writeDiagnostics(rootfs: File, markdown: String): File {
-        val file = File(rootfs, DIAGNOSTICS_FILE)
+    fun writeDiagnostics(rootfs: File, markdown: String, safe: Boolean = false): File {
+        val path = if (safe) "${SafeMode.HOME.removePrefix("/")}/dsh-app/diagnostics.md" else DIAGNOSTICS_FILE
+        val file = File(rootfs, path)
         val dir = file.parentFile ?: throw IOException("no diagnostics directory")
         if (!dir.isDirectory && !dir.mkdirs()) throw IOException("cannot create ${dir.path}")
         val temp = File(dir, ".diagnostics.md.dsh-tmp")
@@ -100,6 +101,7 @@ object GuestSetup {
         phoneControl: Boolean = false,
         visualReplies: Boolean = true,
         directEngine: Boolean = false,
+        hostRoot: Boolean = false,
     ) {
         try {
             val file = File(rootfs, "root/.dsh/AGENTS.md")
@@ -121,7 +123,7 @@ object GuestSetup {
                 },
             ) + (if (visualReplies) DSH_UI_SECTION else "") +
                 (if (phoneControl) PhoneGuest.AGENTS_SECTION else "") +
-                (io.github.ccch1mneyyy.dsh_app.rony.RonyControl.peek()?.agentsSection() ?: "") +
+                (if (hostRoot) io.github.ccch1mneyyy.dsh_app.hostroot.HostRootGuest.AGENTS_SECTION else "") +
                 DIAGNOSTICS_SECTION.replace(
                     "{PATH}",
                     if (directEngine) "${rootfs.canonicalPath}/root/.dsh/dsh-app/diagnostics.md"

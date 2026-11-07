@@ -4,6 +4,7 @@
 // (adj_copy_counterexample_test); nothing here depends on the time zone the
 // test runs in, so run it under several TZ values.
 
+import 'package:dsh_app/l10n/l10n.dart';
 import 'package:dsh_app/ui/chat/activity_copy.dart';
 import 'package:dsh_app/ui/chat/run_info.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -140,11 +141,15 @@ void main() {
     test('waiting, writing, thinking through the 30 s, 1 min and 5 min pools', () {
       for (final start in starts) {
         final turnStart = plainStart(start.subtract(const Duration(seconds: 13)));
-        for (final kind in [ActivityKind.waiting, ActivityKind.writing, ActivityKind.thinking]) {
+        for (final kind in [ActivityKind.writing, ActivityKind.thinking]) {
           final a = RunActivity(kind: kind, title: '…', since: start, turnStart: turnStart);
           // Up to 6 min 40 s: every tier change, but short of the 10-minute reminder.
           expectNoRepeat(shown(a, 0, 100), '$kind $start');
         }
+        final waiting = RunActivity(kind: ActivityKind.waiting, title: '…', since: start, turnStart: turnStart);
+        // 45s with no token replaces the rotating line with one stall sentence.
+        expectNoRepeat(shown(waiting, 0, 10), 'waiting $start');
+        expect(shown(waiting, 12, 14).toSet(), {appL10n.activityReplyStalled});
       }
     });
 

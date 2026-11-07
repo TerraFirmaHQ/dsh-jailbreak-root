@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dsh_app/state/app_info.dart';
 import 'package:dsh_app/state/connection_state.dart';
 import 'package:dsh_app/state/hosts_state.dart';
 import 'package:dsh_app/state/notify_state.dart';
@@ -287,7 +288,7 @@ void main() {
     await notify.settle();
     expect(notifyChannel.shown, hasLength(1));
     final post = notifyChannel.shown.single;
-    expect(post.title, 'DSH Go');
+    expect(post.title, AppInfo.name);
     expect(post.host, HostRef.local);
     expect(post.sessionId, 's1');
     expect(post.eventId, 'q1');

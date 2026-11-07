@@ -565,6 +565,11 @@ ActivityFlavor? activityFlavor(RunActivity a, DateTime now) {
       break;
   }
 
+  // No token yet. Cute waiting lines hide a stuck request; say so instead.
+  if (a.kind == ActivityKind.waiting && elapsed >= const Duration(seconds: 45)) {
+    return (text: appL10n.activityReplyStalled, source: FlavorSource.phrase);
+  }
+
   final narration = a.narration;
   if (narration != null) {
     return (text: narration, source: FlavorSource.narration);

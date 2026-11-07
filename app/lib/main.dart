@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -9,8 +8,6 @@ import 'app.dart';
 import 'dev/frame_probe.dart';
 import 'diagnostics/app_error_log.dart';
 import 'launch/launch_state.dart';
-import 'rony/refresh_motion.dart';
-import 'rony/rony_channel.dart' show loadRonyHumanlike;
 import 'state/locale_state.dart';
 import 'ui/common/third_party_licenses.dart';
 import 'ui/settings/font_licenses.dart';
@@ -19,10 +16,9 @@ import 'ui/theme/theme.dart';
 Future<void> main() => runWithFrameProbe(_startApp);
 
 Future<void> _startApp() async {
+  if (!frameProbeEnabled) SteadyFrameBinding();
   WidgetsFlutterBinding.ensureInitialized();
   appErrorCapture.install();
-  RefreshMotion.install();
-  unawaited(loadRonyHumanlike());
   // The first frame is already in the chosen language (设置 → 语言), and is the launch
   // window's own picture (启动画面, lib/launch/launch_state.dart).
   await Future.wait([AppLanguageController.load(), LaunchController.begin()]);

@@ -42,13 +42,12 @@ Shows your DeepSeek account or API key and balance; tap it to open your account.
 - **Language**: **System**, **简体中文** or **English**.
 - **Notifications**: turn on **Allow notifications**, then choose **Turn complete**, **Error or stopped**, **Needs approval** and **Questions for you**. Alerts from remote hosts need the app running and the connection online. Sound, banners and the lock screen are set in system settings.
 - **Voice input**: which recognition turns speech into text.
-- **Performance**: **Auto**, **Full** or **Light**, plus glass blur, interface motion and **Refresh rate** (Auto / Max / System).
+- **Performance**: **Auto**, **Full** or **Light**, plus glass blur, interface motion, fluid motion and **Refresh rate** (Auto / Max / System).
 - **Background running**: see [FAQ](11-faq.md). Until it's set up, the row says so on the right.
 - **Privacy and sharing**:
   - **My shared links**: see [Sharing and replay](07-sharing.md).
   - **Share configuration**: select the current host's settings, plugins, skills and personal preferences to share, and share them as a link, QR code or file.
-  - **Send anonymous usage stats**: on by default, off anytime; see [FAQ](11-faq.md).
-  - **Upload chat logs to DeepSeek**: shown when the current host has it.
+  - This edition does not send anonymous usage stats and does not upload chat logs.
 
 ## Hosts
 
@@ -61,9 +60,8 @@ Shows your DeepSeek account or API key and balance; tap it to open your account.
 - **Community**: chat groups and the forum.
 - **Diagnostics**: see [FAQ](11-faq.md).
 - **About DSH Go**:
-  - **Version**: the app version, such as 0.9.2 (10251234), with the build number in parentheses. When there's a new version, this row on the Settings page says **Update available**.
-  - **Check for updates**: when there's a new version, the update window opens. Read **What’s new**, tap **Update now**, and once the download is verified, tap **Install** and confirm in the system prompt. DSH Go closes to install; your chats and settings stay. To pass on a version, tap **Skip this version**. The first time, you'll need to allow DSH Go to install apps. If the installed app has a different signature (usually a test build), it can't be updated in place: uninstall it first, which erases your chats, Linux environment and settings.
-  - **Check automatically**: on by default; checks when the app opens, at most once a day. A new version opens the update window, unless you're on another page or typing, in which case **Check for updates** shows it. Skipped versions aren't offered again, and nothing downloads or installs on its own.
+  - **Version**: the app version, such as 1.0.12 (11071721), with the build number in parentheses.
+  - **This build is a locked version**: this edition does not check for updates, show an update prompt, or download a package.
   - **Open-source licenses**.
 
 ## Permissions
