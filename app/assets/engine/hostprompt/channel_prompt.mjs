@@ -43,23 +43,27 @@ export function readPolicy(text) {
   }
 }
 
-export function providerIdOf(context, assembly) {
-  const queue = []
-  if (context != null) queue.push(context)
-  if (assembly != null) queue.push(assembly)
-  const seen = new Set()
-  let depth = 0
-  while (queue.length > 0 && depth < 8) {
-    const cur = queue.shift()
-    depth += 1
-    if (cur == null || typeof cur !== 'object' || seen.has(cur)) continue
-    seen.add(cur)
-    if (typeof cur.providerId === 'string' && cur.providerId.length > 0) return cur.providerId
-    if (typeof cur.provider === 'string' && cur.provider.length > 0) return cur.provider
-    for (const key of ['agent', 'session', 'model', 'selection', 'request']) {
-      if (cur[key] != null) queue.push(cur[key])
+/**
+ * The selected route on one assemble call.
+ * dsh 0.2.2-rc.1 passes `{ modelSelection, agent, scope, signal, toolSet }`
+ * from `dsh-agent-loop` `preStep`. The route is `modelSelection.provider`.
+ * A missing selection is null. Callers must not invent the default channel.
+ */
+export function providerIdOf(context) {
+  const selected = context?.modelSelection?.provider
+  if (typeof selected === 'string' && selected.length > 0) return selected
+  const current = context?.agent?.model?.current
+  if (typeof current === 'function') {
+    let live
+    try {
+      live = current.call(context.agent.model)
+    } catch {
+      live = undefined
     }
+    if (typeof live?.provider === 'string' && live.provider.length > 0) return live.provider
   }
+  const configured = context?.agent?.options?.provider
+  if (typeof configured === 'string' && configured.length > 0) return configured
   return null
 }
 
@@ -89,12 +93,16 @@ export function rewriteSections(sections, channelText, api) {
   return kept
 }
 
-/** Outbound copy. [history] is not modified. Old system rows are not sent again. */
-export function projectRequest(history, systemText, api) {
+/**
+ * Outbound copy. [history] is not modified.
+ * Only a system row whose text is exactly [replacedGlobal] is left out.
+ * Other system rows, including a user note or a tool instruction, stay.
+ */
+export function projectRequest(history, systemText, api, replacedGlobal) {
   const rest = []
   const source = Array.isArray(history) ? history : []
   for (const message of source) {
-    if (message != null && message.role === 'system') continue
+    if (message != null && message.role === 'system' && typeof replacedGlobal === 'string' && message.content === replacedGlobal) continue
     rest.push(message)
   }
   const send = typeof systemText === 'string' && systemText.length > 0

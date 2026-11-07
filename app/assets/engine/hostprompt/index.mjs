@@ -41,7 +41,8 @@ export function apply(ctx) {
     } catch {
       policy = { channels: {} }
     }
-    const id = providerIdOf(context, value)
+    const id = providerIdOf(context)
+    if (id == null) return value
     const record = recordFor(policy, id)
     const channel = effectiveChannelPrompt(record.systemPrompt, record.useBuiltinPrompt, text)
     const sections = rewriteSections(value?.sections, channel, record.api)

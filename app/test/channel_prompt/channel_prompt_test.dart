@@ -72,25 +72,31 @@ void main() {
   });
 
   test('two channels do not share a request body', () {
+    const tool = 'Check the [exit code: N] marker on every bash result; investigate failures before moving on.';
     const history = [
       {'role': 'system', 'content': 'OLD-GLOBAL'},
+      {'role': 'system', 'content': 'USER-NOTE'},
+      {'role': 'system', 'content': tool},
       {'role': 'user', 'content': 'hi'},
     ];
     final before = jsonEncode(history);
-    final a = projectRequest(history, 'PROMPT-A', 'openai-completions');
-    final b = projectRequest(history, null, 'openai-completions');
+    final a = projectRequest(history, 'PROMPT-A', 'openai-completions', replacedGlobal: 'OLD-GLOBAL');
+    final b = projectRequest(history, null, 'openai-completions', replacedGlobal: 'OLD-GLOBAL');
     expect(jsonEncode(history), before);
-    expect(a.messages.map((m) => m['content']).join(), contains('PROMPT-A'));
-    expect(a.messages.where((m) => m['role'] == 'system'), hasLength(1));
+    expect(a.messages.first['content'], 'PROMPT-A');
+    expect(a.messages.map((m) => m['content']), containsAll(['USER-NOTE', tool, 'hi']));
+    expect(a.messages.map((m) => m['content']), isNot(contains('OLD-GLOBAL')));
     expect(a.messages.map((m) => m['content']).join(), isNot(contains('PROMPT-B')));
-    expect(b.messages.any((m) => m['role'] == 'system'), isFalse);
-    expect(b.messages.single['content'], 'hi');
+    expect(b.messages.map((m) => m['content']), containsAll(['USER-NOTE', tool, 'hi']));
+    expect(b.messages.map((m) => m['content']), isNot(contains('OLD-GLOBAL')));
     final anthropic = projectRequest(history, 'PROMPT-A', 'anthropic-messages');
     expect(anthropic.system, 'PROMPT-A');
-    expect(anthropic.messages.single['role'], 'user');
-    final responses = projectRequest(history, 'PROMPT-A', 'openai-responses');
+    expect(anthropic.messages.any((m) => m['role'] == 'user' && m['content'] == 'hi'), isTrue);
+    expect(anthropic.messages.any((m) => m['content'] == 'USER-NOTE'), isTrue);
+    final responses = projectRequest(history, 'PROMPT-A', 'openai-responses', replacedGlobal: 'OLD-GLOBAL');
     expect(responses.instructions, 'PROMPT-A');
-    expect(responses.messages.any((m) => m['role'] == 'system'), isFalse);
+    expect(responses.messages.map((m) => m['content']), containsAll(['USER-NOTE', tool, 'hi']));
+    expect(responses.messages.map((m) => m['content']), isNot(contains('OLD-GLOBAL')));
   });
 
   test('chat completions merge system sections in order and drop the old global prompt', () {

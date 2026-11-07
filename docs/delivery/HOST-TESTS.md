@@ -48,7 +48,13 @@ flutter test test/channel_prompt/channel_prompt_test.dart test/channel_prompt/ch
 flutter test test/settings/index/index_sync_test.dart --name "能力里能看到 Root"
 ```
 
-`channel_prompt` 的 Dart 测试 10 项（含 txt/md、大小写扩展、中文 emoji、CRLF、5000 字、BOM、非法 UTF-8、空文件、路径不当正文）和页面 4 项（取消替换、不保存重开仍是原文、保存后 JSON 含导入全文、BOM 与取消空文件不写）通过。审批 3 项、人设 2 项、设置页那一项通过。Node 7 项通过。Gradle 的 `CommandClassifierTest`、`HostRootSpecHostTest`、`PromptMountTest` 在导入文件之前那一轮 `BUILD SUCCESSFUL`，导入没有改分类器。没有把外部模型的 HTTP 体跑出来。
+`channel_prompt` 的 Dart 测试 10 项（含 txt/md、大小写扩展、中文 emoji、CRLF、5000 字、BOM、非法 UTF-8、空文件、路径不当正文）和页面 4 项（取消替换、不保存重开仍是原文、保存后 JSON 含导入全文、BOM 与取消空文件不写）通过。审批 3 项、人设 2 项、设置页那一项通过。Node 7 项通过。Gradle 的 `CommandClassifierTest`、`HostRootSpecHostTest`、`PromptMountTest` 在导入文件之前那一轮 `BUILD SUCCESSFUL`，导入没有改分类器。真引擎请求捕获：
+
+```bash
+node --test runtime/tests/channel-prompt-live.test.mjs
+```
+
+前缀是本机 `runtime/.work/x86_64/dsh-prefix` 里的 `@deepseek-ai/dsh@0.2.2-rc.1`。假端点 `127.0.0.1`，密钥 `synthetic-local-only`。1 项通过：A/B、显式空、同一会话从 A 切到 B、并发两个会话，请求都进 `/v1/chat/completions`。bash 工具句还在。会话 A 的 jsonl 在会话 B 运行期间哈希不变。没有访问外部模型。
 
 本轮重跑：
 

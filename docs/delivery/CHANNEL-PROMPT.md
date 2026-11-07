@@ -45,7 +45,7 @@ B 文本为 ""           没有 system
                       user: hi
 ```
 
-历史 `[{"role":"system","content":"OLD"},{"role":"user","content":"hi"}]` 在调用前后字节相同。发出去的副本不再带 OLD。
+历史数组本身不被改写。副本里只拿掉内容恰好等于已辨识旧全局段的那一条 system。用户自己的 system 笔记和工具说明留在副本里。引擎真正发出的请求不走这个辅助函数，见下面的真引擎记录。
 
 ## 校验
 
@@ -57,6 +57,23 @@ B 文本为 ""           没有 system
 
 读到的纯文本整段替换草稿，不接在原来的字后面，也不当 Markdown 渲染。点保存才写入。取消选择、取消替换、读失败、扩展名不对、非法 UTF-8、BOM、首行是空的、以 ``` 结尾，都留着原来的草稿，并标明原因。BOM 不会被悄悄删掉。空文件是显式空草稿；若当前草稿非空，先确认再替换。导入不改「使用内置系统提示词」。不上传，也不另要存储权限。
 
-## 没跑成的
+## 真引擎 0.2.2-rc.1
 
-没有 `DSH_PREFIX`，所以没有把真引擎的 HTTP 体打到外部模型上。组装函数是本机测的。引擎如果在 `system-prompt/assemble` 的 context 里不带 provider，钩子按 null/true 用默认，不用另一家渠道的文本。会话 jsonl 没有被这轮代码打开或改写。真机没跑。
+`dsh-agent-loop` 的 `preStep` 调用 `systemPrompt.assemble`，上下文是 `{ agent, scope: agent, signal, modelSelection, toolSet }`。`modelSelection` 来自 `agent.model.current()`，字段是 `{ provider, model }`。选中渠道就是 `modelSelection.provider`。以前的查找没有读这个字段，缺省时会按 null/true 用默认文本，等于每条请求都落回默认。这一处已改：先读 `modelSelection.provider`，再读 `agent.model.current()`，最后才是创建时的 `agent.options.provider`。三个都没有时，钩子不改装配结果，不再假装这是「没设置过的渠道」。
+
+本机前缀 `runtime/.work/x86_64/dsh-prefix` 里的包版本是 `@deepseek-ai/dsh@0.2.2-rc.1`。测试命令：
+
+```bash
+node --test runtime/tests/channel-prompt-live.test.mjs
+```
+
+模型端点是 `127.0.0.1` 上的假 OpenAI Chat Completions。密钥是 `synthetic-local-only`。没有访问外部模型。结果：1 项通过。
+
+- 渠道 A 的 `/v1/chat/completions` 含 `PROMPT-A-CHANNEL` 和 bash 工具句 `Check the [exit code: N] marker...`，不含 `PROMPT-B-CHANNEL`，也不含默认文件开头 `You are rony`。
+- 渠道 B 只有 `PROMPT-B-CHANNEL` 和同一句工具说明。
+- 显式空字符串的渠道不含默认原文，也不含 A/B 文本，工具句还在。
+- 会话 A 跑完后的 jsonl 哈希，在会话 B 跑完时不变。
+- 同一会话从 A 切到 B 之后的下一次请求含 B、不含 A。
+- 两个会话同时 prompt，请求各自只带自己的渠道文本。
+
+引擎自己的 `SystemPromptProjection` 仍可能在 `in-history` 时追加一条新的 `system/message` 事件。那是追加，不是改写已有行。这次测试看到的是另一会话的文件字节不变，以及切换后的 HTTP 不再带旧渠道文本。用户消息和工具段没有被钩子删掉。真机没跑。

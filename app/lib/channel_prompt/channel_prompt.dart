@@ -193,12 +193,19 @@ class ProjectedRequest {
   final List<Map<String, Object?>> messages;
 }
 
-/// A new request. [history] is not written. Previous system rows are left in the
-/// stored history and are not sent again on top of the channel prompt.
-ProjectedRequest projectRequest(List<Map<String, Object?>> history, String? systemText, String? api) {
+/// A new request. [history] is not written.
+/// Only a system row whose content equals [replacedGlobal] is left out of the copy.
+/// A user system note or a tool instruction stays.
+ProjectedRequest projectRequest(
+  List<Map<String, Object?>> history,
+  String? systemText,
+  String? api, {
+  String? replacedGlobal,
+}) {
   final rest = <Map<String, Object?>>[
     for (final message in history)
-      if (message['role'] != 'system') Map<String, Object?>.from(message),
+      if (!(message['role'] == 'system' && replacedGlobal != null && message['content'] == replacedGlobal))
+        Map<String, Object?>.from(message),
   ];
   final send = systemText != null && systemText.isNotEmpty;
   if (api == 'anthropic-messages') {

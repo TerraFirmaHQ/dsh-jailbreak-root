@@ -29,14 +29,24 @@ test('a missing channel is null and builtin on, and another channel is not used'
   assert.equal(recordFor(policy, 'b').useBuiltinPrompt, true)
   assert.equal(recordFor(policy, null).systemPrompt, null)
   assert.equal(effectiveChannelPrompt(recordFor(policy, 'a').systemPrompt, recordFor(policy, 'a').useBuiltinPrompt, fallback), 'PROMPT-A')
-  const history = [{ role: 'system', content: 'OLD' }, { role: 'user', content: 'hi' }]
+  const tool = 'Check the [exit code: N] marker on every bash result; investigate failures before moving on.'
+  const history = [
+    { role: 'system', content: 'OLD' },
+    { role: 'system', content: 'USER-NOTE' },
+    { role: 'system', content: tool },
+    { role: 'user', content: 'hi' },
+  ]
   const before = JSON.stringify(history)
-  const a = projectRequest(history, 'PROMPT-A', 'openai-completions')
-  const b = projectRequest(history, null, 'anthropic-messages')
+  const a = projectRequest(history, 'PROMPT-A', 'openai-completions', 'OLD')
+  const b = projectRequest(history, null, 'anthropic-messages', 'OLD')
   assert.equal(JSON.stringify(history), before)
-  assert.equal(a.messages.filter((m) => m.role === 'system').length, 1)
   assert.equal(a.messages[0].content, 'PROMPT-A')
+  assert.equal(a.messages.some((m) => m.content === 'USER-NOTE'), true)
+  assert.equal(a.messages.some((m) => m.content === tool), true)
+  assert.equal(a.messages.some((m) => m.content === 'OLD'), false)
   assert.equal(b.system, undefined)
+  assert.equal(b.messages.some((m) => m.content === 'USER-NOTE'), true)
+  assert.equal(b.messages.some((m) => m.content === tool), true)
   assert.equal(b.messages.some((m) => JSON.stringify(m).includes('PROMPT-A')), false)
 })
 
@@ -55,8 +65,17 @@ test('chat completions merge in order and leave the input sections alone', () =>
   assert.deepEqual(rewriteSections(sections, '', 'anthropic-messages').map((s) => s.text), ['PERSONA', 'call the tool'])
 })
 
-test('provider id comes from the request context and does not walk into a stale sibling', () => {
-  assert.equal(providerIdOf({ agent: { model: { provider: 'alpha' } } }, {}), 'alpha')
-  assert.equal(providerIdOf({}, { providerId: 'beta' }), 'beta')
-  assert.equal(providerIdOf(null, null), null)
+test('provider id is the selected route on the 0.2.2-rc.1 assemble context', () => {
+  const selected = { provider: 'channel-a', model: 'fixture' }
+  assert.equal(providerIdOf({
+    agent: { options: { provider: 'other' } },
+    scope: {},
+    modelSelection: selected,
+  }), 'channel-a')
+  assert.equal(providerIdOf({
+    agent: { model: { current() { return { provider: 'channel-b', model: 'fixture' } } } },
+  }), 'channel-b')
+  assert.equal(providerIdOf({ agent: { options: { provider: 'channel-c' } } }), 'channel-c')
+  assert.equal(providerIdOf({ agent: { model: { provider: 'not-a-selection' } } }), null)
+  assert.equal(providerIdOf(null), null)
 })
