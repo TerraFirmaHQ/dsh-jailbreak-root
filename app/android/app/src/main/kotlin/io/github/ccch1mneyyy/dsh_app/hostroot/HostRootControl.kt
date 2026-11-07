@@ -78,6 +78,26 @@ object HostRootControl {
         prefs(context).edit().putBoolean(K_AUTO_ALLOW, on).apply()
     }
 
+    @Volatile
+    var lastRootfs: File? = null
+
+    fun channelPromptFile(context: Context) = File(context.filesDir, "channel_prompts.json")
+
+    fun readChannelPrompts(context: Context): String =
+        runCatching { channelPromptFile(context).readText() }.getOrDefault("")
+
+    fun writeChannelPrompts(context: Context, json: String) {
+        channelPromptFile(context).writeText(json)
+        val rootfs = lastRootfs
+        if (rootfs != null) runCatching { syncChannelPolicy(context, rootfs) }
+    }
+
+    private fun syncChannelPolicy(context: Context, rootfs: File) {
+        val file = channelPromptFile(context)
+        if (!file.isFile) return
+        HostRootGuest.writePolicy(rootfs, file.readBytes())
+    }
+
     fun readAudit(context: Context): String =
         runCatching { File(context.filesDir, "root_audit.jsonl").readText() }.getOrDefault("")
 
@@ -163,7 +183,9 @@ object HostRootControl {
     fun prepare(context: Context, rootfs: File, safe: Boolean): Mounts {
         // The locked prompt is mounted in every session mode, including safe mode.
         // Safe mode still turns host-root tools and the optional persona off.
+        lastRootfs = rootfs
         val prompt = HostRootGuest.writePrompt(context, rootfs)
+        runCatching { syncChannelPolicy(context, rootfs) }
         if (safe) {
             stopBridge()
             HostRootGuest.clearRoot(rootfs)

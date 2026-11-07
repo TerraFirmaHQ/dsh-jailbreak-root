@@ -4,6 +4,7 @@
 
 | 文件 | 内容 |
 |---|---|
+| CHANNEL-PROMPT.md | 渠道提示词真值表、Eta 对照、请求样例 |
 | SPEC-COVERAGE.md | F/D/R/P/G 逐项：实现 / 本机测试 / 真机未验证 |
 | CHANGED-FILES.md | 改动文件到条目的映射 |
 | REUSE.md | 五方向各至少两个候选的仓库、star、commit、License，以及实际复用表 |

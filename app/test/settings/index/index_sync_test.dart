@@ -194,13 +194,13 @@ void main() {
       hostRootProvider.overrideWith(_OffRoot.new),
     ]);
     await tester.pump();
-    final locked = find.widgetWithText(SettingsTile, '破甲提示词');
+    final locked = find.widgetWithText(SettingsTile, '默认系统提示词');
     final root = find.widgetWithText(SettingsTile, 'Root');
     final persona = find.widgetWithText(SettingsTile, '人设自定义');
     expect(locked, findsOneWidget);
     expect(root, findsOneWidget);
     expect(persona, findsOneWidget);
-    expect(find.descendant(of: locked, matching: find.text('已锁定')), findsOneWidget);
+    expect(find.descendant(of: locked, matching: find.text('默认')), findsOneWidget);
     expect(find.descendant(of: root, matching: find.text('未开启')), findsOneWidget);
     expect(find.descendant(of: persona, matching: find.text('未设置')), findsOneWidget);
     final phone = tester.getTopLeft(find.text('手机操控')).dy;

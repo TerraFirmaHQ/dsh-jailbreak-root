@@ -14045,7 +14045,7 @@ abstract class L10n {
   /// No description provided for @hostPersonaScope.
   ///
   /// In zh, this message translates to:
-  /// **'这些只影响表达，不覆盖破甲提示词，也不改变审批。'**
+  /// **'这些只影响表达，不替换渠道系统提示词，也不改变审批。'**
   String get hostPersonaScope;
 
   /// No description provided for @lockedEditionNotice.
@@ -14075,7 +14075,7 @@ abstract class L10n {
   /// No description provided for @hostRootPersonaHint.
   ///
   /// In zh, this message translates to:
-  /// **'默认空白。这不是协调员，也不会替换锁定的内置提示词。'**
+  /// **'默认空白。这不是协调员，也不会替换渠道系统提示词。'**
   String get hostRootPersonaHint;
 
   /// No description provided for @hostRootSave.
@@ -14201,26 +14201,122 @@ abstract class L10n {
   /// No description provided for @hostPromptLockedTitle.
   ///
   /// In zh, this message translates to:
-  /// **'破甲提示词'**
+  /// **'默认系统提示词'**
   String get hostPromptLockedTitle;
 
   /// No description provided for @hostPromptLockedValue.
   ///
   /// In zh, this message translates to:
-  /// **'已锁定'**
+  /// **'默认'**
   String get hostPromptLockedValue;
 
   /// No description provided for @hostPromptLockedHint.
   ///
   /// In zh, this message translates to:
-  /// **'已内置，不能在这里改。人设是后面单独的一段，不会替换这段原文。'**
+  /// **'渠道没单独保存过提示词、并且「使用内置系统提示词」开着时，用这份原文。到渠道里改。清空或关掉后，这里不会把原文写回去。'**
   String get hostPromptLockedHint;
 
   /// No description provided for @hostPromptLockedKeywords.
   ///
   /// In zh, this message translates to:
-  /// **'破甲,提示词,锁定,内置'**
+  /// **'默认,系统提示词,渠道,内置'**
   String get hostPromptLockedKeywords;
+
+  /// No description provided for @channelPromptTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'系统提示词'**
+  String get channelPromptTitle;
+
+  /// No description provided for @channelPromptBuiltin.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用内置系统提示词'**
+  String get channelPromptBuiltin;
+
+  /// No description provided for @channelPromptBuiltinHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认开。关掉只取消“没保存过文本时用默认”的回退，不会清掉已经写下的字。打开也不会把空的或改过的文本填回去。'**
+  String get channelPromptBuiltinHint;
+
+  /// No description provided for @channelPromptOpenChannels.
+  ///
+  /// In zh, this message translates to:
+  /// **'到渠道里编辑'**
+  String get channelPromptOpenChannels;
+
+  /// No description provided for @channelPromptRestore.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复默认'**
+  String get channelPromptRestore;
+
+  /// No description provided for @channelPromptRestoreConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'用默认原文替换当前文本，并打开内置开关？'**
+  String get channelPromptRestoreConfirm;
+
+  /// No description provided for @channelPromptClear.
+  ///
+  /// In zh, this message translates to:
+  /// **'清空'**
+  String get channelPromptClear;
+
+  /// No description provided for @channelPromptClearConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'把文本清成空？开关保持不动。'**
+  String get channelPromptClearConfirm;
+
+  /// No description provided for @channelPromptCancel.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get channelPromptCancel;
+
+  /// No description provided for @channelPromptBom.
+  ///
+  /// In zh, this message translates to:
+  /// **'文本以 BOM 开头，没有保存。'**
+  String get channelPromptBom;
+
+  /// No description provided for @channelPromptFirstLine.
+  ///
+  /// In zh, this message translates to:
+  /// **'首行是空的，没有保存。'**
+  String get channelPromptFirstLine;
+
+  /// No description provided for @channelPromptFence.
+  ///
+  /// In zh, this message translates to:
+  /// **'文本以 ``` 结尾，没有保存。'**
+  String get channelPromptFence;
+
+  /// No description provided for @channelPromptStatusOff.
+  ///
+  /// In zh, this message translates to:
+  /// **'内置已关'**
+  String get channelPromptStatusOff;
+
+  /// No description provided for @channelPromptStatusEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'空'**
+  String get channelPromptStatusEmpty;
+
+  /// No description provided for @channelPromptStatusDefault.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认'**
+  String get channelPromptStatusDefault;
+
+  /// No description provided for @channelPromptStatusCustom.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义'**
+  String get channelPromptStatusCustom;
 
   /// No description provided for @hubSessionDetails.
   ///

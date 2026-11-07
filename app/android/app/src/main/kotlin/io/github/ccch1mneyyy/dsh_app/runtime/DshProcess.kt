@@ -205,10 +205,10 @@ class DshProcess(
         val launchText = argv.joinToString(" ")
         listener.onLog(
             HostRootGuest.mountLog(
-                "locked prompt",
+                "default prompt",
                 mounts.prompt,
                 launchText.contains(HostRootGuest.PROMPT_PATCH),
-                "first system segment",
+                "channel fallback",
                 "asset missing or hash rejected",
             ),
             "system",
@@ -228,7 +228,7 @@ class DshProcess(
                 "persona",
                 mounts.persona,
                 launchText.contains(HostRootGuest.PERSONA_PATCH),
-                "after the locked prompt",
+                "after the default prompt",
                 "blank, no section",
             ),
             "system",

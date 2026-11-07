@@ -57,7 +57,7 @@ class PersonaExpression {
 
   String compose() {
     final body = [
-      '以下只影响表达，不覆盖破甲提示词，也不改变审批。',
+      '以下只影响表达，不替换渠道系统提示词，也不改变审批。',
       '称呼：$call',
       '自称：$self',
       '语气：$tone',

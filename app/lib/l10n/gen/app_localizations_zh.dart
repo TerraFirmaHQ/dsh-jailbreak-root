@@ -7630,7 +7630,7 @@ class L10nZh extends L10n {
   String get hostPersonaRestore => '恢复默认';
 
   @override
-  String get hostPersonaScope => '这些只影响表达，不覆盖破甲提示词，也不改变审批。';
+  String get hostPersonaScope => '这些只影响表达，不替换渠道系统提示词，也不改变审批。';
 
   @override
   String get lockedEditionNotice => '当前为锁定版本';
@@ -7645,7 +7645,7 @@ class L10nZh extends L10n {
   String get hostRootPersona => '人设';
 
   @override
-  String get hostRootPersonaHint => '默认空白。这不是协调员，也不会替换锁定的内置提示词。';
+  String get hostRootPersonaHint => '默认空白。这不是协调员，也不会替换渠道系统提示词。';
 
   @override
   String get hostRootSave => '保存';
@@ -7708,16 +7708,64 @@ class L10nZh extends L10n {
   String get hostPersonaKeywords => '人设,人格,自定义,空白';
 
   @override
-  String get hostPromptLockedTitle => '破甲提示词';
+  String get hostPromptLockedTitle => '默认系统提示词';
 
   @override
-  String get hostPromptLockedValue => '已锁定';
+  String get hostPromptLockedValue => '默认';
 
   @override
-  String get hostPromptLockedHint => '已内置，不能在这里改。人设是后面单独的一段，不会替换这段原文。';
+  String get hostPromptLockedHint => '渠道没单独保存过提示词、并且「使用内置系统提示词」开着时，用这份原文。到渠道里改。清空或关掉后，这里不会把原文写回去。';
 
   @override
-  String get hostPromptLockedKeywords => '破甲,提示词,锁定,内置';
+  String get hostPromptLockedKeywords => '默认,系统提示词,渠道,内置';
+
+  @override
+  String get channelPromptTitle => '系统提示词';
+
+  @override
+  String get channelPromptBuiltin => '使用内置系统提示词';
+
+  @override
+  String get channelPromptBuiltinHint => '默认开。关掉只取消“没保存过文本时用默认”的回退，不会清掉已经写下的字。打开也不会把空的或改过的文本填回去。';
+
+  @override
+  String get channelPromptOpenChannels => '到渠道里编辑';
+
+  @override
+  String get channelPromptRestore => '恢复默认';
+
+  @override
+  String get channelPromptRestoreConfirm => '用默认原文替换当前文本，并打开内置开关？';
+
+  @override
+  String get channelPromptClear => '清空';
+
+  @override
+  String get channelPromptClearConfirm => '把文本清成空？开关保持不动。';
+
+  @override
+  String get channelPromptCancel => '取消';
+
+  @override
+  String get channelPromptBom => '文本以 BOM 开头，没有保存。';
+
+  @override
+  String get channelPromptFirstLine => '首行是空的，没有保存。';
+
+  @override
+  String get channelPromptFence => '文本以 ``` 结尾，没有保存。';
+
+  @override
+  String get channelPromptStatusOff => '内置已关';
+
+  @override
+  String get channelPromptStatusEmpty => '空';
+
+  @override
+  String get channelPromptStatusDefault => '默认';
+
+  @override
+  String get channelPromptStatusCustom => '自定义';
 
   @override
   String get hubSessionDetails => '对话详情';

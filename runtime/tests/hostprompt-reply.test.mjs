@@ -31,8 +31,9 @@ test('locked prompt then a reply, then another after cancel', { skip: !prefix },
   const pkg = (name) => join(root, 'node_modules/@deepseek-ai', name)
   const promptFile = new URL('../../app/assets/engine/hostprompt/prompt.md', import.meta.url)
   const pluginFile = new URL('../../app/assets/engine/hostprompt/index.mjs', import.meta.url)
+  const logicFile = new URL('../../app/assets/engine/hostprompt/channel_prompt.mjs', import.meta.url)
   const raw = await readFile(promptFile)
-  const prompt = raw.toString('utf8').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n').trim()
+  const prompt = raw.toString('utf8')
   assert.equal(raw.length, 21403)
   assert.equal(createHash('sha256').update(raw).digest('hex'), promptSha)
 
@@ -61,6 +62,7 @@ test('locked prompt then a reply, then another after cancel', { skip: !prefix },
   await mkdir(pluginDir)
   await writeFile(join(pluginDir, 'prompt.md'), raw)
   await writeFile(join(pluginDir, 'index.mjs'), await readFile(pluginFile))
+  await writeFile(join(pluginDir, 'channel_prompt.mjs'), await readFile(logicFile))
   await symlink(join(root, 'node_modules'), join(directory, 'node_modules'), 'dir')
 
   const rows = [

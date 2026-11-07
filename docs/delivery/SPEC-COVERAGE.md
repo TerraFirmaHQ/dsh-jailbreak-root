@@ -34,7 +34,7 @@
 | G4 | 已有旧 rootfs 时不进欢迎页 | 上一轮 `local_optional_test`：「an upgrade runs…」有旧 `installed` 时是 `OnboardingStep.runtime` 或 null，不是 welcome。全新安装仍是 welcome。本轮没改 | 未测 |
 | G5 | 关于页那一行的标题就是「当前为锁定版本」 | 同上 locked-version 测试，`findsOneWidget` | 未测 |
 | 禁挂载 | `ChrootLaunch.select` 恒为 `mounts-disabled`。`DshProcess.start` 不再写启动脚本，也不再打 `launch method: root-chroot`。若请求里仍带着 chroot，只打一行「chroot mount path disabled; su not called」，随后一行 `launch method: proot` 或 `direct-glibc` | `HostRootSpecHostTest` 读 `DshProcess.kt`：源码里没有那条启动脚本名，也没有 `launch method: root-chroot` | 未改设备。日志里更早的一条 su 启动没有 APK 路径，不能记到 11071753 上。首帧 6359ms 的 prepare 只有 224ms，这轮没有改启动路径 |
-| 破甲 | `prompt.md` 未改 | hash 测试；干净包里的 prompt.md 仍是 21403 字节和原 hash | 未测注入是否出现在手机请求里 |
+| 渠道提示词 | `prompt.md` 仍是默认源，21403 字节、原 hash。null 且开关开才回默认；空串不回填。渠道文本替换破甲段，不改会话历史 | Dart 真值表、页面取消/清空、Node 组装。设置页仍是 Root 前面那一行，标题改为「默认系统提示词」 | 未测。没有外部模型请求体 |
 
 ## 明确未完成
 

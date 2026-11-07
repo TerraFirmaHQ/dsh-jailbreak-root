@@ -39,6 +39,17 @@ flutter test test/settings/index/index_sync_test.dart --name "关于"
 
 人设、附件、使用统计、欢迎页、关于页这几条是上一轮的结果，本轮没改那些文件，没有重跑。
 
+渠道提示词（本轮）：
+
+```bash
+node --test app/tool/hostprompt/channel_prompt.test.mjs app/tool/hostprompt/hash.test.mjs
+flutter test test/channel_prompt/channel_prompt_test.dart test/channel_prompt/channel_prompt_page_test.dart \
+  test/settings/host_root_approval_test.dart test/settings/host_persona_page_test.dart
+flutter test test/settings/index/index_sync_test.dart --name "能力里能看到 Root"
+```
+
+`channel_prompt` 的 Dart 9 项和页面 2 项、审批 3 项、人设 2 项、设置页那一项都通过。Node 7 项通过。Gradle 的 `CommandClassifierTest`、`HostRootSpecHostTest`、`PromptMountTest` 同一轮 `BUILD SUCCESSFUL`。没有把外部模型的 HTTP 体跑出来。
+
 本轮重跑：
 
 ```bash

@@ -333,8 +333,8 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                     bootProfile = null
                     log("[dsh-app] safe mode: booting profile ${SafeMode.PROFILE} rebuilt from the web template, plugins off", "system")
                     log(
-                        if (mounts.prompt) "[dsh-app] safe mode: locked built-in prompt is still the first system segment"
-                        else "[dsh-app] safe mode: locked prompt asset missing or rejected; it was not invented",
+                        if (mounts.prompt) "[dsh-app] safe mode: default prompt file is mounted; a channel can still turn it off"
+                        else "[dsh-app] safe mode: default prompt asset missing or rejected; it was not invented",
                         "system",
                     )
                 } else {

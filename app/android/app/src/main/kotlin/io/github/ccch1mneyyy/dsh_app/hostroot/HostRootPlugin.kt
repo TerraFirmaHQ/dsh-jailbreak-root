@@ -62,6 +62,11 @@ class HostRootPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChan
                 HostRootControl.setAutoAllow(app, call.argument<Boolean>("on") == true)
                 result.success(mapOf("ok" to true))
             }
+            "readChannelPrompts" -> result.success(HostRootControl.readChannelPrompts(app))
+            "writeChannelPrompts" -> {
+                HostRootControl.writeChannelPrompts(app, call.argument<String>("json") ?: "")
+                result.success(mapOf("ok" to true))
+            }
             "readAudit" -> result.success(HostRootControl.readAudit(app))
             "clearAudit" -> {
                 HostRootControl.clearAudit(app)

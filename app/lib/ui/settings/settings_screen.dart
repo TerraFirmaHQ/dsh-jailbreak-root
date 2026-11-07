@@ -42,6 +42,7 @@ import '../plugins/plugins_screen.dart';
 import '../plugins/seats/plugin_settings_tiles.dart';
 import '../plugins/seats/seat_probe.dart';
 import '../providers/providers_page.dart';
+import 'channel_prompt_page.dart';
 import '../remote/host_status.dart';
 import '../remote/remote_screen.dart';
 import '../shell/brand_mark.dart';
@@ -191,7 +192,7 @@ class SettingsScreen extends ConsumerWidget {
               spot: Spots.lockedPrompt,
               subtitle: l10n.hostPromptLockedHint,
               value: text(promptValue),
-              chevron: false,
+              onTap: () => _push(context, const DefaultPromptPage()),
             ),
             SettingsTile(
               icon: AppIcons.permissions,

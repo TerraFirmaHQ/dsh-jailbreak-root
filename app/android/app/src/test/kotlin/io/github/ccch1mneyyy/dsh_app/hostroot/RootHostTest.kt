@@ -307,12 +307,12 @@ class PromptMountTest {
     @Test
     fun `mount log says whether the patch is on the launch command`() {
         assertEquals(
-            "[dsh-app] locked prompt mounted (first system segment)",
-            HostRootGuest.mountLog("locked prompt", true, true, "first system segment", "asset missing or hash rejected"),
+            "[dsh-app] default prompt mounted (channel fallback)",
+            HostRootGuest.mountLog("default prompt", true, true, "channel fallback", "asset missing or hash rejected"),
         )
         assertEquals(
-            "[dsh-app] locked prompt not mounted (asset missing or hash rejected)",
-            HostRootGuest.mountLog("locked prompt", false, false, "first system segment", "asset missing or hash rejected"),
+            "[dsh-app] default prompt not mounted (asset missing or hash rejected)",
+            HostRootGuest.mountLog("default prompt", false, false, "channel fallback", "asset missing or hash rejected"),
         )
         assertEquals(
             "[dsh-app] root tools not mounted (switch off or safe mode, self-check skipped, su not called)",
@@ -324,7 +324,7 @@ class PromptMountTest {
         )
         assertEquals(
             "[dsh-app] persona not mounted (blank, no section)",
-            HostRootGuest.mountLog("persona", false, false, "after the locked prompt", "blank, no section"),
+            HostRootGuest.mountLog("persona", false, false, "after the default prompt", "blank, no section"),
         )
     }
 

@@ -97,11 +97,13 @@ object HostRootGuest {
         return try {
             val prompt = read("prompt.md")
             val plugin = read("index.mjs")
-            if (prompt.isEmpty() || plugin.isEmpty()) throw IOException("prompt asset missing")
+            val logic = read("channel_prompt.mjs")
+            if (prompt.isEmpty() || plugin.isEmpty() || logic.isEmpty()) throw IOException("prompt asset missing")
             if (sha256(prompt) != EXPECTED_PROMPT_SHA256) throw IOException("prompt bytes changed")
             val dir = realDir(File(rootfs, PROMPT_DIR.removePrefix("/")))
             writeIfChanged(File(dir, "prompt.md"), prompt)
             writeIfChanged(File(dir, "index.mjs"), plugin)
+            writeIfChanged(File(dir, "channel_prompt.mjs"), logic)
             writeIfChanged(patch, PROMPT_YAML.toByteArray())
             true
         } catch (_: Exception) {
@@ -146,6 +148,12 @@ object HostRootGuest {
             runCatching { patch.delete() }
             false
         }
+    }
+
+    /** Channel prompt policy. Missing file means every channel is null/true. */
+    fun writePolicy(rootfs: File, bytes: ByteArray) {
+        val dir = realDir(File(rootfs, PROMPT_DIR.removePrefix("/")))
+        writeIfChanged(File(dir, "policy.json"), bytes)
     }
 
     fun clearRoot(rootfs: File) {

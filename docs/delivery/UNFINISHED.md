@@ -7,6 +7,10 @@
 1. **D9 引擎缓存。** 桥没有释放 session projection cache 或供应商 prompt cache 的路由。spool 清理不算完成。缺的接口写在 D9-ENGINE-CACHE.md。
 2. **eta。** 依赖里没有唯一的 eta 包。同名插件有多个，没有选。见 REUSE.md。
 
+## 这轮没有拿真引擎打出的
+
+- 渠道提示词的组装在 Dart 和 `channel_prompt.mjs` 里测过。没有 `DSH_PREFIX`，没有把两个渠道的 HTTP 体送到外部模型。引擎若在 assemble 的 context 里不提供 provider id，钩子用默认文本，不用另一家渠道的文本。会话历史文件没有被打开或改写。
+
 ## 真机未验证
 
 3. 没有连上 Ace7，也没有 ARM64 系统镜像。分类器、审批、root 关闭不 su、图标、165Hz、覆盖安装都没有在那台手机上跑。

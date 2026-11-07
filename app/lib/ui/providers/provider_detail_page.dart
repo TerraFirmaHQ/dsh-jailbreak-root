@@ -16,6 +16,7 @@ import '../features/feature_widgets.dart';
 import '../shell/page_frame.dart';
 import '../theme/app_icons.dart';
 import '../theme/theme.dart';
+import '../settings/channel_prompt_page.dart';
 import 'provider_form_page.dart';
 import 'provider_model_page.dart';
 import 'provider_widgets.dart';
@@ -220,6 +221,11 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
             ListPageCard(
               title: l10n.engineProviderConnection,
               children: [
+                ListPageRow(
+                  icon: AppIcons.edit,
+                  title: context.l10n.channelPromptTitle,
+                  onTap: () => _push(ChannelPromptPage(providerId: provider.id, api: provider.api?.wire)),
+                ),
                 ListPageRow(
                   icon: AppIcons.link,
                   title: 'Base URL',

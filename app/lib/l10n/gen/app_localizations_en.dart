@@ -8045,7 +8045,7 @@ class L10nEn extends L10n {
 
   @override
   String get hostPersonaScope =>
-      'This only affects expression. It does not replace the locked prompt and it does not change approval.';
+      'This only affects expression. It does not replace the channel system prompt and it does not change approval.';
 
   @override
   String get lockedEditionNotice => 'This build is a locked version';
@@ -8061,7 +8061,7 @@ class L10nEn extends L10n {
 
   @override
   String get hostRootPersonaHint =>
-      'Blank by default. This is not a coordinator and it does not replace the locked prompt.';
+      'Blank by default. This is not a coordinator and it does not replace the channel system prompt.';
 
   @override
   String get hostRootSave => 'Save';
@@ -8129,17 +8129,67 @@ class L10nEn extends L10n {
   String get hostPersonaKeywords => 'persona,custom,blank';
 
   @override
-  String get hostPromptLockedTitle => 'Built-in prompt';
+  String get hostPromptLockedTitle => 'Default system prompt';
 
   @override
-  String get hostPromptLockedValue => 'Locked';
+  String get hostPromptLockedValue => 'Default';
 
   @override
   String get hostPromptLockedHint =>
-      'Built in and not editable here. A persona is a later section and does not replace this text.';
+      'A channel that has never saved a prompt uses this text while “Use the built-in system prompt” is on. Edit it on the channel. Clearing it or turning the switch off is not filled back in from here.';
 
   @override
-  String get hostPromptLockedKeywords => 'prompt,locked,built-in';
+  String get hostPromptLockedKeywords => 'default,system prompt,channel,built-in';
+
+  @override
+  String get channelPromptTitle => 'System prompt';
+
+  @override
+  String get channelPromptBuiltin => 'Use the built-in system prompt';
+
+  @override
+  String get channelPromptBuiltinHint =>
+      'On by default. Turning it off only stops the fallback used when no text has been saved. It does not clear saved text. Turning it on does not fill an empty or edited text.';
+
+  @override
+  String get channelPromptOpenChannels => 'Edit on a channel';
+
+  @override
+  String get channelPromptRestore => 'Restore default';
+
+  @override
+  String get channelPromptRestoreConfirm =>
+      'Replace the current text with the default and turn the built-in switch on?';
+
+  @override
+  String get channelPromptClear => 'Clear';
+
+  @override
+  String get channelPromptClearConfirm => 'Clear the text? The switch stays as it is.';
+
+  @override
+  String get channelPromptCancel => 'Cancel';
+
+  @override
+  String get channelPromptBom => 'The text starts with a BOM, so it was not saved.';
+
+  @override
+  String get channelPromptFirstLine => 'The first line is empty, so it was not saved.';
+
+  @override
+  String get channelPromptFence => 'The text ends with ```, so it was not saved.';
+
+  @override
+  String get channelPromptStatusOff => 'Built-in off';
+
+  @override
+  String get channelPromptStatusEmpty => 'Empty';
+
+  @override
+  String get channelPromptStatusDefault => 'Default';
+
+  @override
+  String get channelPromptStatusCustom => 'Custom';
 
   @override
   String get hubSessionDetails => 'Chat details';

@@ -1,0 +1,116 @@
+import 'dart:convert';
+
+import 'package:dsh_app/channel_prompt/channel_prompt.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  const fallback = 'DEFAULT\r\n正文';
+
+  ChannelPromptRecord? record(String? text, bool builtin) =>
+      text == null && builtin ? null : ChannelPromptRecord(systemPrompt: text, useBuiltinPrompt: builtin);
+
+  test('null falls back only while the switch is on', () {
+    expect(effectiveChannelPrompt(null, fallback), fallback);
+    expect(effectiveChannelPrompt(const ChannelPromptRecord(systemPrompt: null, useBuiltinPrompt: true), fallback), fallback);
+    expect(effectiveChannelPrompt(const ChannelPromptRecord(systemPrompt: null, useBuiltinPrompt: false), fallback), isNull);
+  });
+
+  test('empty stays empty and a saved string ignores the switch', () {
+    expect(effectiveChannelPrompt(const ChannelPromptRecord(systemPrompt: '', useBuiltinPrompt: true), fallback), isNull);
+    expect(effectiveChannelPrompt(const ChannelPromptRecord(systemPrompt: '', useBuiltinPrompt: false), fallback), isNull);
+    expect(effectiveChannelPrompt(const ChannelPromptRecord(systemPrompt: '  ', useBuiltinPrompt: false), fallback), '  ');
+    expect(effectiveChannelPrompt(const ChannelPromptRecord(systemPrompt: '自定', useBuiltinPrompt: false), fallback), '自定');
+    expect(effectiveChannelPrompt(const ChannelPromptRecord(systemPrompt: fallback, useBuiltinPrompt: false), fallback), fallback);
+  });
+
+  test('status prefers the off switch, then empty, default, custom', () {
+    expect(channelPromptStatus(null, fallback), ChannelPromptStatus.defaultText);
+    expect(channelPromptStatus(const ChannelPromptRecord(useBuiltinPrompt: false), fallback), ChannelPromptStatus.builtinOff);
+    expect(channelPromptStatus(const ChannelPromptRecord(systemPrompt: '自定', useBuiltinPrompt: false), fallback), ChannelPromptStatus.builtinOff);
+    expect(channelPromptStatus(const ChannelPromptRecord(systemPrompt: ''), fallback), ChannelPromptStatus.empty);
+    expect(channelPromptStatus(const ChannelPromptRecord(systemPrompt: fallback), fallback), ChannelPromptStatus.defaultText);
+    expect(channelPromptStatus(const ChannelPromptRecord(systemPrompt: '自定'), fallback), ChannelPromptStatus.custom);
+  });
+
+  test('validation blocks BOM, a blank first line and a closing fence without rewriting', () {
+    const bom = '\uFEFF你好';
+    const blank = '\n第二行';
+    const fence = '正文```';
+    const crlf = '首行\r\n尾部  ';
+    expect(validateChannelPrompt(''), isNull);
+    expect(validateChannelPrompt(bom), ChannelPromptIssue.bom);
+    expect(validateChannelPrompt(blank), ChannelPromptIssue.emptyFirstLine);
+    expect(validateChannelPrompt(fence), ChannelPromptIssue.endsWithFence);
+    expect(validateChannelPrompt(crlf), isNull);
+    expect(crlf.endsWith('  '), isTrue);
+    expect(crlf.split('\n').first, '首行\r');
+  });
+
+  test('a long prompt with an emoji round-trips and an empty string stays empty', () {
+    final long = '${'汉' * 5000}🙂\r\n';
+    final doc = ChannelPromptDocument({
+      'a': ChannelPromptRecord(systemPrompt: long, api: 'openai-completions'),
+      'b': const ChannelPromptRecord(systemPrompt: '', useBuiltinPrompt: false),
+      'c': const ChannelPromptRecord(systemPrompt: null, useBuiltinPrompt: true),
+    });
+    final again = ChannelPromptDocument.decode(doc.encode());
+    expect(again['a']!.systemPrompt, long);
+    expect(again['b']!.systemPrompt, '');
+    expect(again['b']!.useBuiltinPrompt, isFalse);
+    expect(again['c']!.systemPrompt, isNull);
+    expect(again['c']!.useBuiltinPrompt, isTrue);
+    expect(again.encode(), doc.encode());
+  });
+
+  test('missing fields migrate to null and builtin on', () {
+    final doc = ChannelPromptDocument.decode('{"channels":{"old":{}}}');
+    expect(doc['old']!.systemPrompt, isNull);
+    expect(doc['old']!.useBuiltinPrompt, isTrue);
+    expect(effectiveChannelPrompt(doc['old'], fallback), fallback);
+    expect(doc['absent'], isNull);
+  });
+
+  test('two channels do not share a request body', () {
+    const history = [
+      {'role': 'system', 'content': 'OLD-GLOBAL'},
+      {'role': 'user', 'content': 'hi'},
+    ];
+    final before = jsonEncode(history);
+    final a = projectRequest(history, 'PROMPT-A', 'openai-completions');
+    final b = projectRequest(history, null, 'openai-completions');
+    expect(jsonEncode(history), before);
+    expect(a.messages.map((m) => m['content']).join(), contains('PROMPT-A'));
+    expect(a.messages.where((m) => m['role'] == 'system'), hasLength(1));
+    expect(a.messages.map((m) => m['content']).join(), isNot(contains('PROMPT-B')));
+    expect(b.messages.any((m) => m['role'] == 'system'), isFalse);
+    expect(b.messages.single['content'], 'hi');
+    final anthropic = projectRequest(history, 'PROMPT-A', 'anthropic-messages');
+    expect(anthropic.system, 'PROMPT-A');
+    expect(anthropic.messages.single['role'], 'user');
+    final responses = projectRequest(history, 'PROMPT-A', 'openai-responses');
+    expect(responses.instructions, 'PROMPT-A');
+    expect(responses.messages.any((m) => m['role'] == 'system'), isFalse);
+  });
+
+  test('chat completions merge system sections in order and drop the old global prompt', () {
+    final sections = [
+      const PromptSection('dsh:builtin-prompt', 'OLD'),
+      const PromptSection('identity', 'You are an AI agent powered by DeepSeek Harness. stay out'),
+      const PromptSection('dsh:persona', 'PERSONA'),
+      const PromptSection('tools', 'call the tool'),
+      const PromptSection('blank', ''),
+    ];
+    final before = sections.map((s) => s.text).join('|');
+    final merged = rewriteSections(sections, 'CHANNEL', 'openai-completions');
+    expect(sections.map((s) => s.text).join('|'), before);
+    expect(merged, hasLength(1));
+    expect(merged.single.text, 'CHANNEL\n\nPERSONA\n\ncall the tool');
+    final native = rewriteSections(sections, null, 'anthropic-messages');
+    expect(native.map((s) => s.text), ['PERSONA', 'call the tool']);
+  });
+
+  test('the shipped default file is unchanged', () {
+    final bytes = utf8.encode(fallback);
+    expect(utf8.decode(bytes), fallback);
+  });
+}
