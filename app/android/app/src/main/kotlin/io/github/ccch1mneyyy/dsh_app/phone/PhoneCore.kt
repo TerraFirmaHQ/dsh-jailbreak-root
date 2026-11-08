@@ -318,6 +318,18 @@ class PhoneCore(
 
     // ── Screens ─────────────────────────────────────────────────────────────────────
 
+    private fun a11yOrUnavailable(text: String, summary: String): Out {
+        if (text.contains("无障碍")) {
+            return Out(
+                text + "\n状态：无障碍未连接。这不是命令失败。root 兜底通道（仍要审批，不会自动执行）：input tap、input keyevent、screencap、am start。",
+                error = false,
+                summary = summary,
+                decision = "a11y-down",
+            )
+        }
+        return Out(text, error = true, summary = summary, decision = "unavailable")
+    }
+
     private fun unavailable(screen: PhoneScreen): String = when (screen) {
         PhoneScreen.BACKGROUND -> env.backgroundUnavailable()
         PhoneScreen.MAIN -> when (env.a11yState()) {
@@ -365,7 +377,7 @@ class PhoneCore(
         val which = if (a.bool("background") == true) PhoneScreen.BACKGROUND else PhoneScreen.MAIN
         val summary = if (which == PhoneScreen.BACKGROUND) ui.get("phone_log_background_read", "读后台屏") else ui.get("phone_log_screen_read", "读屏") // l10n:keep test default
         val driver = when (val d = driverFor(which)) {
-            is Either.Left -> return Out(d.value, error = true, summary = summary, decision = "unavailable")
+            is Either.Left -> return a11yOrUnavailable(d.value, summary)
             is Either.Right -> d.value
         }
         if (env.isLocked()) return locked(summary)
@@ -397,7 +409,7 @@ class PhoneCore(
         val pages = (a.int("max_pages") ?: 10).coerceIn(1, 30)
         val summary = ui.get("phone_log_collect", "收集 %1\$s#%2\$d", sid.toString(), list) // l10n:keep test default
         val driver = when (val d = driverFor(which)) {
-            is Either.Left -> return Out(d.value, error = true, summary = summary, decision = "unavailable")
+            is Either.Left -> return a11yOrUnavailable(d.value, summary)
             is Either.Right -> d.value
         }
         if (env.isLocked()) return locked(summary)
@@ -486,7 +498,7 @@ class PhoneCore(
             }
         }
         val driver = when (val d = driverFor(which)) {
-            is Either.Left -> return Out(d.value, error = true, summary = summary, decision = "unavailable")
+            is Either.Left -> return a11yOrUnavailable(d.value, summary)
             is Either.Right -> d.value
         }
         if (env.isLocked()) return locked(summary)
@@ -578,7 +590,7 @@ class PhoneCore(
         }
         val summary = ui.get("phone_log_key", "按键 %1\$s", key.name.lowercase()) // l10n:keep test default
         val driver = when (val d = driverFor(which)) {
-            is Either.Left -> return Out(d.value, error = true, summary = summary, decision = "unavailable")
+            is Either.Left -> return a11yOrUnavailable(d.value, summary)
             is Either.Right -> d.value
         }
         if (env.isLocked()) return locked(summary)

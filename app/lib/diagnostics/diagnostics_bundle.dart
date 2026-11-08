@@ -17,12 +17,14 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../phone/phone_channel.dart';
 import '../runtime/runtime_bridge.dart';
 import '../performance/performance_state.dart';
 import '../runtime/runtime_state.dart';
 import '../state/app_info.dart';
 import '../state/connection_state.dart';
 import '../state/settings_state.dart';
+import '../state/phone_state.dart' show phoneChannelProvider;
 import '../state/voice_settings.dart';
 import 'diagnostics_channel.dart';
 import 'app_error_log.dart';
@@ -39,6 +41,7 @@ class DiagnosticsSnapshot {
     required this.status,
     required this.settings,
     this.native = const NativeDiagnostics(),
+    this.phone = const PhoneStatus.notReady(),
     this.connection = const {},
     this.performance = const {},
     this.voiceMode = VoiceMode.auto,
@@ -52,6 +55,9 @@ class DiagnosticsSnapshot {
   final AppSettings settings;
   final NativeDiagnostics native;
 
+  /// A current local status sample; notReady means no observation, not disabled.
+  final PhoneStatus phone;
+
   /// Last observed connection state and remote link stage; may be stale.
   /// `not_observed` means no active observation is currently retained.
   final Map<String, Object?> connection;
@@ -60,6 +66,16 @@ class DiagnosticsSnapshot {
   final List<String> engineLog;
   final List<String> failureLog;
   final List<AppErrorRecord> appErrors;
+}
+
+/// Installed Android version when the system reports it. [AppInfo.version]
+/// stays 1.0.2+1 unless the build passed DSH_APP_VERSION, so diagnostics
+/// must not prefer that placeholder over versionName and versionCode.
+String diagnosticsAppVersion(Map<String, Object?> app) {
+  final name = app['versionName'];
+  final code = app['versionCode'];
+  if (name is String && name.isNotEmpty && code is num) return '$name+${code.toInt()}';
+  return AppInfo.version;
 }
 
 abstract final class DiagnosticsBundle {
@@ -78,7 +94,7 @@ abstract final class DiagnosticsBundle {
     return {
       'generatedAt': s.at.toUtc().toIso8601String(),
       'timeZoneOffsetMinutes': s.at.timeZoneOffset.inMinutes,
-      'app': {'version': AppInfo.version, ...s.native.app},
+      'app': {...s.native.app, 'version': diagnosticsAppVersion(s.native.app)},
       'device': s.native.device,
       'runtime': {
         'phase': status.phase.name,
@@ -97,6 +113,14 @@ abstract final class DiagnosticsBundle {
         'error': status.error,
       },
       'manifest': s.native.manifest,
+      'phone': {
+        'available': s.phone.ready,
+        if (s.phone.ready) ...{
+          'enabled': s.phone.enabled,
+          'bridgeListening': s.phone.bridgeListening,
+          'a11y': {'enabled': s.phone.a11y.enabled, 'serviceConnected': s.phone.a11y.serviceConnected},
+        },
+      },
       'connection': s.connection,
       'performance': s.performance,
       'voice': {...voiceDiagnosticsFacts(s.native.voice), 'mode': s.voiceMode.name},
@@ -188,6 +212,7 @@ Future<DiagnosticsSnapshot> collectDiagnostics(Ref ref, DateTime at) async {
   }
 
   final native = await attempt(channel.info, const NativeDiagnostics());
+  final phone = await attempt(() => ref.read(phoneChannelProvider).status(), const PhoneStatus.notReady());
   // The log file outlives the app process; the in-memory log is the
   // fallback (and what tests see).
   var engineLog = await attempt(channel.engineLog, const <String>[]);
@@ -205,6 +230,7 @@ Future<DiagnosticsSnapshot> collectDiagnostics(Ref ref, DateTime at) async {
     status: status,
     settings: settings,
     native: native,
+    phone: phone,
     connection: ref.read(connectionDiagnosticsProvider).snapshot,
     performance: performanceDiagnostics(ref),
     voiceMode: await attempt(() => ref.read(voiceSettingsProvider.notifier).ready(), VoiceMode.auto),

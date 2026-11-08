@@ -1,0 +1,12 @@
+{"id":"R1","command":"id","readonly":true,"subcommands":[{"text":"id","verdict":"read"}],"hit":[],"reason":"全部为只读"}
+{"id":"R2","command":"getprop ro.product.model","readonly":true,"subcommands":[{"text":"getprop ro.product.model","verdict":"read"}],"hit":[],"reason":"全部为只读"}
+{"id":"R3","command":"getprop a; getprop b; uptime","readonly":true,"subcommands":[{"text":"getprop a","verdict":"read"},{"text":"getprop b","verdict":"read"},{"text":"uptime","verdict":"read"}],"hit":[],"reason":"全部为只读"}
+{"id":"R4","command":"pm list packages | grep x","readonly":true,"subcommands":[{"text":"pm list packages","verdict":"read"},{"text":"grep x","verdict":"read"}],"hit":[],"reason":"全部为只读"}
+{"id":"R5","command":"iptables -L PG_OUT -n","readonly":true,"subcommands":[{"text":"iptables -L PG_OUT -n","verdict":"read"}],"hit":[],"reason":"全部为只读"}
+{"id":"R6","command":"dumpsys package x | head -20","readonly":true,"subcommands":[{"text":"dumpsys package x","verdict":"read"},{"text":"head -20","verdict":"read"}],"hit":[],"reason":"全部为只读"}
+{"id":"W1","command":"echo 1 > /data/local/tmp/t","readonly":false,"subcommands":[{"text":"echo 1 > /data/local/tmp/t","verdict":"write","reason":"redirect"}],"hit":["redirect"],"reason":"含写入：echo 1 > /data/local/tmp/t"}
+{"id":"W2","command":"pm disable-user --user 0 x","readonly":false,"subcommands":[{"text":"pm disable-user --user 0 x","verdict":"write","reason":"pm-disable-user"}],"hit":["pm-disable-user"],"reason":"含写入：pm disable-user --user 0 x"}
+{"id":"W3","command":"sh -c \"rm -rf /data/x\"","readonly":false,"subcommands":[{"text":"sh -c \"rm -rf /data/x\"","verdict":"write","reason":"sh-c+rm"}],"hit":["sh-c+rm"],"reason":"含写入：sh -c \"rm -rf /data/x\""}
+{"id":"W4","command":"setprop debug.t 1","readonly":false,"subcommands":[{"text":"setprop debug.t 1","verdict":"write","reason":"setprop"}],"hit":["setprop"],"reason":"含写入：setprop debug.t 1"}
+{"id":"W5","command":"iptables -F","readonly":false,"subcommands":[{"text":"iptables -F","verdict":"write","reason":"iptables-write"}],"hit":["iptables-write"],"reason":"含写入：iptables -F"}
+{"id":"W6","command":"getprop a; rm -f /data/x","readonly":false,"subcommands":[{"text":"getprop a","verdict":"read"},{"text":"rm -f /data/x","verdict":"write","reason":"rm"}],"hit":["rm"],"reason":"含写入：rm -f /data/x"}

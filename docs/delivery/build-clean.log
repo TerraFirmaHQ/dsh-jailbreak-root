@@ -1,0 +1,53 @@
+# clean build log
+exit_code=0
+extracted_commit=72dbe708bf9375143ef7034cea6ed4484937ba81
+source_archive=dsh-root-src-72dbe70.tar.gz
+source_archive_sha256=ff09deddb2022c39ebe6b0b89bcccfe504782d05a55288d721c6088eaad910ed
+source_archive_bytes=350953501
+runtime_archive=runtime-arm64-v8a.tar.gz
+runtime_archive_sha256=54a4640cd999689cf09e969e02b6a6943ef780d680c196adfa87aa483c306ca2
+extract_dir=/tmp/dsh-clean-11081033
+note=git archive of extracted_commit was unpacked into an empty directory. runtime/out was absent until bootstrap. The log commit is not inside this archive. 11080152 still joined tool prose into the system string and is not this delivery.
+command=tooling/bootstrap-locked-build.sh /tmp/dsh-clean-11081033 runtime-arm64-v8a.tar.gz 11081033
+flutter_version=3.47.7 revision abaf9c5237
+dart_version=3.13.5
+jdk=OpenJDK 21.0.12.1
+gradle=9.3.1
+ndk=28.2.13676358
+build_tools=36.0.0
+platforms=android-35 android-36
+host_node=v22.23.4
+
+signed_apk=/tmp/dsh-clean-11081033/app/build/app/outputs/flutter-apk/app-arm64-release.apk
+signed_apk_sha256=590394d44d25c09841cd1c669c4da44ed13f013ec53106a11104db52dd9435b8
+signed_apk_bytes=194460680
+
+# The unsigned file is NOT byte-identical to app-arm64-release.apk.
+strip=python3 /tmp/strip_apk_sig.py drop APK Sig Block 42 (12288 bytes) and rewrite the EOCD central-directory offset
+zipalign=$HOME/dev/android-sdk/build-tools/36.0.0/zipalign -p -f 4 /tmp/dsh-root-stripped-11081033.apk /tmp/dsh-root-unsigned-11081033.apk
+zipalign_check=$HOME/dev/android-sdk/build-tools/36.0.0/zipalign -c -p 4 /tmp/dsh-root-unsigned-11081033.apk
+unsigned_apk=dsh-root-1.0.12-arm64-11081033-prere-sign.apk
+unsigned_apk_sha256=b82576f49efbf4354cb165d52a53ad5bee207da6eafc3b5ed8282ea2f4f7f8ea
+unsigned_apk_bytes=194448392
+versionCode=11081033
+versionName=1.0.12
+package=io.github.ronyfork.dsh_app
+prompt_bytes=21403
+prompt_sha256=4fbd3a104fcd16065800e4e730a67f7781698300eec33af8dc67cfd4f328c118
+previous_delivery=11080152
+
+# flutter output captured after the pipe started. Earlier pane also showed pub get and a non-fatal KGP warning for flutter_webrtc. Gradle "Already watching path" did not fail the build.
+Font asset "DshIcons.ttf" was tree-shaken, reducing it from 52936 to 48548 bytes (8.3% reduction). Tree-shaking can be disabled by providing the --no-tree-shake-icons flag when building your app.
+Font asset "MaterialIcons-Regular.otf" was tree-shaken, reducing it from 1645184 to 3816 bytes (99.8% reduction). Tree-shaking can be disabled by providing the --no-tree-shake-icons flag when building your app.
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+3 warnings
+Caught exception: Already watching path: /tmp/dsh-clean-11081033/app/android
+Running Gradle task 'assembleArm64Release'...                     256.1s
+✓ Built build/app/outputs/flutter-apk/app-arm64-release.apk (194.5MB)
+BUILD_EXIT:0

@@ -58,6 +58,8 @@ object Proto {
     const val INJECT_OK = "injectOk"
     /** Gate only, with INJECT_OK false: the failing injection's [ERROR] code. Older cores omit it. */
     const val INJECT_ERROR = "injectError"
+    /** With [ERROR] deviceUnavailable: the failing step's exception type, never its message. Older cores omit it. */
+    const val ERROR_DETAIL = "errorDetail"
 
     // response keys
     const val OK = "ok"
@@ -65,6 +67,8 @@ object Proto {
     const val DISPLAY_ID = "displayId"
     const val UID = "uid"
     const val SECURE = "secure"
+    /** Optional observation after an accepted action; no image or element content accompanies it. */
+    const val FRAME_NOT_READY = "frameNotReady"
     const val POOR = "poorTree"
     const val PORTRAIT = "portrait"
     const val KEYBOARD_UP = "keyboardUp"
@@ -96,6 +100,10 @@ object Proto {
 
 /** Stable reason codes → one short Chinese sentence for the model (after Phase's set). */
 object Reasons {
+    fun of(code: String?, detail: String?): String = withDetail(of(code), detail)
+
+    fun withDetail(reason: String, detail: String?): String = reason + detail?.let { "（$it）" }.orEmpty()
+
     fun of(code: String?): String = when (code) {
         null -> ""
         // l10n:keep privileged protocol
@@ -120,6 +128,8 @@ object Reasons {
         "displayTargetChanged" -> "后台屏前台任务不属于目标应用，未继续操作"
         // l10n:keep privileged protocol
         "secureWindow" -> "此页面受保护（支付或密码），请交还用户在主屏完成"
+        // l10n:keep privileged protocol
+        "frameNotReady" -> "画面尚未就绪；稍后仅重新读屏，不要重放刚才动作"
         // l10n:keep privileged protocol
         "staleSnapshot" -> "后台屏快照已过期，请重新观察后再操作"
         // l10n:keep privileged protocol

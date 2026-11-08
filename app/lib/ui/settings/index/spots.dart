@@ -40,7 +40,10 @@ enum SpotCondition {
   engineField,
 
   /// Only with a conversation open.
-  openChat;
+  openChat,
+
+  /// Only with animations on.
+  animationsOn;
 
   String label(L10n l10n) => switch (this) {
     localHost => l10n.searchNeedsLocal,
@@ -48,6 +51,7 @@ enum SpotCondition {
     nativeUi => l10n.searchNeedsNativeUi,
     engineField => l10n.searchNeedsEngineField,
     openChat => l10n.searchNeedsChat,
+    animationsOn => l10n.searchNeedsAnimations,
   };
 }
 
@@ -77,6 +81,8 @@ enum SettingsPageId {
   privacy,
   sharedLinks,
   engine,
+  hostRoot,
+  hostPersona,
   remote,
   engineParams,
   subagent,
@@ -473,6 +479,22 @@ final _pages = <SettingsPageMeta>[
     links: const ['engine'],
   ),
   SettingsPageMeta(
+    SettingsPageId.hostRoot,
+    title: (l) => l.hostRootTitle,
+    group: _abilities,
+    keywords: (l) => l.hostRootKeywords,
+    freq: Freq.medium,
+    links: const ['host-root', 'root'],
+  ),
+  SettingsPageMeta(
+    SettingsPageId.hostPersona,
+    title: (l) => l.hostPersonaTitle,
+    group: _abilities,
+    keywords: (l) => l.hostPersonaKeywords,
+    freq: Freq.medium,
+    links: const ['persona', 'host-persona'],
+  ),
+  SettingsPageMeta(
     SettingsPageId.remote,
     title: (l) => l.commonRemoteHost,
     group: _hosts,
@@ -574,6 +596,14 @@ abstract final class Spots {
     group: _general,
     title: (l) => l.localeTitle,
     keywords: (l) => l.searchKwLanguage,
+  );
+  static final lockedPrompt = SettingSpot(
+    'locked-prompt',
+    page: SettingsPageId.hub,
+    group: _abilities,
+    title: (l) => l.hostPromptLockedTitle,
+    keywords: (l) => l.hostPromptLockedKeywords,
+    freq: Freq.medium,
   );
   static final askAi = SettingSpot(
     'ask-ai',
@@ -856,6 +886,13 @@ abstract final class Spots {
     title: (l) => l.performanceAnimations,
     keywords: (l) => l.searchKwAnimations,
   );
+  static final fluidMotion = SettingSpot(
+    'fluid-motion',
+    page: SettingsPageId.performance,
+    title: (l) => l.performanceFluid,
+    keywords: (l) => l.searchKwFluidMotion,
+    condition: SpotCondition.animationsOn,
+  );
 
   // 通知.
   static final notifyEnabled = SettingSpot(
@@ -971,6 +1008,13 @@ abstract final class Spots {
     keywords: (l) => l.searchKwRemoteAutoConnect,
   );
 
+  static final remoteCompactHistory = SettingSpot(
+    'remote-compact-history',
+    page: SettingsPageId.remote,
+    title: (l) => l.remoteCompactHistory,
+    keywords: (l) => l.searchKwRemoteCompactHistory,
+  );
+
   // 引擎参数 and its pages (drawn from the engine's schema).
   static final subagentDepth = SettingSpot(
     'subagent-depth',
@@ -1004,17 +1048,11 @@ abstract final class Spots {
     title: (l) => l.commonVersion,
     keywords: (l) => l.searchKwVersion,
   );
-  static final updateCheck = SettingSpot(
-    'update-check',
+  static final lockedEdition = SettingSpot(
+    'locked-edition',
     page: SettingsPageId.about,
-    title: (l) => l.updateCheck,
-    keywords: (l) => l.searchKwUpdate,
-  );
-  static final updateAuto = SettingSpot(
-    'update-auto',
-    page: SettingsPageId.about,
-    title: (l) => l.updateAutoCheck,
-    keywords: (l) => l.searchKwUpdateAuto,
+    title: (l) => l.lockedEditionNotice,
+    keywords: (l) => l.lockedEditionNotice,
   );
   static final star = SettingSpot(
     'star',
@@ -1031,6 +1069,7 @@ abstract final class Spots {
 }
 
 final _rows = <SettingSpot>[
+  Spots.lockedPrompt,
   Spots.chatTextSize,
   Spots.foldTurns,
   Spots.language,
@@ -1073,6 +1112,7 @@ final _rows = <SettingSpot>[
   Spots.refreshRate,
   Spots.blur,
   Spots.animations,
+  Spots.fluidMotion,
   Spots.notifyEnabled,
   Spots.notifyDone,
   Spots.notifyFailed,
@@ -1081,8 +1121,6 @@ final _rows = <SettingSpot>[
   Spots.notifyLive,
   Spots.notifySystem,
   Spots.shareConfig,
-  Spots.usageStats,
-  Spots.chatLogUpload,
   Spots.autoStart,
   Spots.autoSafe,
   Spots.safeMode,
@@ -1090,12 +1128,12 @@ final _rows = <SettingSpot>[
   Spots.engineUninstall,
   Spots.addSshHost,
   Spots.remoteAutoConnect,
+  Spots.remoteCompactHistory,
   Spots.subagentDepth,
   Spots.parallelCalls,
   Spots.commandTimeout,
   Spots.version,
-  Spots.updateCheck,
-  Spots.updateAuto,
+  Spots.lockedEdition,
   Spots.star,
   Spots.licenses,
 ];

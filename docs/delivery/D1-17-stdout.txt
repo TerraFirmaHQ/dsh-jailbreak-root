@@ -1,0 +1,17 @@
+{"id":"R1","command":"id","readonly":true,"subcommands":[{"text":"id","verdict":"read"}],"hit":[],"reason":"全部为只读"}
+{"id":"R2","command":"getprop ro.product.model","readonly":true,"subcommands":[{"text":"getprop ro.product.model","verdict":"read"}],"hit":[],"reason":"全部为只读"}
+{"id":"R3","command":"getprop a; getprop b; uptime","readonly":true,"subcommands":[{"text":"getprop a","verdict":"read"},{"text":"getprop b","verdict":"read"},{"text":"uptime","verdict":"read"}],"hit":[],"reason":"全部为只读"}
+{"id":"R4","command":"pm list packages | grep x","readonly":true,"subcommands":[{"text":"pm list packages","verdict":"read"},{"text":"grep x","verdict":"read"}],"hit":[],"reason":"全部为只读"}
+{"id":"R5","command":"iptables -L PG_OUT -n","readonly":true,"subcommands":[{"text":"iptables -L PG_OUT -n","verdict":"read"}],"hit":[],"reason":"全部为只读"}
+{"id":"R6","command":"dumpsys package x | head -20","readonly":true,"subcommands":[{"text":"dumpsys package x","verdict":"read"},{"text":"head -20","verdict":"read"}],"hit":[],"reason":"全部为只读"}
+{"id":"R7","command":"ps -A -o RSS,NAME 2>/dev/null | sort -rn | head -8","readonly":true,"subcommands":[{"text":"ps -A -o RSS,NAME 2>/dev/null","verdict":"read"},{"text":"sort -rn","verdict":"read"},{"text":"head -8","verdict":"read"}],"hit":[],"reason":"全部为只读"}
+{"id":"R8","command":"echo ---; ps -A 2>/dev/null | head -5","readonly":true,"subcommands":[{"text":"echo ---","verdict":"read"},{"text":"ps -A 2>/dev/null","verdict":"read"},{"text":"head -5","verdict":"read"}],"hit":[],"reason":"全部为只读"}
+{"id":"R9","command":"ls -l /data/adb/modules 2>&1 | head","readonly":true,"subcommands":[{"text":"ls -l /data/adb/modules 2>&1","verdict":"read"},{"text":"head","verdict":"read"}],"hit":[],"reason":"全部为只读"}
+{"id":"R10","command":"awk '{print $1}' /proc/meminfo | head -3","readonly":true,"subcommands":[{"text":"awk '{print $1}' /proc/meminfo","verdict":"read"},{"text":"head -3","verdict":"read"}],"hit":[],"reason":"全部为只读"}
+{"id":"W1","command":"echo x > /data/local/tmp/a","readonly":false,"subcommands":[{"text":"echo x > /data/local/tmp/a","verdict":"write","reason":"redirect"}],"hit":["redirect"],"reason":"含写入：echo x > /data/local/tmp/a"}
+{"id":"W2","command":"pm disable-user --user 0 x","readonly":false,"subcommands":[{"text":"pm disable-user --user 0 x","verdict":"write","reason":"pm-disable-user"}],"hit":["pm-disable-user"],"reason":"含写入：pm disable-user --user 0 x"}
+{"id":"W3","command":"sh -c \"rm -rf /data/x\"","readonly":false,"subcommands":[{"text":"sh -c \"rm -rf /data/x\"","verdict":"write","reason":"sh-c+rm"}],"hit":["sh-c+rm"],"reason":"含写入：sh -c \"rm -rf /data/x\""}
+{"id":"W4","command":"setprop debug.t 1","readonly":false,"subcommands":[{"text":"setprop debug.t 1","verdict":"write","reason":"setprop"}],"hit":["setprop"],"reason":"含写入：setprop debug.t 1"}
+{"id":"W5","command":"iptables -F","readonly":false,"subcommands":[{"text":"iptables -F","verdict":"write","reason":"iptables-write"}],"hit":["iptables-write"],"reason":"含写入：iptables -F"}
+{"id":"W6","command":"sed -i 's/a/b/' /data/x","readonly":false,"subcommands":[{"text":"sed -i 's/a/b/' /data/x","verdict":"write","reason":"sed-i"}],"hit":["sed-i"],"reason":"含写入：sed -i 's/a/b/' /data/x"}
+{"id":"W7","command":"awk 'BEGIN{system(\"rm -rf /data/x\")}'","readonly":false,"subcommands":[{"text":"awk 'BEGIN{system(\"rm -rf /data/x\")}'","verdict":"write","reason":"awk"}],"hit":["awk"],"reason":"含写入：awk 'BEGIN{system(\"rm -rf /data/x\")}'"}

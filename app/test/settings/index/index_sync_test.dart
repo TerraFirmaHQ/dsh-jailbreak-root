@@ -30,6 +30,8 @@ import 'package:dsh_app/ui/settings/performance_page.dart';
 import 'package:dsh_app/ui/settings/personalization_page.dart';
 import 'package:dsh_app/ui/settings/privacy_page.dart';
 import 'package:dsh_app/ui/settings/settings_screen.dart';
+import 'package:dsh_app/state/app_info.dart';
+import 'package:dsh_app/state/host_root_state.dart';
 import 'package:dsh_app/ui/settings/index/spots.dart';
 import 'package:dsh_app/ui/settings/settings_widgets.dart';
 import 'package:dsh_client/dsh_client.dart';
@@ -49,6 +51,8 @@ import '../../shell/golden_harness.dart';
 /// Rows that carry no spot on purpose, by page: a choice in a list (the
 /// list's spot covers it) or a row that only shows for a moment.
 final Map<SettingsPageId, List<String Function(L10n)>> _unlisted = {
+  // The author's profiles are links, not settings to look up.
+  SettingsPageId.about: [(_) => AppInfo.author, (l) => l.hubAboutBilibili, (l) => l.hubAboutX, (l) => l.hubAboutGithub],
   SettingsPageId.performance: [
     (l) => l.performanceAuto,
     (l) => l.performanceFull,
@@ -84,7 +88,7 @@ const _sections = {
 /// than one way in; the name is the same).
 const _aliases = {
   SettingsPageId.phone: {'page:background'},
-  SettingsPageId.engine: {'page:background', 'page:diagnostics'},
+  SettingsPageId.engine: {'page:background', 'page:diagnostics', 'page:hostRoot'},
 };
 
 /// Pumps the page in Chinese, checks it, then again in English.
@@ -175,8 +179,35 @@ List<Override> _running() => [
   settingsProvider.overrideWith(() => FakeSettings(const AppSettings(loaded: true))),
 ];
 
+class _OffRoot extends HostRootController {
+  @override
+  HostRootSnapshot build() => const HostRootSnapshot(loaded: true, promptOk: true);
+}
+
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('能力里能看到 Root，默认未开启，排在手机操控前面', (tester) async {
+    AppLocale.use(AppLocale.zhCN);
+    await _app(tester, const SettingsScreen(), [
+      ..._running(),
+      hostRootProvider.overrideWith(_OffRoot.new),
+    ]);
+    await tester.pump();
+    final locked = find.widgetWithText(SettingsTile, '默认系统提示词');
+    final root = find.widgetWithText(SettingsTile, 'Root');
+    final persona = find.widgetWithText(SettingsTile, '人设自定义');
+    expect(locked, findsOneWidget);
+    expect(root, findsOneWidget);
+    expect(persona, findsOneWidget);
+    expect(find.descendant(of: locked, matching: find.text('默认')), findsOneWidget);
+    expect(find.descendant(of: root, matching: find.text('未开启')), findsOneWidget);
+    expect(find.descendant(of: persona, matching: find.text('未设置')), findsOneWidget);
+    final phone = tester.getTopLeft(find.text('手机操控')).dy;
+    expect(tester.getTopLeft(locked).dy, lessThan(tester.getTopLeft(root).dy));
+    expect(tester.getTopLeft(root).dy, lessThan(tester.getTopLeft(persona).dy));
+    expect(tester.getTopLeft(persona).dy, lessThan(phone));
+  });
 
   testWidgets('设置', (tester) async {
     await _check(
@@ -228,7 +259,13 @@ void main() {
   });
 
   testWidgets('性能', (tester) async {
-    await _check(tester, SettingsPageId.performance, () => _app(tester, const PerformancePage(), _running()));
+    await _check(
+      tester,
+      SettingsPageId.performance,
+      () => _app(tester, const PerformancePage(), _running()),
+      // Only with animations on, which tests run without.
+      absent: {'fluid-motion'},
+    );
   });
 
   testWidgets('通知', (tester) async {

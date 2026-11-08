@@ -1070,6 +1070,12 @@ abstract class L10n {
   /// **'它在酝酿'**
   String get activityWaitingBrew;
 
+  /// No description provided for @activityReplyStalled.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有收到模型回复。可以停止，停止后能重试。'**
+  String get activityReplyStalled;
+
   /// No description provided for @activityWaitingWater.
   ///
   /// In zh, this message translates to:
@@ -2575,6 +2581,36 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'发送消息后显示'**
   String get activityUsageAfterMessage;
+
+  /// No description provided for @activityUsageWaiting.
+  ///
+  /// In zh, this message translates to:
+  /// **'等待上下文用量数据'**
+  String get activityUsageWaiting;
+
+  /// No description provided for @activityUsageProjected.
+  ///
+  /// In zh, this message translates to:
+  /// **'预计下次请求'**
+  String get activityUsageProjected;
+
+  /// No description provided for @activityUsageLastRequest.
+  ///
+  /// In zh, this message translates to:
+  /// **'上次请求'**
+  String get activityUsageLastRequest;
+
+  /// No description provided for @activityUsageBreakdownEstimate.
+  ///
+  /// In zh, this message translates to:
+  /// **'分项为独立估算，可能与总量不同'**
+  String get activityUsageBreakdownEstimate;
+
+  /// No description provided for @activityUsageCumulativeInput.
+  ///
+  /// In zh, this message translates to:
+  /// **'累计输入'**
+  String get activityUsageCumulativeInput;
 
   /// No description provided for @activityUsageContextFull.
   ///
@@ -6191,7 +6227,7 @@ abstract class L10n {
   /// No description provided for @chatOpenAttachmentFailed.
   ///
   /// In zh, this message translates to:
-  /// **'没能打开附件'**
+  /// **'没能打开附件。请把文件放到 /sdcard/Download/DSH-Go/ 后告知文件名'**
   String get chatOpenAttachmentFailed;
 
   /// No description provided for @chatReadFailed.
@@ -6289,6 +6325,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'生成中 · 可直接插话'**
   String get chatGeneratingSteerHint;
+
+  /// No description provided for @chatReplyStalled.
+  ///
+  /// In zh, this message translates to:
+  /// **'三分钟没有收到模型内容，这一轮已停止。可以再发一次。'**
+  String get chatReplyStalled;
 
   /// No description provided for @chatComposerHint.
   ///
@@ -8215,6 +8257,1368 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'{month}月{day}日'**
   String commonMonthDay(String month, int day);
+
+  /// No description provided for @companionTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'伙伴小屋'**
+  String get companionTitle;
+
+  /// No description provided for @companionEntrySubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'和她待一会儿'**
+  String get companionEntrySubtitle;
+
+  /// No description provided for @companionDefaultName.
+  ///
+  /// In zh, this message translates to:
+  /// **'她'**
+  String get companionDefaultName;
+
+  /// No description provided for @companionInputHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'和{name}说点什么'**
+  String companionInputHint(String name);
+
+  /// No description provided for @companionMenu.
+  ///
+  /// In zh, this message translates to:
+  /// **'更多'**
+  String get companionMenu;
+
+  /// No description provided for @companionVoice.
+  ///
+  /// In zh, this message translates to:
+  /// **'语音'**
+  String get companionVoice;
+
+  /// No description provided for @companionStop.
+  ///
+  /// In zh, this message translates to:
+  /// **'让她停下'**
+  String get companionStop;
+
+  /// No description provided for @companionSend.
+  ///
+  /// In zh, this message translates to:
+  /// **'发送'**
+  String get companionSend;
+
+  /// No description provided for @companionNotConnected.
+  ///
+  /// In zh, this message translates to:
+  /// **'现在连不上引擎，等一下再和我说吧。'**
+  String get companionNotConnected;
+
+  /// No description provided for @companionSendFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'这句话没送出去，要不要再说一次？'**
+  String get companionSendFailed;
+
+  /// No description provided for @companionNeedsAttention.
+  ///
+  /// In zh, this message translates to:
+  /// **'有件事要你确认，点这里去看'**
+  String get companionNeedsAttention;
+
+  /// No description provided for @companionMenuHistory.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看聊天记录'**
+  String get companionMenuHistory;
+
+  /// No description provided for @companionMenuRestart.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新认识'**
+  String get companionMenuRestart;
+
+  /// No description provided for @companionMenuRestartHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'开始一段新对话'**
+  String get companionMenuRestartHint;
+
+  /// No description provided for @companionMenuRestartConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'她会忘记这段对话。旧的记录还留在主机上，不会被删除。'**
+  String get companionMenuRestartConfirm;
+
+  /// No description provided for @companionMenuRemovePack.
+  ///
+  /// In zh, this message translates to:
+  /// **'移除素材'**
+  String get companionMenuRemovePack;
+
+  /// No description provided for @companionMenuRemoveConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'这台手机上的角色素材会被删除，聊天记录不受影响。下次进来时要重新导入。'**
+  String get companionMenuRemoveConfirm;
+
+  /// No description provided for @companionCreditAuthor.
+  ///
+  /// In zh, this message translates to:
+  /// **'作者：{name}'**
+  String companionCreditAuthor(String name);
+
+  /// No description provided for @companionSetupTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'把她接回家'**
+  String get companionSetupTitle;
+
+  /// No description provided for @companionSetupBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'角色素材不在 App 里，要用时才放进手机。选择素材包（zip）导入后就能见到她。'**
+  String get companionSetupBody;
+
+  /// No description provided for @companionSetupImport.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入素材包'**
+  String get companionSetupImport;
+
+  /// No description provided for @companionFailedTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'她没能出来'**
+  String get companionFailedTitle;
+
+  /// No description provided for @companionFailedBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'这台手机上加载失败了（{reason}）。可以重新导入素材包再试一次。'**
+  String companionFailedBody(String reason);
+
+  /// No description provided for @companionPackBroken.
+  ///
+  /// In zh, this message translates to:
+  /// **'这个文件打不开，可能不是素材包或已经损坏。'**
+  String get companionPackBroken;
+
+  /// No description provided for @companionPackRuntimeMismatch.
+  ///
+  /// In zh, this message translates to:
+  /// **'素材包里的运行库和这个版本的 App 对不上。'**
+  String get companionPackRuntimeMismatch;
+
+  /// No description provided for @companionPackNoRuntime.
+  ///
+  /// In zh, this message translates to:
+  /// **'这个包只有角色，手机上还没有运行库。先导入完整的素材包。'**
+  String get companionPackNoRuntime;
+
+  /// No description provided for @companionPackNoModel.
+  ///
+  /// In zh, this message translates to:
+  /// **'包里没有找到 Live2D 模型（.model3.json）。'**
+  String get companionPackNoModel;
+
+  /// No description provided for @companionPackUnsafe.
+  ///
+  /// In zh, this message translates to:
+  /// **'包里有不允许的文件或路径，没有导入。'**
+  String get companionPackUnsafe;
+
+  /// No description provided for @companionPackTooLarge.
+  ///
+  /// In zh, this message translates to:
+  /// **'素材包太大了。'**
+  String get companionPackTooLarge;
+
+  /// No description provided for @companionPackStorage.
+  ///
+  /// In zh, this message translates to:
+  /// **'写入失败，看看手机存储空间够不够。'**
+  String get companionPackStorage;
+
+  /// No description provided for @companionGreetFirst.
+  ///
+  /// In zh, this message translates to:
+  /// **'你好呀，我是{name}。以后就住在这里了，请多指教。'**
+  String companionGreetFirst(String name);
+
+  /// No description provided for @companionGreetMorning.
+  ///
+  /// In zh, this message translates to:
+  /// **'早呀，今天也要好好吃早饭。'**
+  String get companionGreetMorning;
+
+  /// No description provided for @companionGreetNoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'中午啦，吃过饭了吗？'**
+  String get companionGreetNoon;
+
+  /// No description provided for @companionGreetAfternoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'下午好，我刚才在发呆。'**
+  String get companionGreetAfternoon;
+
+  /// No description provided for @companionGreetEvening.
+  ///
+  /// In zh, this message translates to:
+  /// **'晚上好，今天过得怎么样？'**
+  String get companionGreetEvening;
+
+  /// No description provided for @companionGreetLate.
+  ///
+  /// In zh, this message translates to:
+  /// **'这么晚还没睡呀？'**
+  String get companionGreetLate;
+
+  /// No description provided for @companionGreetLong.
+  ///
+  /// In zh, this message translates to:
+  /// **'好久不见，我还以为你把我忘啦。'**
+  String get companionGreetLong;
+
+  /// No description provided for @companionGreetBack.
+  ///
+  /// In zh, this message translates to:
+  /// **'嗯？又回来啦。'**
+  String get companionGreetBack;
+
+  /// No description provided for @companionWake.
+  ///
+  /// In zh, this message translates to:
+  /// **'嗯……我没睡着，就是眯了一下。'**
+  String get companionWake;
+
+  /// No description provided for @companionPat1.
+  ///
+  /// In zh, this message translates to:
+  /// **'嘿嘿……再摸一会儿也可以。'**
+  String get companionPat1;
+
+  /// No description provided for @companionPat2.
+  ///
+  /// In zh, this message translates to:
+  /// **'唔，好舒服。'**
+  String get companionPat2;
+
+  /// No description provided for @companionPat3.
+  ///
+  /// In zh, this message translates to:
+  /// **'头发要被你弄乱啦。'**
+  String get companionPat3;
+
+  /// No description provided for @companionTapHead1.
+  ///
+  /// In zh, this message translates to:
+  /// **'怎么啦？'**
+  String get companionTapHead1;
+
+  /// No description provided for @companionTapHead2.
+  ///
+  /// In zh, this message translates to:
+  /// **'嗯？'**
+  String get companionTapHead2;
+
+  /// No description provided for @companionTapFace1.
+  ///
+  /// In zh, this message translates to:
+  /// **'别戳脸啦。'**
+  String get companionTapFace1;
+
+  /// No description provided for @companionTapFace2.
+  ///
+  /// In zh, this message translates to:
+  /// **'哇，手好凉。'**
+  String get companionTapFace2;
+
+  /// No description provided for @companionTapFace3.
+  ///
+  /// In zh, this message translates to:
+  /// **'我脸上有东西吗？'**
+  String get companionTapFace3;
+
+  /// No description provided for @companionTapBody1.
+  ///
+  /// In zh, this message translates to:
+  /// **'哎，吓我一跳。'**
+  String get companionTapBody1;
+
+  /// No description provided for @companionTapBody2.
+  ///
+  /// In zh, this message translates to:
+  /// **'干嘛呀？'**
+  String get companionTapBody2;
+
+  /// No description provided for @companionTapBody3.
+  ///
+  /// In zh, this message translates to:
+  /// **'围裙刚洗过的！'**
+  String get companionTapBody3;
+
+  /// No description provided for @companionTapTail1.
+  ///
+  /// In zh, this message translates to:
+  /// **'尾巴不可以随便碰！'**
+  String get companionTapTail1;
+
+  /// No description provided for @companionTapTail2.
+  ///
+  /// In zh, this message translates to:
+  /// **'呀，好痒。'**
+  String get companionTapTail2;
+
+  /// No description provided for @companionTapTail3.
+  ///
+  /// In zh, this message translates to:
+  /// **'这可是很重要的尾巴。'**
+  String get companionTapTail3;
+
+  /// No description provided for @companionTapLegs1.
+  ///
+  /// In zh, this message translates to:
+  /// **'地上有什么吗？'**
+  String get companionTapLegs1;
+
+  /// No description provided for @companionTapLegs2.
+  ///
+  /// In zh, this message translates to:
+  /// **'你在看哪里呀。'**
+  String get companionTapLegs2;
+
+  /// No description provided for @companionTease1.
+  ///
+  /// In zh, this message translates to:
+  /// **'别闹了，头都晕了。'**
+  String get companionTease1;
+
+  /// No description provided for @companionTease2.
+  ///
+  /// In zh, this message translates to:
+  /// **'再戳就不理你了！'**
+  String get companionTease2;
+
+  /// No description provided for @companionTease3.
+  ///
+  /// In zh, this message translates to:
+  /// **'你是不是很闲？'**
+  String get companionTease3;
+
+  /// No description provided for @companionStatusIdle.
+  ///
+  /// In zh, this message translates to:
+  /// **'在发呆'**
+  String get companionStatusIdle;
+
+  /// No description provided for @companionStatusListening.
+  ///
+  /// In zh, this message translates to:
+  /// **'在听你说'**
+  String get companionStatusListening;
+
+  /// No description provided for @companionStatusThinking.
+  ///
+  /// In zh, this message translates to:
+  /// **'在想'**
+  String get companionStatusThinking;
+
+  /// No description provided for @companionStatusSpeaking.
+  ///
+  /// In zh, this message translates to:
+  /// **'在说话'**
+  String get companionStatusSpeaking;
+
+  /// No description provided for @companionStatusSleeping.
+  ///
+  /// In zh, this message translates to:
+  /// **'睡着了'**
+  String get companionStatusSleeping;
+
+  /// No description provided for @companionStatusAway.
+  ///
+  /// In zh, this message translates to:
+  /// **'不在'**
+  String get companionStatusAway;
+
+  /// No description provided for @companionListening.
+  ///
+  /// In zh, this message translates to:
+  /// **'在听…'**
+  String get companionListening;
+
+  /// No description provided for @companionTouchHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'摸摸她的头试试'**
+  String get companionTouchHint;
+
+  /// No description provided for @companionArriving.
+  ///
+  /// In zh, this message translates to:
+  /// **'她正在游过来…'**
+  String get companionArriving;
+
+  /// No description provided for @companionPrivacyLine.
+  ///
+  /// In zh, this message translates to:
+  /// **'素材只存在这台手机上，聊天走当前主机。'**
+  String get companionPrivacyLine;
+
+  /// No description provided for @companionMemoryTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'她记得的事'**
+  String get companionMemoryTitle;
+
+  /// No description provided for @companionMemoryScope.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存在{host}上。她现在还不会自己想起这些，之后的版本会接上。'**
+  String companionMemoryScope(String host);
+
+  /// No description provided for @companionMemoryAdd.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加'**
+  String get companionMemoryAdd;
+
+  /// No description provided for @companionMemoryEdit.
+  ///
+  /// In zh, this message translates to:
+  /// **'修改'**
+  String get companionMemoryEdit;
+
+  /// No description provided for @companionMemorySave.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存'**
+  String get companionMemorySave;
+
+  /// No description provided for @companionMemoryHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'比如：我喜欢无糖的茶，不喝咖啡'**
+  String get companionMemoryHint;
+
+  /// No description provided for @companionMemoryForget.
+  ///
+  /// In zh, this message translates to:
+  /// **'忘掉'**
+  String get companionMemoryForget;
+
+  /// No description provided for @companionMemoryForgetTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'让她忘掉这件事？'**
+  String get companionMemoryForgetTitle;
+
+  /// No description provided for @companionMemoryEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有记下什么'**
+  String get companionMemoryEmpty;
+
+  /// No description provided for @companionMemoryEmptyHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'想让她记住的事，可以在这里写下来。只存在当前主机上，随时能改能删。'**
+  String get companionMemoryEmptyHint;
+
+  /// No description provided for @companionMemoryUnsupported.
+  ///
+  /// In zh, this message translates to:
+  /// **'这台主机还不能保存她的记忆'**
+  String get companionMemoryUnsupported;
+
+  /// No description provided for @companionMemoryUnsupportedHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'经 DSH Remote 中继连接时用不了，或者这台主机的 dsh-go 桥接比较旧。'**
+  String get companionMemoryUnsupportedHint;
+
+  /// No description provided for @companionMemoryLoadFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'没读到'**
+  String get companionMemoryLoadFailed;
+
+  /// No description provided for @companionMemoryRetry.
+  ///
+  /// In zh, this message translates to:
+  /// **'重试'**
+  String get companionMemoryRetry;
+
+  /// No description provided for @companionMemoryConflict.
+  ///
+  /// In zh, this message translates to:
+  /// **'刚才另一处改过了，已经刷新'**
+  String get companionMemoryConflict;
+
+  /// No description provided for @companionMemoryFull.
+  ///
+  /// In zh, this message translates to:
+  /// **'记满了，先删掉一些吧'**
+  String get companionMemoryFull;
+
+  /// No description provided for @companionMemorySaveFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'没保存上，再试一次吧'**
+  String get companionMemorySaveFailed;
+
+  /// No description provided for @companionStatusSnacking.
+  ///
+  /// In zh, this message translates to:
+  /// **'在吃点心'**
+  String get companionStatusSnacking;
+
+  /// No description provided for @companionStatusPlaying.
+  ///
+  /// In zh, this message translates to:
+  /// **'在玩泡泡'**
+  String get companionStatusPlaying;
+
+  /// No description provided for @companionStatusResting.
+  ///
+  /// In zh, this message translates to:
+  /// **'在软垫上歇着'**
+  String get companionStatusResting;
+
+  /// No description provided for @companionSnack1.
+  ///
+  /// In zh, this message translates to:
+  /// **'啊呜——好吃！'**
+  String get companionSnack1;
+
+  /// No description provided for @companionSnack2.
+  ///
+  /// In zh, this message translates to:
+  /// **'是海苔味的，谢谢你。'**
+  String get companionSnack2;
+
+  /// No description provided for @companionSnack3.
+  ///
+  /// In zh, this message translates to:
+  /// **'嗯……我还能再吃一块吗？'**
+  String get companionSnack3;
+
+  /// No description provided for @companionPlay1.
+  ///
+  /// In zh, this message translates to:
+  /// **'嘿，接住啦！'**
+  String get companionPlay1;
+
+  /// No description provided for @companionPlay2.
+  ///
+  /// In zh, this message translates to:
+  /// **'泡泡软软的，好好玩。'**
+  String get companionPlay2;
+
+  /// No description provided for @companionPlay3.
+  ///
+  /// In zh, this message translates to:
+  /// **'它又飘回去了。'**
+  String get companionPlay3;
+
+  /// No description provided for @companionRest1.
+  ///
+  /// In zh, this message translates to:
+  /// **'那我在这儿靠一会儿。'**
+  String get companionRest1;
+
+  /// No description provided for @companionRest2.
+  ///
+  /// In zh, this message translates to:
+  /// **'你说，我听着呢。'**
+  String get companionRest2;
+
+  /// No description provided for @companionTouchHintHome.
+  ///
+  /// In zh, this message translates to:
+  /// **'点点贝壳、泡泡和软垫，点心还能拖到她嘴边'**
+  String get companionTouchHintHome;
+
+  /// No description provided for @companionMenuMode.
+  ///
+  /// In zh, this message translates to:
+  /// **'对话方式'**
+  String get companionMenuMode;
+
+  /// No description provided for @companionModeLight.
+  ///
+  /// In zh, this message translates to:
+  /// **'轻量'**
+  String get companionModeLight;
+
+  /// No description provided for @companionModeLightHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'只聊天。手机直连模型，不用启动引擎'**
+  String get companionModeLightHint;
+
+  /// No description provided for @companionModeFull.
+  ///
+  /// In zh, this message translates to:
+  /// **'完整'**
+  String get companionModeFull;
+
+  /// No description provided for @companionModeFullHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'主机上的 DSH 引擎，带工具和手机操控'**
+  String get companionModeFullHint;
+
+  /// No description provided for @companionLightNoKey.
+  ///
+  /// In zh, this message translates to:
+  /// **'轻量模式要用 DeepSeek API Key，在设置里填上就能和我聊啦。'**
+  String get companionLightNoKey;
+
+  /// No description provided for @companionLightBadKey.
+  ///
+  /// In zh, this message translates to:
+  /// **'API Key 好像不对，或者已经失效了。'**
+  String get companionLightBadKey;
+
+  /// No description provided for @companionLightBusy.
+  ///
+  /// In zh, this message translates to:
+  /// **'那边有点忙，等一下再和我说吧。'**
+  String get companionLightBusy;
+
+  /// No description provided for @companionNotConnectedTryLight.
+  ///
+  /// In zh, this message translates to:
+  /// **'现在连不上主机。只想聊天的话，可以在右上角菜单换成轻量模式。'**
+  String get companionNotConnectedTryLight;
+
+  /// No description provided for @companionMenuRestartLightHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'清掉这台手机上的聊天记录'**
+  String get companionMenuRestartLightHint;
+
+  /// No description provided for @companionMenuRestartLightConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'她会忘记这段对话，这台手机上的聊天记录会被删掉。'**
+  String get companionMenuRestartLightConfirm;
+
+  /// No description provided for @companionInviteRest.
+  ///
+  /// In zh, this message translates to:
+  /// **'要不要陪我在软垫上歇一会儿？'**
+  String get companionInviteRest;
+
+  /// No description provided for @companionInviteAccept.
+  ///
+  /// In zh, this message translates to:
+  /// **'好呀'**
+  String get companionInviteAccept;
+
+  /// No description provided for @companionInviteDecline.
+  ///
+  /// In zh, this message translates to:
+  /// **'等会儿'**
+  String get companionInviteDecline;
+
+  /// No description provided for @companionInviteYes1.
+  ///
+  /// In zh, this message translates to:
+  /// **'嘿嘿，就歇一小会儿。'**
+  String get companionInviteYes1;
+
+  /// No description provided for @companionInviteYes2.
+  ///
+  /// In zh, this message translates to:
+  /// **'那我先躺好啦，你也放松点。'**
+  String get companionInviteYes2;
+
+  /// No description provided for @companionMenuInvite.
+  ///
+  /// In zh, this message translates to:
+  /// **'主动邀请'**
+  String get companionMenuInvite;
+
+  /// No description provided for @companionMenuInviteHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'你安静陪着她时，她偶尔会邀你一起歇一会儿'**
+  String get companionMenuInviteHint;
+
+  /// No description provided for @companionSetupBundled.
+  ///
+  /// In zh, this message translates to:
+  /// **'接她回家'**
+  String get companionSetupBundled;
+
+  /// No description provided for @companionSetupBodyBundled.
+  ///
+  /// In zh, this message translates to:
+  /// **'她就在 App 里，点一下就到，素材只解压到这台手机上。也可以导入别的素材包（zip）。'**
+  String get companionSetupBodyBundled;
+
+  /// No description provided for @companionSetupImportOther.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入别的素材包'**
+  String get companionSetupImportOther;
+
+  /// No description provided for @companionMenuRemoveConfirmBundled.
+  ///
+  /// In zh, this message translates to:
+  /// **'这台手机上解压出来的角色素材会被删除，聊天记录不受影响。之后随时可以再接她回来。'**
+  String get companionMenuRemoveConfirmBundled;
+
+  /// No description provided for @companionHug1.
+  ///
+  /// In zh, this message translates to:
+  /// **'唔……抱抱。'**
+  String get companionHug1;
+
+  /// No description provided for @companionHug2.
+  ///
+  /// In zh, this message translates to:
+  /// **'被你这样抱着，好安心。'**
+  String get companionHug2;
+
+  /// No description provided for @companionHug3.
+  ///
+  /// In zh, this message translates to:
+  /// **'再抱一会儿，就一会儿。'**
+  String get companionHug3;
+
+  /// No description provided for @companionBondTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'你们的关系'**
+  String get companionBondTitle;
+
+  /// No description provided for @companionBond0.
+  ///
+  /// In zh, this message translates to:
+  /// **'刚认识'**
+  String get companionBond0;
+
+  /// No description provided for @companionBond1.
+  ///
+  /// In zh, this message translates to:
+  /// **'渐渐熟悉'**
+  String get companionBond1;
+
+  /// No description provided for @companionBond2.
+  ///
+  /// In zh, this message translates to:
+  /// **'熟起来了'**
+  String get companionBond2;
+
+  /// No description provided for @companionBond3.
+  ///
+  /// In zh, this message translates to:
+  /// **'很亲近'**
+  String get companionBond3;
+
+  /// No description provided for @companionCloser1.
+  ///
+  /// In zh, this message translates to:
+  /// **'好像……没那么紧张了。'**
+  String get companionCloser1;
+
+  /// No description provided for @companionCloser2.
+  ///
+  /// In zh, this message translates to:
+  /// **'和你待着，越来越自在了。'**
+  String get companionCloser2;
+
+  /// No description provided for @companionCloser3.
+  ///
+  /// In zh, this message translates to:
+  /// **'以后也要常来哦，我会想你的。'**
+  String get companionCloser3;
+
+  /// No description provided for @companionPatClose.
+  ///
+  /// In zh, this message translates to:
+  /// **'最喜欢被你摸头了。'**
+  String get companionPatClose;
+
+  /// No description provided for @companionHugClose.
+  ///
+  /// In zh, this message translates to:
+  /// **'抱紧一点也没关系哦。'**
+  String get companionHugClose;
+
+  /// No description provided for @companionTaskDone.
+  ///
+  /// In zh, this message translates to:
+  /// **'「{title}」那边跑完啦。'**
+  String companionTaskDone(String title);
+
+  /// No description provided for @companionTaskDoneUntitled.
+  ///
+  /// In zh, this message translates to:
+  /// **'你那边的任务跑完啦。'**
+  String get companionTaskDoneUntitled;
+
+  /// No description provided for @companionTaskFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'「{title}」好像出错了，要去看看吗？'**
+  String companionTaskFailed(String title);
+
+  /// No description provided for @companionTaskFailedUntitled.
+  ///
+  /// In zh, this message translates to:
+  /// **'你那边的任务好像出错了，要去看看吗？'**
+  String get companionTaskFailedUntitled;
+
+  /// No description provided for @companionTaskApproval.
+  ///
+  /// In zh, this message translates to:
+  /// **'「{title}」在等你批准。'**
+  String companionTaskApproval(String title);
+
+  /// No description provided for @companionTaskApprovalUntitled.
+  ///
+  /// In zh, this message translates to:
+  /// **'你那边有件事在等你批准。'**
+  String get companionTaskApprovalUntitled;
+
+  /// No description provided for @companionTaskQuestion.
+  ///
+  /// In zh, this message translates to:
+  /// **'「{title}」有事想问你。'**
+  String companionTaskQuestion(String title);
+
+  /// No description provided for @companionTaskQuestionUntitled.
+  ///
+  /// In zh, this message translates to:
+  /// **'你那边有个问题在等你回答。'**
+  String get companionTaskQuestionUntitled;
+
+  /// No description provided for @companionTaskOpen.
+  ///
+  /// In zh, this message translates to:
+  /// **'去看看'**
+  String get companionTaskOpen;
+
+  /// No description provided for @companionMenuVoice.
+  ///
+  /// In zh, this message translates to:
+  /// **'她的声音'**
+  String get companionMenuVoice;
+
+  /// No description provided for @companionMenuVoiceHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'用手机自带的语音读出她说的话'**
+  String get companionMenuVoiceHint;
+
+  /// No description provided for @companionVoiceHello.
+  ///
+  /// In zh, this message translates to:
+  /// **'你好呀，这是我的声音。喜欢的话就留着吧。'**
+  String get companionVoiceHello;
+
+  /// No description provided for @companionVoiceUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'这台手机没有能用的中文语音。可以在系统设置的「文字转语音」里装一个。'**
+  String get companionVoiceUnavailable;
+
+  /// No description provided for @companionWidgetWaiting.
+  ///
+  /// In zh, this message translates to:
+  /// **'在小屋里等你'**
+  String get companionWidgetWaiting;
+
+  /// No description provided for @companionVoiceOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'让她出声'**
+  String get companionVoiceOn;
+
+  /// No description provided for @companionVoiceOffHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开时她会先用选好的声音打个招呼。'**
+  String get companionVoiceOffHint;
+
+  /// No description provided for @companionVoiceOff.
+  ///
+  /// In zh, this message translates to:
+  /// **'关'**
+  String get companionVoiceOff;
+
+  /// No description provided for @companionVoiceSource.
+  ///
+  /// In zh, this message translates to:
+  /// **'声音来源'**
+  String get companionVoiceSource;
+
+  /// No description provided for @companionVoiceSystem.
+  ///
+  /// In zh, this message translates to:
+  /// **'手机自带'**
+  String get companionVoiceSystem;
+
+  /// No description provided for @companionVoiceSystemHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'系统的文字转语音，不联网也能用'**
+  String get companionVoiceSystemHint;
+
+  /// No description provided for @companionVoiceOpenai.
+  ///
+  /// In zh, this message translates to:
+  /// **'OpenAI 兼容接口'**
+  String get companionVoiceOpenai;
+
+  /// No description provided for @companionVoiceOpenaiHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'OpenAI、硅基流动，以及大多数自建的 GPT-SoVITS、CosyVoice、edge-tts 服务'**
+  String get companionVoiceOpenaiHint;
+
+  /// No description provided for @companionVoiceCustom.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义 HTTP'**
+  String get companionVoiceCustom;
+
+  /// No description provided for @companionVoiceCustomHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'别的接口：自己填请求和返回的格式'**
+  String get companionVoiceCustomHint;
+
+  /// No description provided for @companionVoiceApi.
+  ///
+  /// In zh, this message translates to:
+  /// **'接口'**
+  String get companionVoiceApi;
+
+  /// No description provided for @companionVoiceBase.
+  ///
+  /// In zh, this message translates to:
+  /// **'地址'**
+  String get companionVoiceBase;
+
+  /// No description provided for @companionVoiceBaseHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'填到 /v1 为止，App 会接上 /audio/speech'**
+  String get companionVoiceBaseHelper;
+
+  /// No description provided for @companionVoiceKeyHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'存在这台手机的安全存储里'**
+  String get companionVoiceKeyHelper;
+
+  /// No description provided for @companionVoiceModel.
+  ///
+  /// In zh, this message translates to:
+  /// **'模型'**
+  String get companionVoiceModel;
+
+  /// No description provided for @companionVoiceVoice.
+  ///
+  /// In zh, this message translates to:
+  /// **'音色'**
+  String get companionVoiceVoice;
+
+  /// No description provided for @companionVoiceVoiceHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务给的音色名，比如 alloy，或你自建服务里的角色名'**
+  String get companionVoiceVoiceHelper;
+
+  /// No description provided for @companionVoiceRequest.
+  ///
+  /// In zh, this message translates to:
+  /// **'请求'**
+  String get companionVoiceRequest;
+
+  /// No description provided for @companionVoiceUrl.
+  ///
+  /// In zh, this message translates to:
+  /// **'请求地址'**
+  String get companionVoiceUrl;
+
+  /// No description provided for @companionVoiceUrlHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'地址里也可以用 {text}'**
+  String get companionVoiceUrlHelper;
+
+  /// No description provided for @companionVoiceMethod.
+  ///
+  /// In zh, this message translates to:
+  /// **'方法'**
+  String get companionVoiceMethod;
+
+  /// No description provided for @companionVoiceHeaders.
+  ///
+  /// In zh, this message translates to:
+  /// **'请求头'**
+  String get companionVoiceHeaders;
+
+  /// No description provided for @companionVoiceHeadersHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'每行一个；会存进安全存储'**
+  String get companionVoiceHeadersHelper;
+
+  /// No description provided for @companionVoiceBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'请求体'**
+  String get companionVoiceBody;
+
+  /// No description provided for @companionVoiceBodyHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'{text} 会换成她要说的话'**
+  String get companionVoiceBodyHelper;
+
+  /// No description provided for @companionVoiceField.
+  ///
+  /// In zh, this message translates to:
+  /// **'音频字段'**
+  String get companionVoiceField;
+
+  /// No description provided for @companionVoiceFieldHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'返回 JSON 时，音频在哪个字段（base64 或链接），比如 data.audio；直接返回音频就留空'**
+  String get companionVoiceFieldHelper;
+
+  /// No description provided for @companionVoicePrivacy.
+  ///
+  /// In zh, this message translates to:
+  /// **'她要说的话会发给你填的这个服务。'**
+  String get companionVoicePrivacy;
+
+  /// No description provided for @companionVoicePreview.
+  ///
+  /// In zh, this message translates to:
+  /// **'试听'**
+  String get companionVoicePreview;
+
+  /// No description provided for @companionVoicePreviewing.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在请求…'**
+  String get companionVoicePreviewing;
+
+  /// No description provided for @companionVoicePreviewOk.
+  ///
+  /// In zh, this message translates to:
+  /// **'能用，听到了吗？'**
+  String get companionVoicePreviewOk;
+
+  /// No description provided for @companionVoicePreviewFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'没成功：{reason}'**
+  String companionVoicePreviewFailed(String reason);
+
+  /// No description provided for @companionVoiceNotSetUp.
+  ///
+  /// In zh, this message translates to:
+  /// **'先把上面的地址填好。'**
+  String get companionVoiceNotSetUp;
+
+  /// No description provided for @companionVoiceFallback.
+  ///
+  /// In zh, this message translates to:
+  /// **'外接的声音这次没连上，先用了手机自带的声音'**
+  String get companionVoiceFallback;
+
+  /// No description provided for @companionGreetFirstNameless.
+  ///
+  /// In zh, this message translates to:
+  /// **'你好呀，以后我就住在这里了，请多指教。'**
+  String get companionGreetFirstNameless;
+
+  /// No description provided for @companionRenamed.
+  ///
+  /// In zh, this message translates to:
+  /// **'「{name}」……好，以后我就叫这个名字啦。'**
+  String companionRenamed(String name);
+
+  /// No description provided for @companionVoicePreset.
+  ///
+  /// In zh, this message translates to:
+  /// **'常用服务'**
+  String get companionVoicePreset;
+
+  /// No description provided for @companionVoicePresetHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'小米 MiMo、OpenAI、硅基流动、阿里云百炼：填个 Key 就能用'**
+  String get companionVoicePresetHint;
+
+  /// No description provided for @companionVoiceService.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务'**
+  String get companionVoiceService;
+
+  /// No description provided for @companionVoiceKeyWhere.
+  ///
+  /// In zh, this message translates to:
+  /// **'在 {site} 申请；存在这台手机的安全存储里'**
+  String companionVoiceKeyWhere(String site);
+
+  /// No description provided for @companionVoiceVoiceCustomHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'点一个，或者直接填服务给的音色 ID'**
+  String get companionVoiceVoiceCustomHelper;
+
+  /// No description provided for @companionVoiceStyle.
+  ///
+  /// In zh, this message translates to:
+  /// **'说话风格'**
+  String get companionVoiceStyle;
+
+  /// No description provided for @companionVoiceStyleHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'描述她说话的语气，服务会照着读；留空用默认的温柔少女音'**
+  String get companionVoiceStyleHelper;
+
+  /// No description provided for @companionVoiceFemale.
+  ///
+  /// In zh, this message translates to:
+  /// **'女声'**
+  String get companionVoiceFemale;
+
+  /// No description provided for @companionVoiceMale.
+  ///
+  /// In zh, this message translates to:
+  /// **'男声'**
+  String get companionVoiceMale;
+
+  /// No description provided for @companionClonePreset.
+  ///
+  /// In zh, this message translates to:
+  /// **'预置音色'**
+  String get companionClonePreset;
+
+  /// No description provided for @companionCloneMine.
+  ///
+  /// In zh, this message translates to:
+  /// **'克隆声音'**
+  String get companionCloneMine;
+
+  /// No description provided for @companionVoicePresetVoice.
+  ///
+  /// In zh, this message translates to:
+  /// **'预置音色'**
+  String get companionVoicePresetVoice;
+
+  /// No description provided for @companionCloneRecording.
+  ///
+  /// In zh, this message translates to:
+  /// **'录音'**
+  String get companionCloneRecording;
+
+  /// No description provided for @companionCloneHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'5–30 秒、只有一个人在说话、没有背景音的 mp3 或 wav，最大 7 MB。请只用你自己的声音，或本人同意过的声音。她说的每句话都会带上这段录音发给小米。'**
+  String get companionCloneHelper;
+
+  /// No description provided for @companionCloneNone.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有录音'**
+  String get companionCloneNone;
+
+  /// No description provided for @companionCloneReady.
+  ///
+  /// In zh, this message translates to:
+  /// **'已上传 · {detail}'**
+  String companionCloneReady(String detail);
+
+  /// No description provided for @companionCloneSeconds.
+  ///
+  /// In zh, this message translates to:
+  /// **'{n} 秒'**
+  String companionCloneSeconds(int n);
+
+  /// No description provided for @companionClonePick.
+  ///
+  /// In zh, this message translates to:
+  /// **'选一段录音'**
+  String get companionClonePick;
+
+  /// No description provided for @companionCloneReplace.
+  ///
+  /// In zh, this message translates to:
+  /// **'换一段'**
+  String get companionCloneReplace;
+
+  /// No description provided for @companionCloneTooLarge.
+  ///
+  /// In zh, this message translates to:
+  /// **'录音太大了，最大 7 MB。剪短一点再试。'**
+  String get companionCloneTooLarge;
+
+  /// No description provided for @companionCloneNotAudio.
+  ///
+  /// In zh, this message translates to:
+  /// **'只支持 mp3 或 wav 格式的录音。'**
+  String get companionCloneNotAudio;
+
+  /// No description provided for @companionCloneFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'没能读取这段录音。'**
+  String get companionCloneFailed;
+
+  /// No description provided for @companionMenuPersona.
+  ///
+  /// In zh, this message translates to:
+  /// **'她的设定'**
+  String get companionMenuPersona;
+
+  /// No description provided for @companionPersonaName.
+  ///
+  /// In zh, this message translates to:
+  /// **'名字'**
+  String get companionPersonaName;
+
+  /// No description provided for @companionPersonaNameHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'留空用素材包里的名字'**
+  String get companionPersonaNameHelper;
+
+  /// No description provided for @companionPersonaCallMe.
+  ///
+  /// In zh, this message translates to:
+  /// **'她怎么叫你'**
+  String get companionPersonaCallMe;
+
+  /// No description provided for @companionPersonaCallMeHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'比如 小周'**
+  String get companionPersonaCallMeHint;
+
+  /// No description provided for @companionPersonaCallMeHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'留空就不特别称呼'**
+  String get companionPersonaCallMeHelper;
+
+  /// No description provided for @companionPersonaText.
+  ///
+  /// In zh, this message translates to:
+  /// **'人设'**
+  String get companionPersonaText;
+
+  /// No description provided for @companionPersonaTextLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'她是谁、怎么说话'**
+  String get companionPersonaTextLabel;
+
+  /// No description provided for @companionPersonaTextHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'性格、身份、说话方式、哪些话不说，都写在这里，删改随你。只有表情动作的标记格式由 App 自动加上。'**
+  String get companionPersonaTextHelper;
+
+  /// No description provided for @companionPersonaReset.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复默认'**
+  String get companionPersonaReset;
+
+  /// No description provided for @companionPersonaFooter.
+  ///
+  /// In zh, this message translates to:
+  /// **'轻量模式下一句就生效；完整模式会在你下一条消息里把新设定告诉她。'**
+  String get companionPersonaFooter;
+
+  /// No description provided for @engineNewChatDefaultsLast.
+  ///
+  /// In zh, this message translates to:
+  /// **'新对话默认（上次选择）'**
+  String get engineNewChatDefaultsLast;
+
+  /// No description provided for @engineNewChatDefaultsFixed.
+  ///
+  /// In zh, this message translates to:
+  /// **'新对话默认（固定）'**
+  String get engineNewChatDefaultsFixed;
+
+  /// No description provided for @engineNewChatUseLast.
+  ///
+  /// In zh, this message translates to:
+  /// **'沿用上次'**
+  String get engineNewChatUseLast;
+
+  /// No description provided for @engineNewChatUseFixed.
+  ///
+  /// In zh, this message translates to:
+  /// **'固定默认'**
+  String get engineNewChatUseFixed;
+
+  /// No description provided for @engineNewChatDefaultsHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存在当前主机，只影响新对话的模型和思考深度。权限仍用独立默认，不继承临时会话授权。'**
+  String get engineNewChatDefaultsHint;
+
+  /// No description provided for @engineNewChatDefaultsLegacy.
+  ///
+  /// In zh, this message translates to:
+  /// **'此引擎仅支持沿用上次选择；不支持固定默认，也无法确认切换时默认值是否保存成功。'**
+  String get engineNewChatDefaultsLegacy;
+
+  /// No description provided for @engineNewChatDefaultsUnsupported.
+  ///
+  /// In zh, this message translates to:
+  /// **'此主机没有可编辑的默认模型设置'**
+  String get engineNewChatDefaultsUnsupported;
+
+  /// No description provided for @engineNewChatDefaultsSelectionUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'此模型或思考深度已不可用，请重新选择。'**
+  String get engineNewChatDefaultsSelectionUnavailable;
+
+  /// No description provided for @engineNewChatDefaultsInheritedEffort.
+  ///
+  /// In zh, this message translates to:
+  /// **'主机基础配置指定了思考深度，不能在这里为无思考模型清除。请先调整主机配置。'**
+  String get engineNewChatDefaultsInheritedEffort;
+
+  /// No description provided for @engineNewChatDefaultsSaving.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在保存并确认默认值…'**
+  String get engineNewChatDefaultsSaving;
+
+  /// No description provided for @engineNewChatDefaultsUnconfirmed.
+  ///
+  /// In zh, this message translates to:
+  /// **'没能确认完整默认值，请刷新后检查模型和思考深度。主机基础配置或其他客户端可能已改变它们。'**
+  String get engineNewChatDefaultsUnconfirmed;
+
+  /// No description provided for @engineModelDefaultSaveFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前对话的模型已切换，但新对话默认未保存。请到设置 › 模型检查并重试。'**
+  String get engineModelDefaultSaveFailed;
 
   /// No description provided for @engineAccountSignedIn.
   ///
@@ -11378,6 +12782,12 @@ abstract class L10n {
   /// **'高级'**
   String get featuresRepeatAdvanced;
 
+  /// No description provided for @featuresRepeatCustom.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义'**
+  String get featuresRepeatCustom;
+
   /// No description provided for @featuresIntervalSeconds.
   ///
   /// In zh, this message translates to:
@@ -12530,6 +13940,444 @@ abstract class L10n {
   /// **'对话'**
   String get fileChatFallback;
 
+  /// No description provided for @hostDetailsConnectionType.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接方式'**
+  String get hostDetailsConnectionType;
+
+  /// No description provided for @hostDetailsSshNetworkHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'通过 SSH 隧道连接。此连接不提供 LAN / P2P 路径检测或延迟测量。'**
+  String get hostDetailsSshNetworkHint;
+
+  /// No description provided for @hostRootTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'Root'**
+  String get hostRootTitle;
+
+  /// No description provided for @hostRootBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'主机 root 默认关闭。关闭时不会调用 su。打开后，read_file 按固定命令读取（含 /data/adb，不弹窗）。任意 shell 和写入都要先看预览；改隐藏、模块、SELinux 或挂载会标明。取消则不执行。'**
+  String get hostRootBody;
+
+  /// No description provided for @hostRootSwitch.
+  ///
+  /// In zh, this message translates to:
+  /// **'主机 root 工具'**
+  String get hostRootSwitch;
+
+  /// No description provided for @hostRootChroot.
+  ///
+  /// In zh, this message translates to:
+  /// **'可选 chroot 引擎'**
+  String get hostRootChroot;
+
+  /// No description provided for @hostRootChrootHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'这条挂载路径已禁用。日常仍用上游 PRoot，不会为此调用 su。'**
+  String get hostRootChrootHint;
+
+  /// No description provided for @hostRootReadonlySkip.
+  ///
+  /// In zh, this message translates to:
+  /// **'只读命令免确认'**
+  String get hostRootReadonlySkip;
+
+  /// No description provided for @hostRootReadonlySkipHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认关闭。打开后只有分类为只读的命令直接执行。写入和未知命令仍要确认。分类不是隔离。'**
+  String get hostRootReadonlySkipHint;
+
+  /// No description provided for @hostRootClearMemory.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除本会话命令记忆'**
+  String get hostRootClearMemory;
+
+  /// No description provided for @hostRootSession.
+  ///
+  /// In zh, this message translates to:
+  /// **'本会话不再询问'**
+  String get hostRootSession;
+
+  /// No description provided for @hostPersonaCall.
+  ///
+  /// In zh, this message translates to:
+  /// **'称呼'**
+  String get hostPersonaCall;
+
+  /// No description provided for @hostPersonaSelf.
+  ///
+  /// In zh, this message translates to:
+  /// **'自称'**
+  String get hostPersonaSelf;
+
+  /// No description provided for @hostPersonaTone.
+  ///
+  /// In zh, this message translates to:
+  /// **'语气'**
+  String get hostPersonaTone;
+
+  /// No description provided for @hostPersonaSpeech.
+  ///
+  /// In zh, this message translates to:
+  /// **'口语程度'**
+  String get hostPersonaSpeech;
+
+  /// No description provided for @hostPersonaNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'补充'**
+  String get hostPersonaNote;
+
+  /// No description provided for @hostPersonaRestore.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复默认'**
+  String get hostPersonaRestore;
+
+  /// No description provided for @hostPersonaScope.
+  ///
+  /// In zh, this message translates to:
+  /// **'这些只影响表达，不替换渠道系统提示词，也不改变审批。'**
+  String get hostPersonaScope;
+
+  /// No description provided for @lockedEditionNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前为锁定版本'**
+  String get lockedEditionNotice;
+
+  /// No description provided for @hostRootPrompt.
+  ///
+  /// In zh, this message translates to:
+  /// **'内置提示词已锁定'**
+  String get hostRootPrompt;
+
+  /// No description provided for @hostRootPromptMissing.
+  ///
+  /// In zh, this message translates to:
+  /// **'内置提示词资源缺失，没有用别的文本顶替。'**
+  String get hostRootPromptMissing;
+
+  /// No description provided for @hostRootPersona.
+  ///
+  /// In zh, this message translates to:
+  /// **'人设'**
+  String get hostRootPersona;
+
+  /// No description provided for @hostRootPersonaHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认空白。这不是协调员，也不会替换渠道系统提示词。'**
+  String get hostRootPersonaHint;
+
+  /// No description provided for @hostRootSave.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存'**
+  String get hostRootSave;
+
+  /// No description provided for @hostRootNoSu.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有拿到 su。开关保持关闭。'**
+  String get hostRootNoSu;
+
+  /// No description provided for @hostRootBattery.
+  ///
+  /// In zh, this message translates to:
+  /// **'电池豁免（读回确认）'**
+  String get hostRootBattery;
+
+  /// No description provided for @hostRootMigration.
+  ///
+  /// In zh, this message translates to:
+  /// **'升级只保留 /root。/usr/local 和 /opt 需要重装。新引擎写入的定时任务不能保证被旧引擎读回。'**
+  String get hostRootMigration;
+
+  /// No description provided for @hostRootKeywords.
+  ///
+  /// In zh, this message translates to:
+  /// **'主机,su,root,data/adb,隐藏,模块'**
+  String get hostRootKeywords;
+
+  /// No description provided for @hostRootRestarting.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在重启本机引擎。会话还在，root 工具随这次启动挂上或卸下。'**
+  String get hostRootRestarting;
+
+  /// No description provided for @hostRootPendingStart.
+  ///
+  /// In zh, this message translates to:
+  /// **'本机引擎没在跑。下次启动时才会按这个开关挂上或卸下工具。'**
+  String get hostRootPendingStart;
+
+  /// No description provided for @hostRootSafe.
+  ///
+  /// In zh, this message translates to:
+  /// **'安全模式不加载 root 工具，也没有为此调用 su。'**
+  String get hostRootSafe;
+
+  /// No description provided for @hostRootToolsOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'工具已登记。shell 以 uid 0 执行，read_file 可读 /data/adb。'**
+  String get hostRootToolsOn;
+
+  /// No description provided for @hostRootToolsOff.
+  ///
+  /// In zh, this message translates to:
+  /// **'开关关闭。不会调用 su，模型也看不到 root 工具。'**
+  String get hostRootToolsOff;
+
+  /// No description provided for @hostRootApprovalTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许执行？'**
+  String get hostRootApprovalTitle;
+
+  /// No description provided for @hostRootAutoAllow.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动允许 root 命令（不再逐条询问）'**
+  String get hostRootAutoAllow;
+
+  /// No description provided for @hostRootAutoAllowHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认关闭。打开后 shell 不再逐条询问，仍会分类并写入本机审计。关闭后恢复询问。不会因此调用 su。'**
+  String get hostRootAutoAllowHint;
+
+  /// No description provided for @hostRootAudit.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看审计'**
+  String get hostRootAudit;
+
+  /// No description provided for @hostRootAuditClear.
+  ///
+  /// In zh, this message translates to:
+  /// **'清空审计'**
+  String get hostRootAuditClear;
+
+  /// No description provided for @hostRootApprovalProtected.
+  ///
+  /// In zh, this message translates to:
+  /// **'这会改动隐藏环境、模块、SELinux 或挂载。不点允许就不会执行。'**
+  String get hostRootApprovalProtected;
+
+  /// No description provided for @hostRootAllow.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许'**
+  String get hostRootAllow;
+
+  /// No description provided for @hostRootDeny.
+  ///
+  /// In zh, this message translates to:
+  /// **'拒绝'**
+  String get hostRootDeny;
+
+  /// No description provided for @hostPersonaTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'人设自定义'**
+  String get hostPersonaTitle;
+
+  /// No description provided for @hostPersonaKeywords.
+  ///
+  /// In zh, this message translates to:
+  /// **'人设,人格,自定义,空白'**
+  String get hostPersonaKeywords;
+
+  /// No description provided for @hostPromptLockedTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认系统提示词'**
+  String get hostPromptLockedTitle;
+
+  /// No description provided for @hostPromptLockedValue.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认'**
+  String get hostPromptLockedValue;
+
+  /// No description provided for @hostPromptLockedHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'渠道没单独保存过提示词、并且「使用内置系统提示词」开着时，用这份原文。到渠道里改。清空或关掉后，这里不会把原文写回去。'**
+  String get hostPromptLockedHint;
+
+  /// No description provided for @hostPromptLockedKeywords.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认,系统提示词,渠道,内置'**
+  String get hostPromptLockedKeywords;
+
+  /// No description provided for @channelPromptTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'系统提示词'**
+  String get channelPromptTitle;
+
+  /// No description provided for @channelPromptBuiltin.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用内置系统提示词'**
+  String get channelPromptBuiltin;
+
+  /// No description provided for @channelPromptBuiltinHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认开。关掉只取消“没保存过文本时用默认”的回退，不会清掉已经写下的字。打开也不会把空的或改过的文本填回去。'**
+  String get channelPromptBuiltinHint;
+
+  /// No description provided for @channelPromptOpenChannels.
+  ///
+  /// In zh, this message translates to:
+  /// **'到渠道里编辑'**
+  String get channelPromptOpenChannels;
+
+  /// No description provided for @channelPromptRestore.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复默认'**
+  String get channelPromptRestore;
+
+  /// No description provided for @channelPromptRestoreConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'用默认原文替换当前文本，并打开内置开关？'**
+  String get channelPromptRestoreConfirm;
+
+  /// No description provided for @channelPromptClear.
+  ///
+  /// In zh, this message translates to:
+  /// **'清空'**
+  String get channelPromptClear;
+
+  /// No description provided for @channelPromptClearConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'把文本清成空？开关保持不动。'**
+  String get channelPromptClearConfirm;
+
+  /// No description provided for @channelPromptCancel.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get channelPromptCancel;
+
+  /// No description provided for @channelPromptBom.
+  ///
+  /// In zh, this message translates to:
+  /// **'文本以 BOM 开头，没有保存。'**
+  String get channelPromptBom;
+
+  /// No description provided for @channelPromptFirstLine.
+  ///
+  /// In zh, this message translates to:
+  /// **'首行是空的，没有保存。'**
+  String get channelPromptFirstLine;
+
+  /// No description provided for @channelPromptFence.
+  ///
+  /// In zh, this message translates to:
+  /// **'文本以 ``` 结尾，没有保存。'**
+  String get channelPromptFence;
+
+  /// No description provided for @channelPromptStatusOff.
+  ///
+  /// In zh, this message translates to:
+  /// **'内置已关'**
+  String get channelPromptStatusOff;
+
+  /// No description provided for @channelPromptStatusEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'空'**
+  String get channelPromptStatusEmpty;
+
+  /// No description provided for @channelPromptStatusDefault.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认'**
+  String get channelPromptStatusDefault;
+
+  /// No description provided for @channelPromptStatusCustom.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义'**
+  String get channelPromptStatusCustom;
+
+  /// No description provided for @channelPromptImport.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入文件'**
+  String get channelPromptImport;
+
+  /// No description provided for @channelPromptImportReplace.
+  ///
+  /// In zh, this message translates to:
+  /// **'用文件内容替换当前草稿？不会接在原文后面。点保存才写入。'**
+  String get channelPromptImportReplace;
+
+  /// No description provided for @channelPromptImportEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'这个文件是空的。替换后草稿为空，保存后不会填回默认。'**
+  String get channelPromptImportEmpty;
+
+  /// No description provided for @channelPromptImportDo.
+  ///
+  /// In zh, this message translates to:
+  /// **'替换'**
+  String get channelPromptImportDo;
+
+  /// No description provided for @channelPromptImportType.
+  ///
+  /// In zh, this message translates to:
+  /// **'只能导入 .txt 或 .md。草稿没变。'**
+  String get channelPromptImportType;
+
+  /// No description provided for @channelPromptImportRead.
+  ///
+  /// In zh, this message translates to:
+  /// **'读不到这个文件。草稿没变。'**
+  String get channelPromptImportRead;
+
+  /// No description provided for @channelPromptImportUtf8.
+  ///
+  /// In zh, this message translates to:
+  /// **'不是合法的 UTF-8。草稿没变。'**
+  String get channelPromptImportUtf8;
+
+  /// No description provided for @channelPromptImportBom.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件以 UTF-8 BOM 开头，没有改草稿。'**
+  String get channelPromptImportBom;
+
+  /// No description provided for @channelPromptImportFirst.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入的首行是空的，没有改草稿。'**
+  String get channelPromptImportFirst;
+
+  /// No description provided for @channelPromptImportFence.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入的文本以 ``` 结尾，没有改草稿。'**
+  String get channelPromptImportFence;
+
   /// No description provided for @hubSessionDetails.
   ///
   /// In zh, this message translates to:
@@ -13399,6 +15247,30 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'关于 DSH Go'**
   String get hubAbout;
+
+  /// No description provided for @hubAboutAuthor.
+  ///
+  /// In zh, this message translates to:
+  /// **'DSH Go 原作者'**
+  String get hubAboutAuthor;
+
+  /// No description provided for @hubAboutBilibili.
+  ///
+  /// In zh, this message translates to:
+  /// **'B站主页'**
+  String get hubAboutBilibili;
+
+  /// No description provided for @hubAboutX.
+  ///
+  /// In zh, this message translates to:
+  /// **'X 主页'**
+  String get hubAboutX;
+
+  /// No description provided for @hubAboutGithub.
+  ///
+  /// In zh, this message translates to:
+  /// **'GitHub 主页'**
+  String get hubAboutGithub;
 
   /// No description provided for @hubAboutNewVersion.
   ///
@@ -15314,6 +17186,18 @@ abstract class L10n {
   /// **'同时遵循系统的移除动画设置'**
   String get performanceSystemMotion;
 
+  /// No description provided for @performanceFluid.
+  ///
+  /// In zh, this message translates to:
+  /// **'灵动动效'**
+  String get performanceFluid;
+
+  /// No description provided for @performanceFluidHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'弹性回弹、按压光晕、卡片展开成页面。几乎不增加耗电'**
+  String get performanceFluidHint;
+
   /// No description provided for @performanceFollowMode.
   ///
   /// In zh, this message translates to:
@@ -15643,6 +17527,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'重置运行环境？'**
   String get phoneEngineResetTitle;
+
+  /// No description provided for @phoneResetAlsoDeletes.
+  ///
+  /// In zh, this message translates to:
+  /// **'家目录（/root）里没有保留的内容也会一起删除，包括工作区里的文件、AGENTS.md，以及插件自己存的数据（比如记忆）。'**
+  String get phoneResetAlsoDeletes;
 
   /// No description provided for @phoneEngineKeepUiSkills.
   ///
@@ -21218,6 +23108,24 @@ abstract class L10n {
   /// **'请在这台主机上查看引擎日志。'**
   String get pluginsLoadRemoteLogs;
 
+  /// No description provided for @plugslotsSurfaceComposerTools.
+  ///
+  /// In zh, this message translates to:
+  /// **'加号面板'**
+  String get plugslotsSurfaceComposerTools;
+
+  /// No description provided for @plugslotsSurfaceSessionActions.
+  ///
+  /// In zh, this message translates to:
+  /// **'对话操作'**
+  String get plugslotsSurfaceSessionActions;
+
+  /// No description provided for @plugslotsSurfaceTurnNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'回合尾注'**
+  String get plugslotsSurfaceTurnNote;
+
   /// No description provided for @plugslotsSurfaceComposerActions.
   ///
   /// In zh, this message translates to:
@@ -24530,6 +26438,96 @@ abstract class L10n {
   /// **'最近观测'**
   String get remoteNetworkObservedAt;
 
+  /// No description provided for @remoteNetworkLocalIpVersion.
+  ///
+  /// In zh, this message translates to:
+  /// **'手机 ICE IP 版本'**
+  String get remoteNetworkLocalIpVersion;
+
+  /// No description provided for @remoteNetworkRemoteIpVersion.
+  ///
+  /// In zh, this message translates to:
+  /// **'主机 ICE IP 版本'**
+  String get remoteNetworkRemoteIpVersion;
+
+  /// No description provided for @remoteNetworkIceProtocol.
+  ///
+  /// In zh, this message translates to:
+  /// **'ICE 协议'**
+  String get remoteNetworkIceProtocol;
+
+  /// No description provided for @remoteTransferSettings.
+  ///
+  /// In zh, this message translates to:
+  /// **'远程传输'**
+  String get remoteTransferSettings;
+
+  /// No description provided for @remoteCompactHistory.
+  ///
+  /// In zh, this message translates to:
+  /// **'精简历史'**
+  String get remoteCompactHistory;
+
+  /// No description provided for @remoteErrHistoryModeChanged.
+  ///
+  /// In zh, this message translates to:
+  /// **'主机已不支持精简历史，请切换到其他主机后再连回来，或重启 App，重新加载历史'**
+  String get remoteErrHistoryModeChanged;
+
+  /// No description provided for @remoteCompactHistoryHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'支持的 DSH Remote 主机会精简历史工具详情，实时回复和审批不变。切换主机或重启 App 后生效；旧主机仍传输完整历史。'**
+  String get remoteCompactHistoryHint;
+
+  /// No description provided for @searchKwRemoteCompactHistory.
+  ///
+  /// In zh, this message translates to:
+  /// **'精简 简洁 历史 工具 传输 流量 远程 compact slim lite'**
+  String get searchKwRemoteCompactHistory;
+
+  /// No description provided for @stateWorkspaceFilesHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'已上传到当前工作区的文件：'**
+  String get stateWorkspaceFilesHint;
+
+  /// No description provided for @stateRemoteUploadNameInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件名不受主机支持，请去掉特殊字符或缩短后再试'**
+  String get stateRemoteUploadNameInvalid;
+
+  /// No description provided for @stateRemoteUploadWorkspaceUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前对话没有可写的工作目录'**
+  String get stateRemoteUploadWorkspaceUnavailable;
+
+  /// No description provided for @stateRemoteUploadWorkspaceChanged.
+  ///
+  /// In zh, this message translates to:
+  /// **'工作目录已变化，请确认后重新上传'**
+  String get stateRemoteUploadWorkspaceChanged;
+
+  /// No description provided for @stateRemoteUploadLimit.
+  ///
+  /// In zh, this message translates to:
+  /// **'主机拒绝了上传，请检查文件大小或稍后重试'**
+  String get stateRemoteUploadLimit;
+
+  /// No description provided for @stateRemoteUploadUnsupported.
+  ///
+  /// In zh, this message translates to:
+  /// **'这台主机不支持文件上传，请更新主机上的 Remote 插件后重连'**
+  String get stateRemoteUploadUnsupported;
+
+  /// No description provided for @stateRemoteUploadTooLarge.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件超过远程上传协议的大小上限'**
+  String get stateRemoteUploadTooLarge;
+
   /// No description provided for @riskDontShowAgain.
   ///
   /// In zh, this message translates to:
@@ -24745,6 +26743,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'当前主机提供时可用'**
   String get searchNeedsEngineField;
+
+  /// No description provided for @searchNeedsAnimations.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启动画时可用'**
+  String get searchNeedsAnimations;
 
   /// No description provided for @searchNeedsChat.
   ///
@@ -25093,6 +27097,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'动画,动效,减少动画'**
   String get searchKwAnimations;
+
+  /// No description provided for @searchKwFluidMotion.
+  ///
+  /// In zh, this message translates to:
+  /// **'灵动,弹性,回弹,光晕,丝滑'**
+  String get searchKwFluidMotion;
 
   /// No description provided for @searchKwNotifyEnabled.
   ///
@@ -27128,6 +29138,42 @@ abstract class L10n {
   /// **'已归档 {count} 个对话，{failed} 个没能归档'**
   String shellChatsArchivedPartial(int count, int failed);
 
+  /// No description provided for @shellPanelOverview.
+  ///
+  /// In zh, this message translates to:
+  /// **'信息'**
+  String get shellPanelOverview;
+
+  /// No description provided for @shellPanelWorkspace.
+  ///
+  /// In zh, this message translates to:
+  /// **'工作区'**
+  String get shellPanelWorkspace;
+
+  /// No description provided for @shellPanelModel.
+  ///
+  /// In zh, this message translates to:
+  /// **'模型'**
+  String get shellPanelModel;
+
+  /// No description provided for @shellPanelHost.
+  ///
+  /// In zh, this message translates to:
+  /// **'主机'**
+  String get shellPanelHost;
+
+  /// No description provided for @shellPanelOpenFull.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开完整页面'**
+  String get shellPanelOpenFull;
+
+  /// No description provided for @shellPanelNoPlugins.
+  ///
+  /// In zh, this message translates to:
+  /// **'这段对话还没有插件面板'**
+  String get shellPanelNoPlugins;
+
   /// No description provided for @shellQuickPanel.
   ///
   /// In zh, this message translates to:
@@ -27803,7 +29849,7 @@ abstract class L10n {
   /// No description provided for @stateChatAttachmentInvalid.
   ///
   /// In zh, this message translates to:
-  /// **'这个附件发不了'**
+  /// **'这个附件发不了。请把文件放到 /sdcard/Download/DSH-Go/ 后告知文件名'**
   String get stateChatAttachmentInvalid;
 
   /// No description provided for @stateChatForkUnavailable.
@@ -27875,7 +29921,7 @@ abstract class L10n {
   /// No description provided for @stateAttachmentUploadFailed.
   ///
   /// In zh, this message translates to:
-  /// **'附件上传失败'**
+  /// **'附件上传失败。请把文件放到 /sdcard/Download/DSH-Go/ 后告知文件名'**
   String get stateAttachmentUploadFailed;
 
   /// No description provided for @stateChatImageModelRequired.
@@ -30901,6 +32947,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'切换工作区'**
   String get viewEmptySwitchWorkspace;
+
+  /// No description provided for @viewEmptyHostDefaultDirectory.
+  ///
+  /// In zh, this message translates to:
+  /// **'主机默认目录'**
+  String get viewEmptyHostDefaultDirectory;
 
   /// No description provided for @viewScheduleTitle.
   ///

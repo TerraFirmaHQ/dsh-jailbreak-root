@@ -11,7 +11,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import io.github.ccch1mneyyy.dsh_app.phone.PhoneControl
-import io.github.ccch1mneyyy.dsh_app.rony.RonyControl
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -241,7 +240,7 @@ class RuntimeController private constructor(private val app: Context) : DshProce
     fun publishDiagnostics(markdown: String): Map<String, Any?>? = try {
         if (!installer.isCurrent()) null
         else {
-            val file = GuestSetup.writeDiagnostics(installer.rootfs, markdown)
+            val file = GuestSetup.writeDiagnostics(installer.rootfs, markdown, safe = currentModeSafe())
             mapOf("path" to file.absolutePath, "bytes" to file.length())
         }
     } catch (_: Exception) {
@@ -313,7 +312,6 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                 PhoneStorage.syncShortcut(installer.rootfs, storage)
                 // Phone control: bridge up and guest files written before DSH starts; off in safe mode.
                 val phone = PhoneControl.get(app).prepareLaunch(installer.rootfs, safe) { log(it, "system") }
-                RonyControl.get(app).prepareLaunch(installer.rootfs, safe) { log(it, "system") }
                 if (!safe && !SessionSearchGuest.writeFiles(installer.rootfs)) {
                     log("[dsh-app] message search overlay not written; searching matches titles only", "system")
                 }
@@ -328,11 +326,17 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                 env["TZ"] = java.util.TimeZone.getDefault().id
                 env.putAll(pendingEnv)
                 PerformancePolicy.applyEngineEnvironment(app, env, manifest.launchArgv, manifest.launchEnv)
+                val mounts = io.github.ccch1mneyyy.dsh_app.hostroot.HostRootControl.prepare(app, installer.rootfs, safe)
                 if (safe) {
                     SafeMode.prepare(installer.rootfs, briefing())
                     env.putAll(SafeMode.GUEST_ENV)
                     bootProfile = null
                     log("[dsh-app] safe mode: booting profile ${SafeMode.PROFILE} rebuilt from the web template, plugins off", "system")
+                    log(
+                        if (mounts.prompt) "[dsh-app] safe mode: default prompt file is mounted; a channel can still turn it off"
+                        else "[dsh-app] safe mode: default prompt asset missing or rejected; it was not invented",
+                        "system",
+                    )
                 } else {
                     bootProfile = try {
                         LastKnownGood.read(installer.rootfs)
@@ -343,20 +347,35 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                 // Stopped (or started again) while this was queued: launching now would leave an orphan.
                 if (stopGen >= gen || gen != runGen) {
                     PhoneControl.get(app).onEngineStopped()
-                    RonyControl.get(app).onEngineStopped()
                     return@execute
+                }
+                val direct = directEngine()
+                val runtimeVersion = runCatching { manifest.runtimeVersion }.getOrNull()
+                val chrootPref = io.github.ccch1mneyyy.dsh_app.hostroot.HostRootControl.chrootPreference(app, runtimeVersion)
+                if (chrootPref.enabled) {
+                    log("[dsh-app] chroot mount path disabled; su not called", "system")
                 }
                 val p = DshProcess(app, manifest, installer.rootfs, this)
                 launched = p
                 lastLaunch = p.launchDiagnostics
                 process = p
                 timeline.spawned()
-                val direct = directEngine()
-                p.start(env, if (storage) PhoneStorage.binds() else emptyList(), safe, phone, direct.requested, direct.failed) { actualDirect ->
-                    GuestSetup.writeAgentsMd(installer.rootfs, storage, phone, pendingVisualReplies, actualDirect)
-                }
+                p.start(
+                    env,
+                    if (storage) PhoneStorage.binds() else emptyList(),
+                    safe,
+                    phone,
+                    direct.requested,
+                    direct.failed,
+                    { actualDirect ->
+                        if (!safe) GuestSetup.writeAgentsMd(installer.rootfs, storage, phone, pendingVisualReplies, actualDirect, mounts.root)
+                    },
+                    chrootRequested = false,
+                    chrootFailed = false,
+                    chrootGranted = false,
+                    mounts = mounts,
+                )
                 if (phone) PhoneControl.get(app).launched(p.phoneMounted)
-                RonyControl.get(app).launched(p.rootMounted)
             } catch (e: Throwable) {
                 // Keep ownership while the old UID sweep runs, including a
                 // failure after spawning but before the waiter was allocated.
@@ -365,7 +384,6 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                 if (gen != runGen) return@execute
                 process = null
                 PhoneControl.get(app).onEngineStopped()
-                RonyControl.get(app).onEngineStopped()
                 if (stopGen >= gen) return@execute
                 error = "start failed: ${e.message}"
                 log("[dsh-app] $error", "system")
@@ -739,6 +757,22 @@ class RuntimeController private constructor(private val app: Context) : DshProce
             bootProfile = LastKnownGood.bootedAtReady(bootProfile) { LastKnownGood.read(installer.rootfs) }
         }
         if (!runSafe) healthyAt = System.currentTimeMillis() + SafePolicy.HEALTHY_MS
+        if (source.chrootActive && source.adoptedPid == null) {
+            val pid = runCatching { File(installer.rootfs, "tmp/dsh-web.pid").readText().trim().toIntOrNull() }.getOrNull()
+            if (pid != null && pid > 0) {
+                EngineHandoff.save(
+                    app.filesDir,
+                    EngineHandoff.Record(
+                        pid = pid,
+                        port = source.port,
+                        token = token,
+                        rootfs = installer.rootfs.canonicalPath,
+                        mountTargets = source.chrootMounts.ifEmpty { ChrootLaunch.standardMountTargets(installer.rootfs) },
+                        phone = source.phoneMounted,
+                    ),
+                )
+            }
+        }
         log("[dsh-app] DSH is listening at $baseUrl${if (runSafe) " (safe mode)" else ""}", "system")
         timeline.ready()?.let { log(it, "system") }
         setPhase(Phase.RUNNING)
@@ -755,7 +789,6 @@ class RuntimeController private constructor(private val app: Context) : DshProce
             }
             process = null
             PhoneControl.get(app).onEngineStopped()
-            RonyControl.get(app).onEngineStopped()
             baseUrl = null
             token = null
             healthyAt = null
@@ -841,6 +874,17 @@ class RuntimeController private constructor(private val app: Context) : DshProce
             }
         }
     }
+
+    private fun readProc(path: String): String? {
+        val file = File(path)
+        if (!file.exists()) return null
+        if (path.endsWith("/cwd")) return runCatching { file.canonicalPath }.getOrNull()
+        if (file.isDirectory) return ""
+        return runCatching { file.readText() }.getOrNull()
+    }
+
+    /** su only when chroot is already enabled and /proc could not be read. */
+    private fun readProcViaSu(path: String): String? = ChrootLaunch.readViaSu(path)
 
     private fun log(line: String, stream: String) = runtimeLogs.accept(line, stream)
 

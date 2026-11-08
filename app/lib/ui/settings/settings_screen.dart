@@ -13,6 +13,7 @@ import '../../state/connection_state.dart';
 import '../../state/engine_settings_state.dart';
 import '../../state/features_state.dart';
 import '../../state/hosts_state.dart';
+import '../../state/host_root_state.dart';
 import '../../state/phone_state.dart';
 import '../../state/plugins_state.dart';
 import '../../state/sessions_state.dart';
@@ -37,18 +38,19 @@ import '../features/permission_page.dart';
 import '../onboarding/api_key_page.dart' show maskApiKey;
 import '../pets/pet_settings_page.dart';
 import '../phone/phone_control_screen.dart';
-import '../phone/rony_tools_page.dart';
 import '../plugins/plugins_screen.dart';
 import '../plugins/seats/plugin_settings_tiles.dart';
 import '../plugins/seats/seat_probe.dart';
 import '../providers/providers_page.dart';
+import 'channel_prompt_page.dart';
 import '../remote/host_status.dart';
 import '../remote/remote_screen.dart';
 import '../shell/brand_mark.dart';
 import '../shell/page_frame.dart';
 import '../theme/app_icons.dart';
 import '../theme/theme.dart';
-import '../update/update_tiles.dart' show UpdateBadge;
+import 'host_persona_page.dart';
+import 'host_root_page.dart';
 import 'about_page.dart';
 import 'appearance/appearance_page.dart';
 import 'background_guide_page.dart';
@@ -104,6 +106,24 @@ class SettingsScreen extends ConsumerWidget {
         ? (replyPrefsSummary(ref) == null ? l10n.commonNotSet : l10n.hubValueSet)
         : null;
     // 能力.
+    final root = ref.watch(hostRootProvider);
+    final rootValue = !root.loaded
+        ? null
+        : root.restarting
+        ? l10n.hostRootRestarting
+        : root.rootEnabled
+        ? l10n.pluginsTurnedOn
+        : l10n.hubValueOff;
+    final personaValue = !root.loaded
+        ? null
+        : root.persona.trim().isEmpty
+        ? l10n.commonNotSet
+        : l10n.hubValueSet;
+    final promptValue = !root.loaded
+        ? null
+        : root.promptOk
+        ? l10n.hostPromptLockedValue
+        : l10n.hostRootPromptMissing;
     final phone = ref.watch(phoneProvider);
     final phoneValue = !phone.loaded || !phone.status.ready
         ? null
@@ -125,7 +145,6 @@ class SettingsScreen extends ConsumerWidget {
     final hostName = host.isLocal ? l10n.commonThisPhone : ref.watch(hostNameProvider(host)) ?? l10n.commonRemoteHost;
     // 帮助与关于.
     final update = ref.watch(appUpdateProvider);
-    final newVersion = update.hasUpdate && !update.isSkipped;
 
     final page = AppPage.list(
       title: l10n.commonSettings,
@@ -168,17 +187,33 @@ class SettingsScreen extends ConsumerWidget {
           title: l10n.hubGroupCapabilities,
           children: [
             SettingsTile(
+              icon: AppIcons.lock,
+              tint: SettingsHues.abilities,
+              spot: Spots.lockedPrompt,
+              subtitle: l10n.hostPromptLockedHint,
+              value: text(promptValue),
+              onTap: () => _push(context, const DefaultPromptPage()),
+            ),
+            SettingsTile(
+              icon: AppIcons.permissions,
+              tint: SettingsHues.abilities,
+              spot: SettingsIndex.entry(SettingsPageId.hostRoot),
+              value: text(rootValue),
+              onTap: () => _push(context, const HostRootPage()),
+            ),
+            SettingsTile(
+              icon: AppIcons.profile,
+              tint: SettingsHues.abilities,
+              spot: SettingsIndex.entry(SettingsPageId.hostPersona),
+              value: text(personaValue),
+              onTap: () => _push(context, const HostPersonaPage()),
+            ),
+            SettingsTile(
               icon: AppIcons.phoneControl,
               tint: SettingsHues.abilities,
               spot: SettingsIndex.entry(SettingsPageId.phone),
               value: text(phoneValue, color: phoneValue == l10n.hubValueOneStep ? colors.warning : null),
               onTap: () => _push(context, const PhoneControlScreen()),
-            ),
-            SettingsTile(
-              icon: AppIcons.phoneControl,
-              tint: SettingsHues.abilities,
-              title: 'Root 与 MCP',
-              onTap: () => _push(context, const RonyToolsPage()),
             ),
             SettingsTile(
               icon: AppIcons.webSearch,
@@ -323,9 +358,7 @@ class SettingsScreen extends ConsumerWidget {
               icon: AppIcons.info,
               tint: SettingsHues.help,
               spot: SettingsIndex.entry(SettingsPageId.about),
-              value: newVersion
-                  ? UpdateBadge(l10n.hubAboutNewVersion)
-                  : Text(update.current.name, style: AppType.tabular(Theme.of(context).textTheme.bodyMedium!)),
+              value: Text(update.current.name, style: AppType.tabular(Theme.of(context).textTheme.bodyMedium!)),
               onTap: () => _push(context, const AboutPage()),
             ),
           ],

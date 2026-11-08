@@ -33,6 +33,7 @@ import '../../state/hosts_state.dart' show HostKind, activeHostProvider;
 import '../../state/media_generation.dart';
 import '../../state/mention_state.dart';
 import '../../state/models_state.dart';
+import '../../state/session_search.dart' show folderLabel;
 import '../../state/safe_mode_state.dart';
 import '../../state/session_modes.dart';
 import '../../state/sessions_state.dart';
@@ -45,6 +46,7 @@ import '../../state/workspaces_state.dart' show selectedWorkspaceProvider, works
 import '../../usage/usage_stats.dart';
 import '../common/app_sheet.dart';
 import '../common/brief_notice.dart';
+import '../common/fluid_bits.dart';
 import '../common/ui_trace.dart';
 import '../common/sheet_title_bar.dart';
 import '../common/smooth_size.dart';
@@ -56,7 +58,7 @@ import '../pets/pet_perch.dart';
 import '../pets/pet_stage.dart';
 import '../plugins/native/composer_strip.dart' show ComposerStripSlot;
 import '../plugins/native/native_composer_bar.dart';
-import '../plugins/native/native_taps.dart' show NativeComposerHost, NativeComposerScope;
+import '../plugins/native/native_taps.dart' show NativeComposerHost, NativeComposerScope, runNativeAction;
 import '../safe_mode/engine_failure_card.dart';
 import '../safe_mode/safe_mode_banner.dart';
 import '../session/session_detail_page.dart';
@@ -90,6 +92,7 @@ import 'slash_palette.dart';
 import 'trajectory_sheet.dart';
 import 'usage_sheet.dart';
 import 'voice/voice_controller.dart';
+import 'run_info.dart';
 import 'widgets/activity_strip.dart';
 import 'widgets/attachments.dart';
 import 'widgets/notice_row.dart';
@@ -228,6 +231,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     _draftScope = Object();
     _creating = null;
     _syncWait = null;
+    _composerToastWait?.cancel();
     if (_voice.active) unawaited(_voice.cancel());
     _mentions.dismiss();
     _saveDraft();
@@ -329,24 +333,87 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     if (insert.skill case final name?) _handedSkills.add(name);
     _input.value = insertComposerToken(_input.value, insert.token);
     _focus.requestFocus();
-    showComposerToast(context, composerInsertedText, composerHeight: _veilHeight.value + _ChatLayout.overlap);
+    _composerToast(composerInsertedText);
   }
 
-  /// A toast from the list (a fork's 「返回原对话」): above the composer, once
-  /// the frame has laid out whatever just went into it (编辑后重发's text).
+  /// A toast about the composer (a fork's 「返回原对话」, an inserted skill): above
+  /// it, once the frame has laid out whatever just went into it (编辑后重发's text)
+  /// and the capsule has finished growing to it.
   void _composerToast(String message, {String? actionLabel, VoidCallback? onAction}) {
+    void show() {
+      if (!mounted) return;
+      showComposerToast(
+        context,
+        message,
+        composerHeight: _veilHeight.value + _ChatLayout.overlap,
+        actionLabel: actionLabel,
+        onAction: onAction,
+      );
+    }
+
     WidgetsBinding.instance
       ..addPostFrameCallback((_) {
         if (!mounted) return;
-        showComposerToast(
-          context,
-          message,
-          composerHeight: _veilHeight.value + _ChatLayout.overlap,
-          actionLabel: actionLabel,
-          onAction: onAction,
-        );
+        _composerToastWait?.cancel();
+        // A composer that has just been focused is still opening.
+        final opening = _composerOpens(context) && _focus.hasFocus;
+        _composerToastWait = Timer(AppMotion.of(context, opening ? AppMotion.emphasized : AppMotion.quick), show);
       })
       ..ensureVisualUpdate();
+  }
+
+  Timer? _composerToastWait;
+  Timer? _replyStall;
+  DateTime? _replyWaitFrom;
+  bool _replyStalled = false;
+
+  void _disarmReplyStall() {
+    _replyStall?.cancel();
+    _replyStall = null;
+    _replyWaitFrom = null;
+    _replyStalled = false;
+  }
+
+  /// While a turn is waiting on the first model token, say so after 45s and
+  /// stop it after 3 minutes. Tool runs and streamed reasoning reset the clock.
+  void _armReplyStall(String sessionId) {
+    _disarmReplyStall();
+    _replyWaitFrom = DateTime.now();
+    _replyStall = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted) return;
+      final activity = runActivityOf(ref.read(chatProvider(sessionId)));
+      if (activity?.kind != ActivityKind.waiting) {
+        _replyWaitFrom = DateTime.now();
+        if (_replyStalled) setState(() => _replyStalled = false);
+        return;
+      }
+      final waited = DateTime.now().difference(_replyWaitFrom ?? DateTime.now());
+      if (waited >= const Duration(minutes: 3)) {
+        _replyStall?.cancel();
+        _replyStall = null;
+        if (_replyStalled) setState(() => _replyStalled = false);
+        unawaited(_stopStalled());
+        return;
+      }
+      if (waited >= const Duration(seconds: 45) && !_replyStalled) {
+        setState(() => _replyStalled = true);
+      }
+    });
+  }
+
+  Future<void> _stopStalled() async {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final text = context.l10n.chatReplyStalled;
+    await _stop();
+    messenger?.showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  /// A phone's composer opens into two rows while typing. A window too short for the
+  /// extra row keeps it on one: the model is on the side panel's 信息 there.
+  bool _composerOpens(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    return size.width < WindowClass.mediumMin && size.height >= WindowClass.compactHeight;
   }
 
   @override
@@ -357,6 +424,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     _draftScope = Object();
     _creating = null;
     _syncWait = null;
+    _composerToastWait?.cancel();
+    _disarmReplyStall();
     _input.removeListener(_saveDraft);
     _mentions.dispose();
     _voice.removeListener(_reportVoice);
@@ -803,13 +872,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     try {
       final choice = await showPlusPanel(
         context,
-        // DSH Remote stages no files: photos only.
-        files: client?.supportsEndpoint('fileUploads/upload') ?? true,
+        files: canStageFiles(ref.read(activeConnectionProvider).value, ref.read(activeHostProvider)),
         sessionId: ref.read(currentSessionProvider),
         generate: ref.read(mediaPluginProvider) != MediaPluginState.absent,
       );
       if (choice is GenerateChoice) {
         if (ownsDraft()) _enterGenerate();
+        return;
+      }
+      if (choice is NativeToolChoice) {
+        if (ownsDraft() && mounted) {
+          final scope = DshGoScope(sessionId: ref.read(currentSessionProvider));
+          unawaited(runNativeAction(context, ref, choice.action, scope: scope, composer: _nativeHost));
+        }
         return;
       }
       if (choice is! AttachChoice || !ownsDraft()) return;
@@ -824,10 +899,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
         picked = switch (source) {
           AttachSource.gallery => PickedAttachments(await picker.pickImages(limit: room)),
           AttachSource.camera => PickedAttachments([?await picker.takePhoto()]),
-          AttachSource.files => await picker.pickFiles(
-            limit: room,
-            heldBytes: totalAttachmentBytes(_drafts),
-          ),
+          AttachSource.files => await picker.pickFiles(limit: room, heldBytes: totalAttachmentBytes(_drafts)),
         };
       } on PlatformException catch (e) {
         if (!ownsDraft()) return;
@@ -1250,7 +1322,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     final selection = sessionId == null ? ref.read(pendingModelProvider) : ref.read(chatProvider(sessionId)).model;
     return showModelSheet(
       context,
-      current: selection ?? ref.read(modelCatalogProvider).value?.defaultSelection,
+      current: selection ?? ref.read(currentModelCatalogProvider)?.defaultSelection,
       onSelected: _modelTarget(),
     );
   }
@@ -1268,10 +1340,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   /// again, another conversation or host chosen — and a pick then goes to
   /// neither, rather than to whatever is open by then.
   ValueChanged<ModelSelection> _modelTarget() {
-    final host = ref.read(activeHostProvider);
+    final scope = ref.read(modelSelectionScopeProvider);
+    final client = ref.read(activeConnectionProvider).value?.client;
+    final generation = client?.mux.generation;
     final sessionId = ref.read(currentSessionProvider);
     return (selection) {
-      if (!mounted || ref.read(activeHostProvider) != host || ref.read(currentSessionProvider) != sessionId) return;
+      if (!mounted ||
+          client == null ||
+          !_sameConnection(client, generation) ||
+          ref.read(activeConnectionProvider).isLoading ||
+          ref.read(activeConnectionProvider).hasError ||
+          !identical(ref.read(modelSelectionScopeProvider), scope) ||
+          ref.read(currentSessionProvider) != sessionId) {
+        return;
+      }
       if (sessionId == null) {
         ref.read(pendingModelProvider.notifier).select(selection);
       } else {
@@ -1344,6 +1426,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                 singleQuestion: s.singleQuestion != null,
                 model: s.model,
                 error: s.error,
+                defaultModelSaveFailed: s.defaultModelSaveFailed,
                 notice: s.notice,
                 autoApprove: s.autoApprove,
               ),
@@ -1381,7 +1464,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
       ref.listen(chatProvider(sessionId).select((s) => s.running), (previous, running) {
         if (running) {
           _spoken = null;
+          _armReplyStall(sessionId);
         } else if (previous == true) {
+          _disarmReplyStall();
           final turns = ref.read(chatProvider(sessionId)).turns;
           _spoken = switch (turns.lastOrNull?.endReason?.kind) {
             'aborted' => l10n.commonStopped,
@@ -1422,8 +1507,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
           ? questionText(question)
           : _spoken,
     );
-    // Where a new conversation starts (the drawer's workspace).
-    final workspace = ref.watch(selectedWorkspaceProvider);
+    final narrow = MediaQuery.sizeOf(context).width < WindowClass.mediumMin;
+    // Where a new conversation starts (the drawer's workspace, else the one a
+    // remote host falls back to, so the host's start directory is never silent).
+    final newChat = sessionId == null;
+    final workspace =
+        ref.watch(selectedWorkspaceProvider) ?? (newChat ? ref.watch(recentWorkspaceForNewChatProvider) : null);
+    final inHostDefault = newChat && workspace == null && ref.watch(newChatInHostDefaultProvider);
     // A one-shot subagent takes no messages: DSH Web shows it read-only.
     final readOnly =
         sessionId != null &&
@@ -1453,7 +1543,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
         : ref.watch(mediaCatalogProvider.select((c) => c.resolve(generate.model, generate.kind)?.model));
     // 引用追问: the passage waiting above this conversation's composer.
     final quote = ref.watch(composerQuoteProvider.select((quotes) => quotes[_draftKey]));
-    final error = sessionId == null ? _localError : chat?.error;
+    final modelDefaultWarning = sessionId != null && chat?.error == null && (chat?.defaultModelSaveFailed ?? false);
+    final error = sessionId == null
+        ? _localError
+        : chat?.error ?? (modelDefaultWarning ? l10n.engineModelDefaultSaveFailed : null);
     // An error wins the slot; a notice shows when there is none.
     final notice = error == null && sessionId != null ? chat?.notice : null;
     // A phone on its side with the keyboard up keeps a strip of chat: the
@@ -1529,7 +1622,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                                               onTap: _pickNewChatFolder,
                                             )
                                           : null,
-                                      workspace: workspace == null ? null : workspaceTitle(workspace),
+                                      workspace: workspace != null
+                                          ? workspaceTitle(workspace)
+                                          : inHostDefault
+                                          ? context.l10n.viewEmptyHostDefaultDirectory
+                                          : null,
                                       onWorkspace: () => showWorkspaceSheet(
                                         context,
                                         onManage: () =>
@@ -1552,19 +1649,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                               makeVideo: readOnly || !mediaVideo
                                   ? null
                                   : (meta, item) => unawaited(_reuseMedia(sessionId, meta, item, video: true)),
-                              child: ChatList(
+                              // Keyed by conversation: opening another one fades it in.
+                              child: FluidFadeIn(
                                 key: ValueKey(sessionId),
-                                sessionId: sessionId,
-                                topInset: headerHeight,
-                                bottomInset: _ChatLayout.overlap,
-                                scrolledUnder: _scrolledUnder,
-                                onWithdraw: _withdraw,
-                                onSendNow: _sendNow,
-                                onEditPrompt: _compose,
-                                onResend: _resend,
-                                onQuote: readOnly ? null : (passage) => _quote(sessionId, passage),
-                                onToast: _composerToast,
-                                onSwitchModel: readOnly ? null : _switchModel,
+                                child: ChatList(
+                                  key: ValueKey(sessionId),
+                                  sessionId: sessionId,
+                                  topInset: headerHeight,
+                                  bottomInset: _ChatLayout.overlap,
+                                  scrolledUnder: _scrolledUnder,
+                                  onWithdraw: _withdraw,
+                                  onSendNow: _sendNow,
+                                  onEditPrompt: _compose,
+                                  onResend: _resend,
+                                  onQuote: readOnly ? null : (passage) => _quote(sessionId, passage),
+                                  onToast: _composerToast,
+                                  onSwitchModel: readOnly ? null : _switchModel,
+                                ),
                               ),
                             ),
                           ),
@@ -1586,6 +1687,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                         scrolledUnder: sessionId == null ? null : _scrolledUnder,
                         title: title,
                         status: status,
+                        detail: !narrow || isChild
+                            ? null
+                            : folderLabel(
+                                ref.watch(
+                                  sessionsProvider.select(
+                                    (s) => s.value?.where((session) => session.sessionId == sessionId).firstOrNull?.cwd,
+                                  ),
+                                ),
+                              ),
                         onOpenDrawer: widget.onOpenDrawer,
                         onNewChat: sessionId == null || isChild
                             ? null
@@ -1598,11 +1708,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                         onTitleTap: sessionId == null
                             ? null
                             : () => SessionDetailPage.open(context, sessionId, toggle: true),
-                        trailing: ModelChip(
-                          selection: sessionId == null ? pendingModel : chat?.model,
-                          onSelected: _modelTarget(),
-                          grouped: true,
-                        ),
+                        // A phone has no room for it: the model is shown and picked at the
+                        // composer's foot while typing.
+                        trailing: narrow
+                            ? null
+                            : ModelChip(
+                                selection: sessionId == null ? pendingModel : chat?.model,
+                                onSelected: _modelTarget(),
+                                grouped: true,
+                              ),
                       ),
                     ),
                   ),
@@ -1679,7 +1793,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                                     duration: AppMotion.of(context, AppMotion.standard),
                                     curve: AppMotion.std,
                                     alignment: Alignment.bottomCenter,
-                                    child: connected && sessionId != null && !(chat?.controlReady ?? true)
+                                    child: _replyStalled && error == null
+                                        ? Padding(
+                                            padding: const EdgeInsets.only(bottom: 8),
+                                            child: ErrorBanner(
+                                              info: true,
+                                              message: l10n.activityReplyStalled,
+                                              action: (label: l10n.commonStop, onPressed: () => unawaited(_stop())),
+                                            ),
+                                          )
+                                        : connected && sessionId != null && !(chat?.controlReady ?? true)
                                         ? Padding(
                                             padding: const EdgeInsets.only(bottom: 8),
                                             child: ErrorBanner(
@@ -1716,6 +1839,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                                               onDismiss: () {
                                                 if (sessionId == null) {
                                                   setState(() => _localError = null);
+                                                } else if (modelDefaultWarning) {
+                                                  ref
+                                                      .read(chatProvider(sessionId).notifier)
+                                                      .dismissDefaultModelSaveWarning();
                                                 } else {
                                                   ref.read(chatProvider(sessionId).notifier).dismissError();
                                                 }
@@ -1838,6 +1965,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                                     onStop: _stop,
                                     hasAttachments: _drafts.isNotEmpty,
                                     leading: AttachButton(onPressed: connected ? _attach : null),
+                                    keyboardInset: MediaQuery.viewInsetsOf(context).bottom,
+                                    footer: _composerOpens(context) && !isChild
+                                        ? ComposerModelPill(
+                                            selection: sessionId == null ? pendingModel : chat?.model,
+                                            onSelected: _modelTarget(),
+                                          )
+                                        : null,
                                     tray: ComposerTrayStack.maybe(
                                       quote: switch (quote) {
                                         final quote? => QuoteChip(

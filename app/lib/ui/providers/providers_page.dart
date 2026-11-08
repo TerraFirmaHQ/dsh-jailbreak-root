@@ -7,6 +7,8 @@ import 'package:dsh_client/dsh_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../channel_prompt/channel_prompt.dart';
+import '../../channel_prompt/channel_prompt_controller.dart';
 import '../../l10n/l10n.dart';
 import '../../state/account_state.dart';
 import '../../state/connection_state.dart';
@@ -27,6 +29,7 @@ import '../settings/index/spots.dart';
 import '../shell/page_frame.dart';
 import '../theme/app_icons.dart';
 import '../theme/theme.dart';
+import 'new_chat_defaults_card.dart';
 import 'provider_detail_page.dart';
 import 'provider_form_page.dart';
 import 'provider_widgets.dart';
@@ -55,6 +58,7 @@ class ProvidersPage extends ConsumerWidget {
           ? null
           : Text(summary),
       children: [
+        const NewChatDefaultsCard(),
         const _DeepSeekCard(),
         const _SubscriptionAccounts(),
         if (view.value?.supported == false)
@@ -328,17 +332,27 @@ class _CustomCard extends StatelessWidget {
   }
 }
 
-class _ProviderRow extends StatelessWidget {
+class _ProviderRow extends ConsumerWidget {
   const _ProviderRow({required this.provider, required this.onTap});
 
   final CachedProvider provider;
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final health = provider.health;
     final view = ProviderHealthView.of(health);
     final colors = DshColors.of(context);
+    final l10n = context.l10n;
+    final record = ref.watch(channelPromptProvider)[provider.id];
+    final fallback = ref.watch(defaultPromptTextProvider).asData?.value ?? '';
+    final status = channelPromptStatus(record, fallback);
+    final statusLabel = switch (status) {
+      ChannelPromptStatus.builtinOff => l10n.channelPromptStatusOff,
+      ChannelPromptStatus.empty => l10n.channelPromptStatusEmpty,
+      ChannelPromptStatus.defaultText => l10n.channelPromptStatusDefault,
+      ChannelPromptStatus.custom => l10n.channelPromptStatusCustom,
+    };
     return Semantics(
       label: '${provider.name}，${view.label}',
       child: ListPageRow(
@@ -347,8 +361,9 @@ class _ProviderRow extends StatelessWidget {
         subtitle: health != ProviderHealth.ready
             ? view.label
             : [
-                if (provider.api case final api?) protocolLabel(api) else context.l10n.engineProviderConfiguredInWeb,
-                if (provider.models > 0) context.l10n.engineProviderModels(provider.models),
+                if (provider.api case final api?) protocolLabel(api) else l10n.engineProviderConfiguredInWeb,
+                if (provider.models > 0) l10n.engineProviderModels(provider.models),
+                statusLabel,
               ].join(' · '),
         subtitleColor: switch (health) {
           ProviderHealth.missingKey => colors.warning,

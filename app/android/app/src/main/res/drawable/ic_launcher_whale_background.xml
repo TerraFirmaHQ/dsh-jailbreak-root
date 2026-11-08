@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive icon background. Android requires a background drawable. Fully
+     transparent is accepted by AdaptiveIconDrawable; the pixels outside the
+     whale stay transparent unless the launcher paints its own plate.
+     ColorOS often does that, so a floating icon is not guaranteed there. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@android:color/transparent" />
+</shape>

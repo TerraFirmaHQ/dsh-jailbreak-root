@@ -1,0 +1,9 @@
+environment=host-jvm
+device=not-ace7
+method=20 in-process summarize rounds, 4000 lines each
+memoryBeforeBytes=8566744
+memoryAfterBytes=8596344
+deltaBytes=29600
+tokenAlgorithm=charCount/4
+avgSummaryTokens=614.15
+note=this is not an Ace7 measurement and not a 20-round phone tool session

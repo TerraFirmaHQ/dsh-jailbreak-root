@@ -71,7 +71,7 @@
     }
   },
   "chatAttachmentPermission": "没有权限，可在系统设置中开启",
-  "chatOpenAttachmentFailed": "没能打开附件",
+  "chatOpenAttachmentFailed": "没能打开附件。请把文件放到 /sdcard/Download/DSH-Go/ 后告知文件名",
   "chatReadFailed": "读取失败",
   "chatReadImageFailed": "没能读取图片",
   "chatOpenChatFirst": "先打开一个对话",
@@ -88,6 +88,7 @@
   "chatTranscribingEllipsis": "正在转写…",
   "chatConnectToSend": "连接引擎后即可发送",
   "chatGeneratingSteerHint": "生成中 · 可直接插话",
+  "chatReplyStalled": "三分钟没有收到模型内容，这一轮已停止。可以再发一次。",
   "chatComposerHint": "给 DSH 发消息…",
   "chatStopGenerating": "停止生成",
   "chatVoiceInput": "语音输入",

@@ -7,7 +7,6 @@ import 'package:dsh_app/state/models_state.dart';
 import 'package:dsh_app/state/sessions_state.dart';
 import 'package:dsh_app/state/update_state.dart';
 import 'package:dsh_app/ui/chat/chat_screen.dart';
-import 'package:dsh_app/ui/chat/model_sheet.dart';
 import 'package:dsh_app/ui/chat/widgets/notice_row.dart';
 import 'package:dsh_app/ui/chat/widgets/stream_row.dart';
 import 'package:dsh_app/ui/onboarding/api_key_page.dart';
@@ -264,7 +263,10 @@ void main() {
     testWidgets('the header\'s model sheet, the conversation switched under it: the pick goes nowhere', (tester) async {
       final harness = await refused(tester, 'MODEL_UNSUPPORTED', unsupported);
       final c = ProviderScope.containerOf(tester.element(find.byType(ChatScreen)));
-      await tester.tap(find.byType(ModelChip));
+      await tester.tap(find.byType(TextField));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.tap(find.byKey(const ValueKey('composer-model')));
       await pumpFrames(tester, 4);
       expect(find.text('选择模型'), findsOneWidget);
 
@@ -281,10 +283,10 @@ void main() {
       await refused(tester, 'CLIENT_UPGRADE_REQUIRED', upgrade, extra: [appUpdateProvider.overrideWith(() => update)]);
       expect(find.text('这个模型需要新版引擎'), findsOneWidget);
       expect(find.widgetWithText(TextButton, '换模型'), findsNothing);
-      await tester.tap(find.widgetWithText(TextButton, '检查更新'));
+      await tester.tap(find.widgetWithText(TextButton, '当前为锁定版本'));
       await pumpFrames(tester, 3);
-      expect(update.checks, 1);
-      expect(find.text('已是最新版本'), findsOneWidget);
+      expect(update.checks, 0);
+      expect(find.text('当前为锁定版本'), findsWidgets);
     });
 
     testWidgets('on a remote host the engine is not the app’s: 换模型', (tester) async {

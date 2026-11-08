@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
 import '../../state/providers_state.dart';
+import '../common/app_dialog.dart';
 import '../common/expand_reveal.dart';
 import '../common/list_page_row.dart';
 import '../common/page_hero.dart';
@@ -15,6 +16,7 @@ import '../features/feature_widgets.dart';
 import '../shell/page_frame.dart';
 import '../theme/app_icons.dart';
 import '../theme/theme.dart';
+import '../settings/channel_prompt_page.dart';
 import 'provider_form_page.dart';
 import 'provider_model_page.dart';
 import 'provider_widgets.dart';
@@ -82,7 +84,7 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
   }
 
   Future<void> _delete(CustomProvider provider) async {
-    final ok = await showDialog<bool>(
+    final ok = await showAppDialog<bool>(
       context: context,
       builder: (dialog) => AlertDialog(
         title: Text(context.l10n.engineProviderDeleteTitle(provider.displayName)),
@@ -219,6 +221,11 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
             ListPageCard(
               title: l10n.engineProviderConnection,
               children: [
+                ListPageRow(
+                  icon: AppIcons.edit,
+                  title: context.l10n.channelPromptTitle,
+                  onTap: () => _push(ChannelPromptPage(providerId: provider.id, api: provider.api?.wire)),
+                ),
                 ListPageRow(
                   icon: AppIcons.link,
                   title: 'Base URL',
