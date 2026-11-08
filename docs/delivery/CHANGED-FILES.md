@@ -13,7 +13,7 @@
 | `app/android/.../hostroot/HostRootPlugin.kt` | D2 D3 D4 R4 |
 | `app/android/.../diagnostics/DiagnosticsPlugin.kt` | D4 诊断只带哈希 |
 | `app/android/.../hostroot/HostRootGuest.kt` | D3 文案，渠道提示词文件 |
-| `app/assets/engine/hostprompt/index.mjs` `channel_prompt.mjs` | 渠道提示词替换破甲段 |
+| `app/assets/engine/hostprompt/index.mjs` `channel_prompt.mjs` | 渠道提示词只以一条 `<system-reminder>` 发出 |
 | `app/lib/channel_prompt/` | 真值表、持久化 |
 | `app/lib/ui/settings/channel_prompt_page.dart` | 渠道编辑、默认提示词页 |
 | `app/android/.../runtime/ChrootLaunch.kt` | 禁挂载 |

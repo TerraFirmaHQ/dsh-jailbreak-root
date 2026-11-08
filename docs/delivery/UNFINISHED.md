@@ -21,5 +21,6 @@
 - 关于页「检查更新」索引行已删。G1/G5 的关于页测试这轮重跑通过。
 - 使用统计和对话日志上传的入口已从欢迎页和隐私页拿掉。产品路径不上传，有 host 测试。
 - D2/D6/D7/D9 本应用缓存/D11/D12/R2/R3 序列化/R4/P2/G4 有 host 测试，见 HOST-TESTS.md。
-- 干净目录构建见 BUILD.md 和 build-clean.log。这轮 versionCode 是 11080152，源码是 `73c6ada`。11080129 没有接通选中渠道。真机没跑。
+- 干净目录构建见 BUILD.md 和 build-clean.log。这轮 versionCode 是 11081033，源码是 `72dbe70`。11080152 的 system 里还有工具说明句。真机没跑。
+- 人格段和工具说明段不再进入这条 system content。工具 schema 仍在 `tools`。Root 说明仍在引擎的 user 角色 AGENTS 消息里。选中渠道缺失时钩子不包装。Anthropic OAuth 仍会先加引擎自己的 Claude Code 身份块。Codex Responses 在空 system 时仍会换成 “You are a helpful assistant.”。这两处没有改引擎，也没有抓对应 HTTP。
 - B1/B2/B3、D1 的 17 例、D2 两按钮对话框、D3 自动允许、D4 审计字段、D7 UTF-8 分页有 host 测试。真机未验证，不能写成 P0 全过。
