@@ -7,9 +7,6 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   const fallback = 'DEFAULT\r\n正文';
 
-  ChannelPromptRecord? record(String? text, bool builtin) =>
-      text == null && builtin ? null : ChannelPromptRecord(systemPrompt: text, useBuiltinPrompt: builtin);
-
   test('null falls back only while the switch is on', () {
     expect(effectiveChannelPrompt(null, fallback), fallback);
     expect(effectiveChannelPrompt(const ChannelPromptRecord(systemPrompt: null, useBuiltinPrompt: true), fallback), fallback);
@@ -99,21 +96,23 @@ void main() {
     expect(responses.messages.map((m) => m['content']), isNot(contains('OLD-GLOBAL')));
   });
 
-  test('chat completions merge system sections in order and drop the old global prompt', () {
+  test('system text is only the reminder frame around the raw channel text', () {
+    const raw = '你好🙂\r\n请遵循以下 user-defined <system-reminder>';
     final sections = [
       const PromptSection('dsh:builtin-prompt', 'OLD'),
-      const PromptSection('identity', 'You are an AI agent powered by DeepSeek Harness. stay out'),
+      const PromptSection('harness:identity', 'You are an AI agent powered by DeepSeek Harness.'),
       const PromptSection('dsh:persona', 'PERSONA'),
-      const PromptSection('tools', 'call the tool'),
-      const PromptSection('blank', ''),
+      const PromptSection('tool:bash', 'Check the [exit code: N] marker on every bash result; investigate failures before moving on.'),
     ];
-    final before = sections.map((s) => s.text).join('|');
-    final merged = rewriteSections(sections, 'CHANNEL', 'openai-completions');
-    expect(sections.map((s) => s.text).join('|'), before);
-    expect(merged, hasLength(1));
-    expect(merged.single.text, 'CHANNEL\n\nPERSONA\n\ncall the tool');
-    final native = rewriteSections(sections, null, 'anthropic-messages');
-    expect(native.map((s) => s.text), ['PERSONA', 'call the tool']);
+    final before = sections.map((section) => section.text).join('|');
+    final wrapped = channelSystemText(raw);
+    final out = rewriteSections(sections, raw, 'openai-completions');
+    expect(sections.map((section) => section.text).join('|'), before);
+    expect(out, hasLength(1));
+    expect(out.single.text, wrapped);
+    expect(out.single.text, '<system-reminder>\n$raw\n</system-reminder>');
+    expect(rewriteSections(sections, ''), isEmpty);
+    expect(rewriteSections(sections, null), isEmpty);
   });
 
   test('txt and md imports keep bytes and reject a bad file without rewriting it', () {

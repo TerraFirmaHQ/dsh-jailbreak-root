@@ -9,8 +9,11 @@ import { mkdtemp, mkdir, readFile, writeFile, readdir, stat } from 'node:fs/prom
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { test } from 'node:test'
+import { channelSystemText } from '../../app/assets/engine/hostprompt/channel_prompt.mjs'
 
 const prefix = resolve(process.env.DSH_PREFIX || '/workspace/runtime/.work/x86_64/dsh-prefix')
+const rawA = 'PROMPT-A-CHANNEL\r\n你好🙂\n请遵循以下 user-defined <system-reminder>'
+const rawB = 'PROMPT-B-CHANNEL'
 const toolMark = 'Check the [exit code: N] marker on every bash result; investigate failures before moving on.'
 
 function sse(text) {
@@ -24,13 +27,6 @@ function sse(text) {
   return chunks.map((chunk) => `data: ${JSON.stringify(chunk)}\n\n`).join('') + 'data: [DONE]\n\n'
 }
 
-function stringsOf(value, out = []) {
-  if (typeof value === 'string') out.push(value)
-  else if (Array.isArray(value)) value.forEach((item) => stringsOf(item, out))
-  else if (value && typeof value === 'object') Object.values(value).forEach((item) => stringsOf(item, out))
-  return out
-}
-
 test('selected channels reach the real 0.2.2-rc.1 request', async () => {
   const root = resolve(prefix)
   const pkg = (name) => join(root, 'node_modules/@deepseek-ai', name)
@@ -42,9 +38,10 @@ test('selected channels reach the real 0.2.2-rc.1 request', async () => {
   await writeFile(join(pluginDir, 'channel_prompt.mjs'), await readFile(asset('channel_prompt.mjs')))
   await writeFile(join(pluginDir, 'policy.json'), JSON.stringify({
     channels: {
-      'channel-a': { systemPrompt: 'PROMPT-A-CHANNEL', useBuiltinPrompt: true, api: 'openai-completions' },
-      'channel-b': { systemPrompt: 'PROMPT-B-CHANNEL', useBuiltinPrompt: false, api: 'openai-completions' },
+      'channel-a': { systemPrompt: rawA, useBuiltinPrompt: true, api: 'openai-completions' },
+      'channel-b': { systemPrompt: rawB, useBuiltinPrompt: false, api: 'openai-completions' },
       'channel-empty': { systemPrompt: '', useBuiltinPrompt: true, api: 'openai-completions' },
+      'channel-off': { systemPrompt: null, useBuiltinPrompt: false, api: 'openai-completions' },
     },
   }))
 
@@ -89,6 +86,8 @@ test('selected channels reach the real 0.2.2-rc.1 request', async () => {
           'channel-a': provider('channel-a'),
           'channel-b': provider('channel-b'),
           'channel-empty': provider('channel-empty'),
+          'channel-off': provider('channel-off'),
+          'channel-default': provider('channel-default'),
         },
       },
     },
@@ -211,25 +210,48 @@ test('selected channels reach the real 0.2.2-rc.1 request', async () => {
     assert.equal(leftDone.reason, 'idle')
     assert.equal(rightDone.reason, 'idle')
     const concurrent = requests.slice(concurrentBefore)
-    const systemOf = (body) => stringsOf(body).join('\n')
-    assert.equal(requests.length >= 3, true, `requests ${requests.length}\n${hostOutput.slice(-1500)}`)
-    const bodies = requests.map((item) => systemOf(item.body))
-    const a = bodies.find((text) => text.includes('PROMPT-A-CHANNEL'))
-    const b = bodies.find((text) => text.includes('PROMPT-B-CHANNEL'))
-    const empty = bodies.find((text) => text.includes('hello-empty') && !text.includes('PROMPT-A-CHANNEL') && !text.includes('PROMPT-B-CHANNEL'))
-    assert.ok(a, `channel A missing\n${bodies.map((text) => text.slice(0, 180)).join('\n---\n')}`)
-    assert.equal(a.includes('PROMPT-B-CHANNEL'), false)
-    assert.equal(a.includes('You are rony'), false)
-    assert.equal(a.includes(toolMark), true)
-    assert.ok(b, 'channel B missing')
-    assert.equal(b.includes('PROMPT-A-CHANNEL'), false)
-    assert.equal(b.includes(toolMark), true)
+    const systems = (body) => (body?.messages ?? []).filter((message) => message?.role === 'system').map((message) => message.content)
+    const users = (body) => (body?.messages ?? []).filter((message) => message?.role === 'user').map((message) => (
+      typeof message.content === 'string' ? message.content : JSON.stringify(message.content)
+    ))
+    const requestFor = (token) => requests.map((item) => item.body).find((body) => users(body).some((text) => text.includes(token)))
+    const frame = channelSystemText
+    function assertExact(token, raw) {
+      const body = requestFor(token)
+      assert.ok(body, `no request for ${token}`)
+      const expected = frame(raw)
+      assert.deepEqual(systems(body), [expected])
+      assert.equal(users(body).some((text) => text.includes(raw)), false)
+      assert.equal(systems(body).join('').includes(toolMark), false)
+      assert.equal(systems(body).join('').includes('You are an AI agent powered by DeepSeek Harness.'), false)
+      const toolNames = (body.tools ?? []).map((tool) => tool?.name ?? tool?.function?.name)
+      assert.ok(toolNames.includes('bash'), `tools=${toolNames.slice(0, 12).join(',')} keys=${Object.keys(body).join(',')}`)
+    }
+    assertExact('hello-a', rawA)
+    assertExact('hello-b', rawB)
+    assertExact('switched-a', rawB)
+    assertExact('conc-a', rawA)
+    assertExact('conc-b', rawB)
+    const empty = requestFor('hello-empty')
     assert.ok(empty, 'empty channel request missing')
-    assert.equal(empty.includes('You are rony'), false)
-    assert.equal(empty.includes('PROMPT-A-CHANNEL'), false)
-    assert.equal(empty.includes(toolMark), true)
-    const switchedBody = bodies.find((text) => text.includes('switched-a'))
-    if (!switchedBody) {
+    assert.deepEqual(systems(empty).filter((text) => typeof text === 'string' && text.length > 0), [])
+    assert.equal(JSON.stringify(empty).includes('<system-reminder>'), false)
+    assert.equal(JSON.stringify(empty).includes('You are rony'), false)
+    const emptyToolNames = (empty.tools ?? []).map((tool) => tool?.name ?? tool?.function?.name)
+    assert.ok(emptyToolNames.includes('bash'), `empty tools=${emptyToolNames.slice(0, 8).join(',')} keys=${Object.keys(empty).join(',')}`)
+    const off = await turn('channel-off', 'hello-off')
+    const offBody = requestFor('hello-off')
+    assert.ok(offBody, 'builtin-off request missing')
+    assert.equal(JSON.stringify(offBody).includes('<system-reminder>'), false)
+    assert.equal(JSON.stringify(offBody).includes('You are rony'), false)
+    const promptFile = await readFile(new URL('../../app/assets/engine/hostprompt/prompt.md', import.meta.url))
+    const promptText = promptFile.toString('utf8')
+    await turn('channel-default', 'hello-default')
+    const fallback = requestFor('hello-default')
+    assert.ok(fallback, 'default channel request missing')
+    assert.deepEqual(systems(fallback), [frame(promptText)])
+    assert.equal(createHash('sha256').update(promptFile).digest('hex'), '4fbd3a104fcd16065800e4e730a67f7781698300eec33af8dc67cfd4f328c118')
+    async function filesContaining(token) {
       const hits = []
       async function walk(dir) {
         for (const name of await readdir(dir).catch(() => [])) {
@@ -237,21 +259,32 @@ test('selected channels reach the real 0.2.2-rc.1 request', async () => {
           const info = await stat(path)
           if (info.isDirectory()) await walk(path)
           else {
-            const text = await readFile(path, 'utf8')
-            if (text.includes('switched-a')) hits.push(path)
+            const bytes = await readFile(path)
+            if (bytes.includes(Buffer.from(token))) hits.push({ path, bytes })
           }
         }
       }
       await walk(join(home, 'sessions'))
-      assert.ok(false, `switched request missing; stored=${hits.join(',') || 'none'}; flags=${bodies.map((text) => [text.includes('hello-a'), text.includes('switched-a'), text.includes('PROMPT-A-CHANNEL'), text.includes('PROMPT-B-CHANNEL')].join(':')).join(' | ')}`)
+      return hits
     }
-    assert.equal(switchedBody.includes('PROMPT-B-CHANNEL'), true)
-    assert.equal(switchedBody.includes('PROMPT-A-CHANNEL'), false)
-    const concA = concurrent.map((item) => systemOf(item.body)).find((text) => text.includes('conc-a'))
-    const concB = concurrent.map((item) => systemOf(item.body)).find((text) => text.includes('conc-b'))
-    assert.ok(concA && concB, 'concurrent requests missing')
-    assert.equal(concA.includes('PROMPT-A-CHANNEL') && !concA.includes('PROMPT-B-CHANNEL'), true)
-    assert.equal(concB.includes('PROMPT-B-CHANNEL') && !concB.includes('PROMPT-A-CHANNEL'), true)
+    const beforeRetry = await filesContaining('hello-b')
+    assert.ok(beforeRetry.length > 0, 'session B history missing')
+    await rpc('session/prompt', {
+      request: { sessionId: sessionB, requestId: 'retry-b', mode: 'queue', content: [{ type: 'text', text: 'retry-b' }] },
+    })
+    const retried = await rpc('session/wait', { request: { sessionId: sessionB, timeoutMs: 45000 } })
+    assert.equal(retried.reason, 'idle', JSON.stringify(retried).slice(0, 400))
+    const retryBody = requestFor('retry-b')
+    assert.ok(retryBody, 'retry request missing')
+    assert.deepEqual(systems(retryBody), [frame(rawB)])
+    assert.equal((systems(retryBody).join('').match(/<system-reminder>/g) ?? []).length, 1)
+    const afterRetry = await filesContaining('hello-b')
+    for (const old of beforeRetry) {
+      const now = afterRetry.find((item) => item.path === old.path)
+      assert.ok(now, old.path)
+      assert.equal(now.bytes.subarray(0, old.bytes.length).equals(old.bytes), true, `${old.path} rewrote earlier bytes`)
+    }
+    void off
     assert.equal(requests.every((item) => item.url === '/v1/chat/completions'), true)
     assert.ok(Object.keys(afterA).length > 0, 'session A wrote no history file')
     for (const [name, hash] of Object.entries(afterA)) {

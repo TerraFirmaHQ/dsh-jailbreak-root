@@ -9,7 +9,7 @@
 
 ## 真引擎已经在本机打过
 
-- `node --test runtime/tests/channel-prompt-live.test.mjs` 用 0.2.2-rc.1 和 `127.0.0.1` 假端点抓到了 A/B、显式空、切换和并发请求。没有访问外部模型。真机仍未跑。见 CHANNEL-PROMPT.md。
+- `node --test runtime/tests/channel-prompt-live.test.mjs` 用 0.2.2-rc.1 和 `127.0.0.1` 假端点抓到了包装后的 system content、空/null、切换、并发、重试和会话文件前缀。没有访问外部模型，也没有测真实模型会不会把短拒绝改成长回答。Anthropic 和 Responses 只核对了同一前缀里的转换源码，没有抓这两种 HTTP。真机仍未跑。见 CHANNEL-PROMPT.md。
 
 ## 真机未验证
 

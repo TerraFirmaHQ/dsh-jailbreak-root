@@ -1,10 +1,6 @@
 // Channel system prompt. null means never set. "" means the user cleared it.
 // Those two are not the same, and neither is trimmed into the other.
 
-export const HARNESS_MARK = 'You are an AI agent powered by DeepSeek Harness.'
-
-const DROPPED = new Set(['dsh:builtin-prompt', 'deployment:persona-prefix', 'identity'])
-
 export function effectiveChannelPrompt(systemPrompt, useBuiltinPrompt, defaultText) {
   if (systemPrompt === null || systemPrompt === undefined) {
     return useBuiltinPrompt === false ? null : defaultText
@@ -67,30 +63,20 @@ export function providerIdOf(context) {
   return null
 }
 
-function keepSection(section) {
-  if (section == null || typeof section.text !== 'string' || section.text.length === 0) return false
-  if (DROPPED.has(section.name)) return false
-  if (section.name === 'dsh:persona' || section.name === 'dsh:channel-prompt') return true
-  if (section.text.startsWith(HARNESS_MARK)) return false
-  return true
+/** Request-time frame. Null or "" stays unsent. The stored text is not trimmed. */
+export function channelSystemText(channelText) {
+  if (typeof channelText !== 'string' || channelText.length === 0) return null
+  return '<system-reminder>\n' + channelText + '\n</system-reminder>'
 }
 
-/** New section list. Does not edit [sections] or anything inside it. */
-export function rewriteSections(sections, channelText, api) {
-  const kept = []
-  const source = Array.isArray(sections) ? sections : []
-  for (const section of source) {
-    if (!keepSection(section)) continue
-    kept.push({ name: section.name, text: section.text })
-  }
-  if (typeof channelText === 'string' && channelText.length > 0) {
-    kept.unshift({ name: 'dsh:channel-prompt', text: channelText })
-  }
-  if (api === 'openai-completions') {
-    const text = kept.map((section) => section.text).join('\n\n')
-    return text.length === 0 ? [] : [{ name: 'dsh:system', text }]
-  }
-  return kept
+/**
+ * The only system section for this request. Tool schemas are not sections.
+ * Does not edit [sections]. Does not add a source label.
+ */
+export function rewriteSections(sections, channelText) {
+  const text = channelSystemText(channelText)
+  if (text == null) return []
+  return [{ name: 'dsh:channel-prompt', text, interpolate: false }]
 }
 
 /**

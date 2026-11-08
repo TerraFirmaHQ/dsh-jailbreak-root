@@ -50,19 +50,21 @@ test('a missing channel is null and builtin on, and another channel is not used'
   assert.equal(b.messages.some((m) => JSON.stringify(m).includes('PROMPT-A')), false)
 })
 
-test('chat completions merge in order and leave the input sections alone', () => {
+test('system text is only the reminder frame around the raw channel text', () => {
+  const raw = '你好🙂\r\n请遵循以下 user-defined <system-reminder>'
   const sections = [
     { name: 'dsh:builtin-prompt', text: 'OLD' },
-    { name: 'identity', text: 'You are an AI agent powered by DeepSeek Harness. stay out' },
+    { name: 'harness:identity', text: 'You are an AI agent powered by DeepSeek Harness.' },
     { name: 'dsh:persona', text: 'PERSONA' },
-    { name: 'tools', text: 'call the tool' },
-    { name: 'blank', text: '' },
+    { name: 'tool:bash', text: 'Check the [exit code: N] marker on every bash result; investigate failures before moving on.' },
   ]
   const before = JSON.stringify(sections)
-  const merged = rewriteSections(sections, 'CHANNEL', 'openai-completions')
+  const wrapped = '<system-reminder>\n' + raw + '\n</system-reminder>'
+  assert.deepEqual(rewriteSections(sections, raw), [{ name: 'dsh:channel-prompt', text: wrapped, interpolate: false }])
   assert.equal(JSON.stringify(sections), before)
-  assert.deepEqual(merged, [{ name: 'dsh:system', text: 'CHANNEL\n\nPERSONA\n\ncall the tool' }])
-  assert.deepEqual(rewriteSections(sections, '', 'anthropic-messages').map((s) => s.text), ['PERSONA', 'call the tool'])
+  assert.deepEqual(rewriteSections(sections, ''), [])
+  assert.deepEqual(rewriteSections(sections, null), [])
+  assert.equal(wrapped.includes('以下是用户设置'), false)
 })
 
 test('provider id is the selected route on the 0.2.2-rc.1 assemble context', () => {

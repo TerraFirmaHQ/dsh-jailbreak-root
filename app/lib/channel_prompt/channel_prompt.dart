@@ -159,30 +159,17 @@ class PromptSection {
   final String text;
 }
 
-const harnessIdentityMark = 'You are an AI agent powered by DeepSeek Harness.';
-
-const _droppedSections = {'dsh:builtin-prompt', 'deployment:persona-prefix', 'identity'};
-
-bool _keepSection(PromptSection section) {
-  if (section.text.isEmpty) return false;
-  if (_droppedSections.contains(section.name)) return false;
-  if (section.name == 'dsh:persona' || section.name == 'dsh:channel-prompt') return true;
-  if (section.text.startsWith(harnessIdentityMark)) return false;
-  return true;
+/// Request-time frame. Null or empty stays unsent. The stored text is not trimmed.
+String? channelSystemText(String? channelText) {
+  if (channelText == null || channelText.isEmpty) return null;
+  return '<system-reminder>\n$channelText\n</system-reminder>';
 }
 
-/// Replaces the old global chat prompt. Tool sections and the editable persona stay.
-/// OpenAI chat completions become one system string, in the same order, with no empty entry.
-List<PromptSection> rewriteSections(List<PromptSection> sections, String? channelText, String? api) {
-  final kept = <PromptSection>[for (final section in sections) if (_keepSection(section)) PromptSection(section.name, section.text)];
-  if (channelText != null && channelText.isNotEmpty) {
-    kept.insert(0, PromptSection('dsh:channel-prompt', channelText));
-  }
-  if (api == 'openai-completions') {
-    if (kept.isEmpty) return const [];
-    return [PromptSection('dsh:system', kept.map((section) => section.text).join('\n\n'))];
-  }
-  return kept;
+/// The only system section for this request. Does not edit [sections].
+List<PromptSection> rewriteSections(List<PromptSection> sections, String? channelText, [String? api]) {
+  final text = channelSystemText(channelText);
+  if (text == null) return const [];
+  return [PromptSection('dsh:channel-prompt', text)];
 }
 
 class ProjectedRequest {

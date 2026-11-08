@@ -54,7 +54,7 @@ flutter test test/settings/index/index_sync_test.dart --name "能力里能看到
 node --test runtime/tests/channel-prompt-live.test.mjs
 ```
 
-前缀是本机 `runtime/.work/x86_64/dsh-prefix` 里的 `@deepseek-ai/dsh@0.2.2-rc.1`。假端点 `127.0.0.1`，密钥 `synthetic-local-only`。1 项通过：A/B、显式空、同一会话从 A 切到 B、并发两个会话，请求都进 `/v1/chat/completions`。bash 工具句还在。会话 A 的 jsonl 在会话 B 运行期间哈希不变。没有访问外部模型。
+前缀是本机 `runtime/.work/x86_64/dsh-prefix` 里的 `@deepseek-ai/dsh@0.2.2-rc.1`。假端点 `127.0.0.1`，密钥 `synthetic-local-only`。1 项通过。Chat Completions 的 system content 与 `<system-reminder>\n` + 原文 + `\n</system-reminder>` 逐字节相等，只有一条。空字符串和 null/false 不发标签。null/true 包的是 `prompt.md` 原文。user 里没有渠道文本。A/B、切换、并发不串。重试不重复包装。会话 A 的 jsonl 在会话 B 运行期间哈希不变。含 `hello-b` 的文件在重试后旧字节仍是开头。`tools` 里仍有 `bash`。system 里没有工具说明句。没有访问外部模型。假端点的 `LOCAL_REPLY` 不是模型效果。
 
 本轮重跑：
 

@@ -5,7 +5,9 @@
 // on, uses those exact bytes. A cleared channel or a switch that is off with
 // no saved text sends no channel prompt. The assemble hook replaces this
 // section for the request being built. It does not edit session history.
-// The editable persona section stays. Tool sections stay.
+// The model-visible system text is only the request-time frame around the
+// raw channel text. Tool schemas stay on the tool list. Persona and tool
+// instruction sections are not copied into that frame.
 
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'

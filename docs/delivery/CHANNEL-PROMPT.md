@@ -34,18 +34,21 @@
 
 ## 请求
 
-渠道文本替换 `dsh:builtin-prompt`。`deployment:persona-prefix` 和以 `You are an AI agent powered by DeepSeek Harness.` 开头的默认身份段不跟渠道文本拼在一起。`dsh:persona` 和工具段留着。空段不发。
-
-Chat Completions（`openai-completions`）按原顺序合成一条 system。Anthropic 放在 `system`。Responses 放在 `instructions`。用户和工具消息留在后面。构造函数返回新数组，不改传入的历史。
+非空渠道文本在发出前包一次。模型能看见的 system content 是：
 
 ```text
-A openai-completions  system: PROMPT-A
-                      user: hi
-B 文本为 ""           没有 system
-                      user: hi
+<system-reminder>
+{存着的提示词全文，一个字节不改}
+</system-reminder>
 ```
 
-历史数组本身不被改写。副本里只拿掉内容恰好等于已辨识旧全局段的那一条 system。用户自己的 system 笔记和工具说明留在副本里。引擎真正发出的请求不走这个辅助函数，见下面的真引擎记录。
+只放这一条。不拼到 user。不写第二份。不在标签前后加来源说明、小标题或「请遵循以下」这类应用自己写的句子。用户正文里如果本来就有这些词或这对标签，原样留在标签里面。空字符串和 null/false 不发渠道提示词，也不发空标签。null/true 先取 `prompt.md` 原文，再包这一次。包装不写回 `channel_prompts.json`，也不改 `prompt.md`。标签只是应用约定的发送格式，不改变模型权限。
+
+装配钩子在有选中渠道时把 system 段换成这一条，或在没有渠道文本时换成空列表。`dsh:persona`、`tool:*` 说明段、`harness:identity` 和默认身份句不再跟渠道文本放进同一条 system。工具 schema 仍由引擎挂在请求的 `tools` 上。人格编辑和 `persona.mjs` 还在，只是这段人格不再进入这条 system content。Root 用法说明仍由引擎放进 user 角色的 AGENTS 消息，没有删。选中渠道缺失时钩子不改装配结果，那条路径不走这次包装。
+
+Chat Completions 的首条 system 用 `messages[].role = system`，content 就是上面这一条。这是这次假端点抓到的。同一份 `@earendil-works/pi-ai` 源码里，Anthropic 非 OAuth 把同一段渲染结果放进 `params.system[0].text`；OAuth 会先加引擎自己的 “You are Claude Code...” 块，这次没有改它，也没有抓 Anthropic 请求。`openai-responses` 把同一段放进 `input` 里的一条消息，角色是 `system`；模型开了 reasoning 且没有关掉 developer role 时，角色是 `developer`。它没有顶层 `instructions`。`openai-codex-responses` 才把这段放进 `instructions`，空字符串时引擎会换成 “You are a helpful assistant.”。Codex 这条没有抓包。`sanitizeSurrogates` 会去掉不成对的代理项，普通 emoji 和 CRLF 留着。
+
+本地的 `projectRequest` 只是测试里的副本，不是引擎编码器。它返回新数组，不改传入的历史。
 
 ## 校验
 
@@ -67,13 +70,16 @@ B 文本为 ""           没有 system
 node --test runtime/tests/channel-prompt-live.test.mjs
 ```
 
-模型端点是 `127.0.0.1` 上的假 OpenAI Chat Completions。密钥是 `synthetic-local-only`。没有访问外部模型。结果：1 项通过。
+模型端点是 `127.0.0.1` 上的假 OpenAI Chat Completions。密钥是 `synthetic-local-only`。没有访问外部模型。假端点只回 `LOCAL_REPLY`，不能当成模型会把短拒绝改成长回答。结果：1 项通过。
 
-- 渠道 A 的 `/v1/chat/completions` 含 `PROMPT-A-CHANNEL` 和 bash 工具句 `Check the [exit code: N] marker...`，不含 `PROMPT-B-CHANNEL`，也不含默认文件开头 `You are rony`。
-- 渠道 B 只有 `PROMPT-B-CHANNEL` 和同一句工具说明。
-- 显式空字符串的渠道不含默认原文，也不含 A/B 文本，工具句还在。
+渠道 A 存的原文是 `PROMPT-A-CHANNEL` 加 CRLF、`你好🙂`、换行，以及正文自带的「请遵循以下」「user-defined」和 `<system-reminder>`。抓到的 system 只有一条，content 与 `<system-reminder>\n` + 这段原文 + `\n</system-reminder>` 逐字节相等。user 消息里没有这段原文。system 里没有 bash 工具句，也没有 “You are an AI agent powered by DeepSeek Harness.”。`tools` 里仍有 `bash`（有的请求写在 `name`，有的写在 `function.name`）。
+
+- 渠道 B 的 system content 同样只有包住 `PROMPT-B-CHANNEL` 的那一条。
+- 显式空字符串和 null/false 的请求没有 `<system-reminder>`，也没有 `You are rony`，`bash` 仍在 `tools`。
+- 没有记录的渠道走 null/true。system content 等于把 `prompt.md` 原文包一次。文件 sha256 仍是 `4fbd3a104fcd16065800e4e730a67f7781698300eec33af8dc67cfd4f328c118`。
 - 会话 A 跑完后的 jsonl 哈希，在会话 B 跑完时不变。
-- 同一会话从 A 切到 B 之后的下一次请求含 B、不含 A。
-- 两个会话同时 prompt，请求各自只带自己的渠道文本。
+- 同一会话从 A 切到 B 之后的请求，system content 是 B 的那一条包装，不是 A。
+- 两个会话同时 prompt，各自只有自己的那一条。
+- 同一会话再 prompt 一次，system content 仍是同一条包装，标签只出现一次。含 `hello-b` 的会话文件在这次重试后，原先的字节仍是文件开头。
 
-引擎自己的 `SystemPromptProjection` 仍可能在 `in-history` 时追加一条新的 `system/message` 事件。那是追加，不是改写已有行。这次测试看到的是另一会话的文件字节不变，以及切换后的 HTTP 不再带旧渠道文本。用户消息和工具段没有被钩子删掉。真机没跑。
+引擎自己的 `SystemPromptProjection` 仍可能在 `in-history` 时追加一条新的 `system/message` 事件。那是追加。这次看到的是另一会话的文件哈希不变，以及同一文件重试后旧字节还在开头。真机没跑。Anthropic 和 Responses 没有抓 HTTP，只核对了这份前缀里的转换源码。
